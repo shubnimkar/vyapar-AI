@@ -2,16 +2,20 @@
 
 ## Overview
 
-Vyapar AI is a Next.js 14 web application that provides AI-powered business health analysis for small shop owners in India. The system uses a stateless, session-based architecture where all data remains in memory during user interaction, with no persistent storage.
+Vyapar AI is a Next.js 14 web application that provides a daily business health companion for small shop owners in India. The system uses a **Hybrid Intelligence Model** combining deterministic calculations with AI-enhanced explanations, built on a stateless, session-based architecture where all data remains in memory during user interaction, with no persistent storage.
 
-The application leverages AWS Bedrock (Claude/Titan models) to analyze uploaded CSV data and generate insights about true profitability, product performance, inventory health, expense patterns, and cashflow forecasts. The AI translates complex financial analysis into simple, actionable language in Hindi, Marathi, or English.
+**Product Positioning**: Daily Business Health Companion (not just CSV analyzer)
+
+The application provides instant deterministic calculations for daily business metrics (profit, health score, credit tracking) and uses AWS Bedrock (Claude/Titan models) to enhance these calculations with simple, actionable explanations in Hindi, Marathi, or English.
 
 Key architectural decisions:
 - **Server Components for Static Content**: Next.js App Router with server components for initial page loads
 - **API Routes for Dynamic Operations**: All data processing, AI calls, and CSV parsing happen in API routes
 - **In-Memory Session Storage**: No database—data lives only in memory during the session
 - **Client-Side Language Preference**: localStorage stores language selection for persistence across visits
-- **AI-First Design**: Every core feature depends on AI for value delivery
+- **Hybrid Intelligence Model**: Deterministic core calculations + AI enhancement layer (NOT AI-first)
+- **Daily Entry Primary**: Quick daily entry is the main interface; CSV upload is advanced mode
+- **Trust-First Design**: Prominent privacy messaging about government non-connection
 
 ## Architecture
 
@@ -21,8 +25,12 @@ Key architectural decisions:
 ┌─────────────────────────────────────────────────────────────┐
 │                        Browser (Client)                      │
 │  ┌────────────────┐  ┌──────────────┐  ┌─────────────────┐ │
-│  │  File Upload   │  │  Language    │  │  Voice Synthesis│ │
-│  │  (PapaParse)   │  │  (localStorage)│ │  (Web Speech)  │ │
+│  │  Daily Entry   │  │  Language    │  │  Voice Synthesis│ │
+│  │  Form          │  │  (localStorage)│ │  (Web Speech)  │ │
+│  └────────────────┘  └──────────────┘  └─────────────────┘ │
+│  ┌────────────────┐  ┌──────────────┐  ┌─────────────────┐ │
+│  │  Health Score  │  │  Credit      │  │  File Upload    │ │
+│  │  Display       │  │  Module      │  │  (PapaParse)    │ │
 │  └────────────────┘  └──────────────┘  └─────────────────┘ │
 │           │                   │                   │          │
 └───────────┼───────────────────┼───────────────────┼──────────┘
@@ -32,31 +40,54 @@ Key architectural decisions:
 │                    Next.js App Router                        │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │              Server Components (Static)                 │ │
-│  │  - Landing page with language selector                  │ │
-│  │  - Upload interface                                     │ │
-│  │  - Insights display layout                              │ │
+│  │  - Landing page with trust banner                       │ │
+│  │  - Daily entry interface (primary)                      │ │
+│  │  - Health score display                                 │ │
+│  │  - Credit tracking interface                            │ │
+│  │  - Advanced mode: CSV upload interface                  │ │
 │  └────────────────────────────────────────────────────────┘ │
 │                                                              │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │                   API Routes                            │ │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐  │ │
-│  │  │ /api/upload  │  │ /api/analyze │  │  /api/ask   │  │ │
+│  │  │/api/daily    │  │ /api/upload  │  │/api/analyze │  │ │
 │  │  │              │  │              │  │             │  │ │
-│  │  │ - Parse CSV  │  │ - AI Analysis│  │ - Q&A AI    │  │ │
-│  │  │ - Validate   │  │ - Insights   │  │ - Context   │  │ │
-│  │  │ - Store in   │  │   Generation │  │   Aware     │  │ │
-│  │  │   memory     │  │              │  │             │  │ │
+│  │  │- Calculate   │  │ - Parse CSV  │  │- AI Analysis│  │ │
+│  │  │  profit      │  │ - Validate   │  │- Insights   │  │ │
+│  │  │- Calculate   │  │ - Store in   │  │  Generation │  │ │
+│  │  │  health score│  │   memory     │  │             │  │ │
+│  │  │- NO AI       │  │              │  │             │  │ │
 │  │  └──────────────┘  └──────────────┘  └─────────────┘  │ │
+│  │  ┌──────────────┐  ┌──────────────┐                    │ │
+│  │  │  /api/ask    │  │/api/explain  │                    │ │
+│  │  │              │  │              │                    │ │
+│  │  │ - Q&A AI     │  │- AI explains │                    │ │
+│  │  │ - Context    │  │  deterministic│                   │ │
+│  │  │   Aware      │  │  results     │                    │ │
+│  │  └──────────────┘  └──────────────┘                    │ │
 │  │         │                  │                  │         │ │
 │  └─────────┼──────────────────┼──────────────────┼─────────┘ │
 │            │                  │                  │           │
 │            ▼                  ▼                  ▼           │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │            In-Memory Session Store                      │ │
+│  │  - Daily entries (date, sales, expenses, cash)          │ │
+│  │  - Credit entries (customer, amount, dueDate, isPaid)   │ │
 │  │  - Uploaded CSV data (sales, expenses, inventory)       │ │
 │  │  - Parsed data structures                               │ │
 │  │  - Conversation history                                 │ │
 │  │  - Session ID mapping                                   │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │         Deterministic Calculation Engine                │ │
+│  │  - Profit = Sales - Expenses                            │ │
+│  │  - Expense Ratio = Expenses / Sales                     │ │
+│  │  - Health Score (0-100 formula)                         │ │
+│  │  - Credit Outstanding (sum unpaid)                      │ │
+│  │  - Overdue Amount (sum past due date)                   │ │
+│  │  - Blocked Inventory Cash (qty × cost)                  │ │
+│  │  → ALL calculations < 1 second, NO AI                   │ │
 │  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
                               │
@@ -65,9 +96,14 @@ Key architectural decisions:
                     │   AWS Bedrock    │
                     │  (Claude/Titan)  │
                     │                  │
-                    │ - Analysis       │
+                    │ - Explanations   │
                     │ - Q&A            │
+                    │ - Recommendations│
                     │ - Translation    │
+                    │   refinement     │
+                    │                  │
+                    │ NOT for numeric  │
+                    │ calculations!    │
                     └──────────────────┘
 ```
 
@@ -83,7 +119,126 @@ Key architectural decisions:
 
 ## Components and Interfaces
 
-### 1. File Upload Component (Client)
+### 1. Trust Banner Component (Client) **[NEW]**
+
+**Purpose**: Display persistent privacy messaging
+
+**Interface**:
+```typescript
+interface TrustBannerProps {
+  language: Language;
+}
+```
+
+**Behavior**:
+- Display at top of all pages
+- Show message: "Your data is private. Not connected to GST or any government system."
+- Translate message based on language
+- Non-dismissible, always visible
+- Styled with trust-building colors (blue/green)
+
+### 2. Daily Entry Form Component (Client) **[NEW - PRIMARY INTERFACE]**
+
+**Purpose**: Enable quick daily business data entry
+
+**Interface**:
+```typescript
+interface DailyEntryFormProps {
+  sessionId: string | null;
+  language: Language;
+  onEntryComplete: (entry: DailyEntry, calculations: DailyCalculations) => void;
+}
+
+interface DailyEntry {
+  date: string; // ISO date string
+  totalSales: number;
+  totalExpense: number;
+  cashInHand?: number;
+}
+
+interface DailyCalculations {
+  estimatedProfit: number; // totalSales - totalExpense
+  expenseRatio: number; // totalExpense / totalSales
+  profitMargin: number; // estimatedProfit / totalSales
+}
+```
+
+**Behavior**:
+- Display three input fields: Sales (₹), Expenses (₹), Cash in Hand (₹, optional)
+- On submit, calculate profit and expense ratio deterministically (NO AI)
+- Display results instantly (< 1 second)
+- Store entry in session store
+- Show visual feedback (profit in green if positive, red if negative)
+- Works offline/without AWS Bedrock
+- Large, touch-friendly inputs for mobile
+
+### 3. Health Score Display Component (Client) **[NEW]**
+
+**Purpose**: Show deterministic business health score
+
+**Interface**:
+```typescript
+interface HealthScoreProps {
+  score: number; // 0-100
+  breakdown: HealthScoreBreakdown;
+  language: Language;
+  onExplainClick?: () => void; // Optional AI explanation
+}
+
+interface HealthScoreBreakdown {
+  marginScore: number; // 0-30
+  expenseScore: number; // 0-30
+  cashScore: number; // 0-20
+  creditScore: number; // 0-20
+}
+```
+
+**Behavior**:
+- Display score as "Business Health Score: X/100"
+- Color-code: < 50 red, 50-75 yellow, > 75 green
+- Show visual progress bar
+- Display breakdown of score components
+- Optional "Explain Score" button triggers AI explanation
+- Calculate score deterministically without AI
+- Update immediately when data changes
+
+### 4. Credit Tracking Component (Client) **[NEW]**
+
+**Purpose**: Track customer credit (udhaar) and overdue payments
+
+**Interface**:
+```typescript
+interface CreditTrackingProps {
+  sessionId: string;
+  language: Language;
+}
+
+interface CreditEntry {
+  id: string;
+  customerName: string;
+  amount: number;
+  dueDate: string; // ISO date string
+  isPaid: boolean;
+  createdAt: string;
+}
+
+interface CreditSummary {
+  totalOutstanding: number; // sum of unpaid
+  totalOverdue: number; // sum of unpaid past due date
+  overdueCount: number; // count of overdue customers
+}
+```
+
+**Behavior**:
+- Form to add credit entry (customer name, amount, due date)
+- List of credit entries with paid/unpaid status
+- Calculate and display summary deterministically (NO AI)
+- Mark entries as paid
+- Highlight overdue entries in red
+- Feed into health score calculation
+- Store in session memory only
+
+### 5. File Upload Component (Client) **[EXISTING - NOW ADVANCED MODE]**
 
 **Purpose**: Handle CSV file selection and client-side preview
 
@@ -107,8 +262,9 @@ interface CSVPreview {
 - Display preview table with headers and sample rows
 - On confirmation, send file to `/api/upload` endpoint
 - Handle upload errors and display in selected language
+- **Now positioned as "Advanced Mode" in UI, not primary interface**
 
-### 2. Language Selector Component (Client)
+### 6. Language Selector Component (Client) **[EXISTING]**
 
 **Purpose**: Allow language selection and persist preference
 
@@ -128,7 +284,7 @@ type Language = 'en' | 'hi' | 'mr';
 - Trigger re-render of all text content
 - Show visual indicator for selected language
 
-### 3. Insights Display Component (Client)
+### 7. Insights Display Component (Client) **[EXISTING]**
 
 **Purpose**: Render AI-generated insights with optional voice synthesis
 
@@ -155,7 +311,7 @@ interface BusinessInsights {
 - Format currency values with ₹ symbol
 - Mobile-responsive card layout
 
-### 4. Q&A Chat Component (Client)
+### 8. Q&A Chat Component (Client) **[EXISTING]**
 
 **Purpose**: Enable conversational questions about business data
 
@@ -180,7 +336,78 @@ interface ChatMessage {
 - Send questions to `/api/ask` with session context
 - Show loading indicator during AI response
 
-### 5. Upload API Route (`/api/upload`)
+### 9. Daily Entry API Route (`/api/daily`) **[NEW]**
+
+**Purpose**: Process daily entry and calculate deterministic metrics
+
+**Interface**:
+```typescript
+export async function POST(request: Request): Promise<Response>
+
+interface DailyEntryRequest {
+  sessionId?: string;
+  date: string;
+  totalSales: number;
+  totalExpense: number;
+  cashInHand?: number;
+  language: Language;
+}
+
+interface DailyEntryResponse {
+  success: boolean;
+  sessionId: string;
+  calculations: DailyCalculations;
+  healthScore: number;
+  healthBreakdown: HealthScoreBreakdown;
+  error?: string;
+}
+```
+
+**Behavior**:
+1. Generate or retrieve session ID
+2. Validate input (positive numbers, valid date)
+3. Calculate deterministically (NO AI):
+   - estimatedProfit = totalSales - totalExpense
+   - expenseRatio = totalExpense / totalSales
+   - profitMargin = estimatedProfit / totalSales
+4. Store entry in session: `sessionStore[sessionId].dailyEntries.push(entry)`
+5. Calculate health score using deterministic formula
+6. Return calculations and health score immediately (< 1 second)
+7. NO AWS Bedrock calls in this route
+
+**Health Score Calculation**:
+```typescript
+function calculateHealthScore(
+  profitMargin: number,
+  expenseRatio: number,
+  cashInHand: number | undefined,
+  creditData: CreditSummary
+): number {
+  let score = 0;
+  
+  // Margin score (0-30)
+  if (profitMargin > 0.20) score += 30;
+  else if (profitMargin > 0.10) score += 20;
+  else if (profitMargin > 0) score += 10;
+  
+  // Expense score (0-30)
+  if (expenseRatio < 0.60) score += 30;
+  else if (expenseRatio < 0.75) score += 20;
+  else if (expenseRatio < 0.90) score += 10;
+  
+  // Cash score (0-20)
+  if (cashInHand !== undefined && cashInHand > 0) score += 20;
+  else if (cashInHand !== undefined && cashInHand >= 0) score += 10;
+  
+  // Credit score (0-20)
+  if (creditData.overdueCount === 0) score += 20;
+  else if (creditData.overdueCount <= 2) score += 10;
+  
+  return Math.min(100, Math.max(0, score));
+}
+```
+
+### 10. Upload API Route (`/api/upload`) **[EXISTING]**
 
 **Purpose**: Parse, validate, and store CSV data in memory
 
@@ -212,9 +439,9 @@ interface UploadResponse {
 4. Store parsed data in memory: `sessionStore[sessionId][fileType] = parsedData`
 5. Return preview and session ID
 
-### 6. Analyze API Route (`/api/analyze`)
+### 11. Analyze API Route (`/api/analyze`) **[EXISTING - MODIFIED]**
 
-**Purpose**: Send data to AWS Bedrock for AI analysis
+**Purpose**: Send data to AWS Bedrock for AI explanations (NOT calculations)
 
 **Interface**:
 ```typescript
@@ -223,6 +450,12 @@ export async function POST(request: Request): Promise<Response>
 interface AnalyzeRequest {
   sessionId: string;
   language: Language;
+  deterministicResults?: {
+    profit: number;
+    expenseRatio: number;
+    healthScore: number;
+    blockedInventory: number;
+  };
 }
 
 interface AnalyzeResponse {
@@ -234,34 +467,67 @@ interface AnalyzeResponse {
 
 **Behavior**:
 1. Retrieve uploaded data from memory using session ID
-2. Construct analysis prompt with data context
-3. Call AWS Bedrock with structured prompt
-4. Parse AI response into insight categories
-5. Return insights in requested language
+2. **Calculate deterministic metrics first (if not provided)**:
+   - True profit from sales/expenses
+   - Blocked inventory cash from inventory data
+   - Expense patterns
+3. Construct analysis prompt with data context AND deterministic results
+4. Call AWS Bedrock for **explanations and recommendations** (NOT calculations)
+5. Parse AI response into insight categories
+6. Return insights in requested language
 
-**AWS Bedrock Integration**:
-```typescript
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+**Modified Prompt Strategy**:
+```
+You are explaining business metrics to a small shop owner in {language}.
 
-const client = new BedrockRuntimeClient({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+**Calculated Metrics** (already computed):
+- Profit: ₹{profit}
+- Expense Ratio: {expenseRatio}%
+- Health Score: {healthScore}/100
+- Blocked Inventory: ₹{blockedInventory}
 
-const command = new InvokeModelCommand({
-  modelId: "anthropic.claude-3-sonnet-20240229-v1:0",
-  body: JSON.stringify({
-    anthropic_version: "bedrock-2023-05-31",
-    max_tokens: 2000,
-    messages: [{ role: "user", content: prompt }],
-  }),
-});
+**Your Task**:
+Explain what these numbers mean in simple language. Provide actionable recommendations.
+DO NOT recalculate these numbers. Focus on interpretation and advice.
+
+**Data Context**:
+{formatted_data}
+
+Provide insights in simple {language} without jargon.
 ```
 
-### 7. Ask API Route (`/api/ask`)
+### 12. Explain API Route (`/api/explain`) **[NEW]**
+
+**Purpose**: Get AI explanation for deterministic results
+
+**Interface**:
+```typescript
+export async function POST(request: Request): Promise<Response>
+
+interface ExplainRequest {
+  sessionId: string;
+  metric: 'healthScore' | 'profit' | 'credit' | 'expenses';
+  value: number;
+  context: Record<string, any>;
+  language: Language;
+}
+
+interface ExplainResponse {
+  success: boolean;
+  explanation: string;
+  recommendations: string[];
+  error?: string;
+}
+```
+
+**Behavior**:
+1. Retrieve session context
+2. Construct focused prompt for specific metric
+3. Call AWS Bedrock for explanation only
+4. Return simple language explanation
+5. Provide 2-3 actionable recommendations
+
+### 13. Ask API Route (`/api/ask`) **[EXISTING]**
 
 **Purpose**: Handle conversational Q&A with data context
 
@@ -291,17 +557,48 @@ interface AskResponse {
 
 ## Data Models
 
-### Session Store (In-Memory)
+### Session Store (In-Memory) **[UPDATED]**
 
 ```typescript
 interface SessionData {
   sessionId: string;
   createdAt: Date;
   lastAccessedAt: Date;
+  
+  // NEW: Daily entries (primary data source)
+  dailyEntries: DailyEntry[];
+  
+  // NEW: Credit tracking
+  creditEntries: CreditEntry[];
+  
+  // EXISTING: CSV data (advanced mode)
   salesData?: ParsedCSV;
   expensesData?: ParsedCSV;
   inventoryData?: ParsedCSV;
+  
+  // EXISTING: Conversation history
   conversationHistory: ChatMessage[];
+}
+
+interface DailyEntry {
+  date: string; // ISO date string
+  totalSales: number;
+  totalExpense: number;
+  cashInHand?: number;
+  // Calculated fields (stored for history)
+  estimatedProfit: number;
+  expenseRatio: number;
+  profitMargin: number;
+}
+
+interface CreditEntry {
+  id: string;
+  customerName: string;
+  amount: number;
+  dueDate: string; // ISO date string
+  isPaid: boolean;
+  createdAt: string;
+  paidAt?: string;
 }
 
 interface ParsedCSV {
@@ -325,7 +622,91 @@ function cleanupExpiredSessions() {
 }
 ```
 
-### Language Translations
+### Deterministic Calculation Utilities **[NEW]**
+
+```typescript
+// lib/calculations.ts
+
+export function calculateProfit(sales: number, expenses: number): number {
+  return sales - expenses;
+}
+
+export function calculateExpenseRatio(expenses: number, sales: number): number {
+  if (sales === 0) return 0;
+  return expenses / sales;
+}
+
+export function calculateProfitMargin(profit: number, sales: number): number {
+  if (sales === 0) return 0;
+  return profit / sales;
+}
+
+export function calculateHealthScore(
+  profitMargin: number,
+  expenseRatio: number,
+  cashInHand: number | undefined,
+  creditSummary: CreditSummary
+): { score: number; breakdown: HealthScoreBreakdown } {
+  const breakdown: HealthScoreBreakdown = {
+    marginScore: 0,
+    expenseScore: 0,
+    cashScore: 0,
+    creditScore: 0,
+  };
+  
+  // Margin score (0-30)
+  if (profitMargin > 0.20) breakdown.marginScore = 30;
+  else if (profitMargin > 0.10) breakdown.marginScore = 20;
+  else if (profitMargin > 0) breakdown.marginScore = 10;
+  
+  // Expense score (0-30)
+  if (expenseRatio < 0.60) breakdown.expenseScore = 30;
+  else if (expenseRatio < 0.75) breakdown.expenseScore = 20;
+  else if (expenseRatio < 0.90) breakdown.expenseScore = 10;
+  
+  // Cash score (0-20)
+  if (cashInHand !== undefined) {
+    if (cashInHand > 0) breakdown.cashScore = 20;
+    else if (cashInHand >= 0) breakdown.cashScore = 10;
+  }
+  
+  // Credit score (0-20)
+  if (creditSummary.overdueCount === 0) breakdown.creditScore = 20;
+  else if (creditSummary.overdueCount <= 2) breakdown.creditScore = 10;
+  
+  const score = breakdown.marginScore + breakdown.expenseScore + 
+                breakdown.cashScore + breakdown.creditScore;
+  
+  return { score: Math.min(100, Math.max(0, score)), breakdown };
+}
+
+export function calculateCreditSummary(entries: CreditEntry[]): CreditSummary {
+  const now = new Date();
+  const unpaidEntries = entries.filter(e => !e.isPaid);
+  
+  const totalOutstanding = unpaidEntries.reduce((sum, e) => sum + e.amount, 0);
+  
+  const overdueEntries = unpaidEntries.filter(e => new Date(e.dueDate) < now);
+  const totalOverdue = overdueEntries.reduce((sum, e) => sum + e.amount, 0);
+  const overdueCount = overdueEntries.length;
+  
+  return { totalOutstanding, totalOverdue, overdueCount };
+}
+
+export function calculateBlockedInventory(inventory: ParsedCSV): number {
+  return inventory.rows.reduce((sum, row) => {
+    const quantity = Number(row.quantity) || 0;
+    const costPrice = Number(row.cost_price) || 0;
+    return sum + (quantity * costPrice);
+  }, 0);
+}
+
+// All calculations are pure functions with no side effects
+// All calculations complete in < 1ms
+// No AI or external API calls
+```
+
+### Language Translations **[UPDATED]**
 
 ```typescript
 interface Translations {
@@ -337,6 +718,107 @@ interface Translations {
 }
 
 const translations: Translations = {
+  // NEW: Trust banner
+  trustBanner: {
+    en: "Your data is private. Not connected to GST or any government system.",
+    hi: "आपका डेटा निजी है। GST या किसी सरकारी सिस्टम से जुड़ा नहीं है।",
+    mr: "तुमचा डेटा खाजगी आहे। GST किंवा कोणत्याही सरकारी प्रणालीशी जोडलेला नाही."
+  },
+  
+  // NEW: Daily entry
+  dailyEntry: {
+    en: "Daily Entry",
+    hi: "दैनिक प्रविष्टि",
+    mr: "दैनिक नोंद"
+  },
+  totalSales: {
+    en: "Total Sales Today (₹)",
+    hi: "आज की कुल बिक्री (₹)",
+    mr: "आजची एकूण विक्री (₹)"
+  },
+  totalExpenses: {
+    en: "Total Expenses Today (₹)",
+    hi: "आज का कुल खर्च (₹)",
+    mr: "आजचा एकूण खर्च (₹)"
+  },
+  cashInHand: {
+    en: "Cash in Hand (₹)",
+    hi: "हाथ में नकद (₹)",
+    mr: "हातातील रोकड (₹)"
+  },
+  submitEntry: {
+    en: "Submit",
+    hi: "जमा करें",
+    mr: "सबमिट करा"
+  },
+  
+  // NEW: Health score
+  healthScore: {
+    en: "Business Health Score",
+    hi: "व्यापार स्वास्थ्य स्कोर",
+    mr: "व्यवसाय आरोग्य स्कोअर"
+  },
+  explainScore: {
+    en: "Explain Score",
+    hi: "स्कोर समझाएं",
+    mr: "स्कोअर समजावून सांगा"
+  },
+  
+  // NEW: Credit tracking
+  creditTracking: {
+    en: "Credit Tracking (Udhaar)",
+    hi: "उधार ट्रैकिंग",
+    mr: "उधार ट्रॅकिंग"
+  },
+  customerName: {
+    en: "Customer Name",
+    hi: "ग्राहक का नाम",
+    mr: "ग्राहकाचे नाव"
+  },
+  amount: {
+    en: "Amount (₹)",
+    hi: "राशि (₹)",
+    mr: "रक्कम (₹)"
+  },
+  dueDate: {
+    en: "Due Date",
+    hi: "देय तिथि",
+    mr: "देय तारीख"
+  },
+  totalOutstanding: {
+    en: "Total Outstanding",
+    hi: "कुल बकाया",
+    mr: "एकूण थकबाकी"
+  },
+  totalOverdue: {
+    en: "Total Overdue",
+    hi: "कुल अतिदेय",
+    mr: "एकूण थकीत"
+  },
+  overdueCustomers: {
+    en: "Overdue Customers",
+    hi: "अतिदेय ग्राहक",
+    mr: "थकीत ग्राहक"
+  },
+  
+  // NEW: Results
+  estimatedProfit: {
+    en: "Estimated Profit",
+    hi: "अनुमानित लाभ",
+    mr: "अंदाजे नफा"
+  },
+  expenseRatio: {
+    en: "Expense Ratio",
+    hi: "खर्च अनुपात",
+    mr: "खर्च प्रमाण"
+  },
+  
+  // EXISTING: CSV upload (now advanced mode)
+  advancedMode: {
+    en: "Advanced Analysis (CSV Upload)",
+    hi: "उन्नत विश्लेषण (CSV अपलोड)",
+    mr: "प्रगत विश्लेषण (CSV अपलोड)"
+  },
   uploadCSV: {
     en: "Upload CSV File",
     hi: "CSV फ़ाइल अपलोड करें",
@@ -351,35 +833,42 @@ const translations: Translations = {
 };
 ```
 
-## Prompt Engineering Strategy
+## Prompt Engineering Strategy **[UPDATED FOR HYBRID MODEL]**
 
-### Analysis Prompt Template
+### Analysis Prompt Template **[MODIFIED]**
 
-The analysis prompt is critical for generating accurate, actionable insights. Structure:
+The analysis prompt now receives pre-calculated deterministic results and focuses on explanation rather than calculation:
 
 ```
-You are a business health advisor for small retail shops in India. Analyze the following data and provide insights in {language}.
+You are a business health advisor for small retail shops in India. You are explaining pre-calculated business metrics in {language}.
 
-**Sales Data:**
+**IMPORTANT**: The numbers below have already been calculated deterministically. Your job is to EXPLAIN what they mean and provide actionable recommendations. DO NOT recalculate these numbers.
+
+**Pre-Calculated Metrics:**
+- Estimated Profit: ₹{profit}
+- Expense Ratio: {expenseRatio}%
+- Profit Margin: {profitMargin}%
+- Health Score: {healthScore}/100
+- Blocked Inventory Cash: ₹{blockedInventory}
+- Total Credit Outstanding: ₹{creditOutstanding}
+- Overdue Credit: ₹{overdueCredit}
+
+**Data Context:**
 {formatted_sales_data}
-
-**Expenses Data:**
 {formatted_expenses_data}
-
-**Inventory Data:**
 {formatted_inventory_data}
 
-**Analysis Required:**
+**Your Task:**
 
-1. **True Profit vs Cash Flow**: Calculate actual profit considering inventory costs and blocked capital. Explain the difference between money in hand (cash flow) and real profit.
+1. **Explain True Profit**: Explain what the profit of ₹{profit} means. Is it good for this type of shop? How does it compare to the cash flow?
 
-2. **Loss-Making Products**: Identify products where selling price is below cost price or where inventory holding costs exceed margins.
+2. **Identify Loss-Making Products**: Based on the sales and inventory data, which products are causing losses? Be specific with product names.
 
-3. **Blocked Inventory Cash**: Calculate total cash tied up in unsold inventory. Identify slow-moving items.
+3. **Explain Blocked Inventory**: The shop has ₹{blockedInventory} stuck in inventory. Which products are slow-moving? What should the owner do?
 
-4. **Abnormal Expenses**: Detect expenses that are unusually high compared to typical patterns or business size.
+4. **Highlight Abnormal Expenses**: Look at the expense data. Are there any unusual or concerning expenses? Be specific.
 
-5. **7-Day Cashflow Forecast**: Based on recent patterns, predict if the shop will face cash shortage in the next 7 days.
+5. **Cashflow Forecast**: Based on recent patterns, will the shop face cash shortage in the next 7 days? Why or why not?
 
 **Output Format:**
 Provide insights in simple language without financial jargon. Use examples from the actual data. Format in {language}. Be specific with numbers and product names.
@@ -389,6 +878,53 @@ Provide insights in simple language without financial jargon. Use examples from 
 - Avoid terms like "EBITDA", "working capital", "liquidity"
 - Use simple terms: "real profit", "money stuck", "cash in hand"
 - Provide actionable suggestions, not just analysis
+- Reference the pre-calculated numbers, don't recalculate them
+```
+
+### Health Score Explanation Prompt **[NEW]**
+
+```
+You are explaining a business health score to a small shop owner in {language}.
+
+**Health Score: {score}/100**
+
+**Score Breakdown:**
+- Margin Score: {marginScore}/30 (based on {profitMargin}% profit margin)
+- Expense Score: {expenseScore}/30 (based on {expenseRatio}% expense ratio)
+- Cash Score: {cashScore}/20 (cash in hand: ₹{cashInHand})
+- Credit Score: {creditScore}/20 ({overdueCount} overdue customers)
+
+**Your Task:**
+Explain in simple {language} what this score means:
+1. Is this score good, average, or concerning?
+2. Which area needs the most improvement?
+3. What are 2-3 specific actions the owner can take to improve the score?
+
+**Guidelines:**
+- Use simple language, no jargon
+- Be encouraging but honest
+- Provide specific, actionable advice
+- Keep explanation under 150 words
+```
+
+### Daily Entry Explanation Prompt **[NEW]**
+
+```
+You are explaining today's business results to a shop owner in {language}.
+
+**Today's Results:**
+- Sales: ₹{sales}
+- Expenses: ₹{expenses}
+- Profit: ₹{profit}
+- Expense Ratio: {expenseRatio}%
+
+**Your Task:**
+In 2-3 sentences, explain:
+1. Is today's profit good or concerning?
+2. Is the expense ratio healthy?
+3. One specific suggestion for tomorrow
+
+Use simple {language}. Be brief and actionable.
 ```
 
 ### Q&A Prompt Template
@@ -422,27 +958,88 @@ For Hindi/Marathi responses, add:
 Use natural {language} expressions. Avoid direct English translations. Use culturally appropriate examples and metaphors familiar to Indian shop owners.
 ```
 
-## UI Design
+## UI Design **[UPDATED LAYOUT]**
 
-### Layout Structure
+### Layout Structure **[NEW HIERARCHY]**
 
 ```
 ┌─────────────────────────────────────────┐
+│  Trust Banner (Persistent)              │
+│  🔒 Your data is private. Not connected │
+│  to GST or any government system.       │
+├─────────────────────────────────────────┤
 │  Header                                  │
 │  [Logo] Vyapar AI    [🌐 Language ▼]   │
 ├─────────────────────────────────────────┤
 │                                          │
 │  ┌────────────────────────────────────┐ │
-│  │  Upload Section                     │ │
+│  │  📊 Daily Entry (PRIMARY)           │ │
+│  │                                     │ │
+│  │  Today's Business:                  │ │
+│  │  [₹ Total Sales    ]                │ │
+│  │  [₹ Total Expenses ]                │ │
+│  │  [₹ Cash in Hand   ] (optional)     │ │
+│  │                                     │ │
+│  │  [Submit Entry]                     │ │
+│  │                                     │ │
+│  │  Results (instant, < 1 sec):        │ │
+│  │  ✅ Profit: ₹X                      │ │
+│  │  📊 Expense Ratio: Y%               │ │
+│  └────────────────────────────────────┘ │
+│                                          │
+│  ┌────────────────────────────────────┐ │
+│  │  💯 Business Health Score           │ │
+│  │                                     │ │
+│  │  Score: 72/100 🟡                   │ │
+│  │  [████████░░] 72%                   │ │
+│  │                                     │ │
+│  │  Breakdown:                         │ │
+│  │  • Margin: 20/30                    │ │
+│  │  • Expenses: 30/30                  │ │
+│  │  • Cash: 10/20                      │ │
+│  │  • Credit: 12/20                    │ │
+│  │                                     │ │
+│  │  [🤖 Explain Score]                 │ │
+│  └────────────────────────────────────┘ │
+│                                          │
+│  ┌────────────────────────────────────┐ │
+│  │  📝 Quick Summary                   │ │
+│  │                                     │ │
+│  │  Today:                             │ │
+│  │  Sales: ₹X | Expenses: ₹Y          │ │
+│  │  Profit: ₹Z                         │ │
+│  │                                     │ │
+│  │  This Week:                         │ │
+│  │  Total Profit: ₹A                   │ │
+│  │  Avg Daily: ₹B                      │ │
+│  └────────────────────────────────────┘ │
+│                                          │
+│  ┌────────────────────────────────────┐ │
+│  │  💰 Credit Summary (Udhaar)         │ │
+│  │                                     │ │
+│  │  Total Outstanding: ₹X              │ │
+│  │  Overdue: ₹Y (Z customers) 🔴      │ │
+│  │                                     │ │
+│  │  [+ Add Credit Entry]               │ │
+│  │  [View All Credits]                 │ │
+│  └────────────────────────────────────┘ │
+│                                          │
+│  ┌────────────────────────────────────┐ │
+│  │  🔬 Advanced Analysis               │ │
+│  │  (CSV Upload Mode)                  │ │
+│  │                                     │ │
+│  │  [▼ Expand Advanced Mode]           │ │
+│  │                                     │ │
+│  │  When expanded:                     │ │
 │  │  📊 Sales CSV     [Upload]          │ │
 │  │  💰 Expenses CSV  [Upload]          │ │
 │  │  📦 Inventory CSV [Upload]          │ │
 │  │                                     │ │
-│  │  [🔍 Analyze My Business]           │ │
+│  │  [🔍 Analyze with AI]               │ │
 │  └────────────────────────────────────┘ │
 │                                          │
 │  ┌────────────────────────────────────┐ │
-│  │  Insights (after analysis)          │ │
+│  │  AI Insights (after CSV analysis)   │ │
 │  │                                     │ │
 │  │  💵 True Profit                     │ │
 │  │  Your real profit is ₹X             │ │
@@ -452,15 +1049,11 @@ Use natural {language} expressions. Avoid direct English translations. Use cultu
 │  │  Product A, Product B               │ │
 │  │  [🔊 Listen]                        │ │
 │  │                                     │ │
-│  │  📦 Blocked Cash                    │ │
-│  │  ₹Y stuck in inventory              │ │
-│  │  [🔊 Listen]                        │ │
-│  │                                     │ │
 │  │  ... more insights ...              │ │
 │  └────────────────────────────────────┘ │
 │                                          │
 │  ┌────────────────────────────────────┐ │
-│  │  Ask Questions                      │ │
+│  │  💬 Ask Questions                   │ │
 │  │  ┌──────────────────────────────┐  │ │
 │  │  │ Type your question...        │  │ │
 │  │  └──────────────────────────────┘  │ │
@@ -473,6 +1066,33 @@ Use natural {language} expressions. Avoid direct English translations. Use cultu
 │                                          │
 └─────────────────────────────────────────┘
 ```
+
+### Key UI Changes
+
+1. **Trust Banner**: Always visible at top, non-dismissible
+2. **Daily Entry First**: Primary interface, large and prominent
+3. **Instant Results**: Show profit/expense ratio immediately without AI
+4. **Health Score Prominent**: Visual score with color coding
+5. **Credit Summary**: Quick view of outstanding/overdue
+6. **CSV Upload Collapsed**: "Advanced Mode" section, expandable
+7. **AI Insights Below**: Only after CSV analysis or on-demand explanation
+
+### Color Coding
+
+**Health Score**:
+- 0-49: Red (#EF4444) - Critical
+- 50-74: Yellow (#F59E0B) - Warning  
+- 75-100: Green (#10B981) - Good
+
+**Credit Status**:
+- No overdue: Green
+- 1-2 overdue: Yellow
+- 3+ overdue: Red
+
+**Profit Display**:
+- Positive: Green
+- Zero: Gray
+- Negative: Red
 
 ### Tailwind CSS Styling Approach
 
@@ -744,6 +1364,96 @@ After reflection, the following properties provide comprehensive, non-redundant 
 *For any* asynchronous operation (file upload, analysis, Q&A), while the operation is in progress, a loading indicator should be visible in the UI.
 
 **Validates: Requirements 10.5**
+
+### Property 27: Daily Entry Profit Calculation **[NEW]**
+
+*For any* daily entry with totalSales S and totalExpense E, the calculated estimatedProfit should equal exactly S - E, computed without AI involvement.
+
+**Validates: Requirements 11.3**
+
+### Property 28: Daily Entry Expense Ratio Calculation **[NEW]**
+
+*For any* daily entry with totalSales S > 0 and totalExpense E, the calculated expenseRatio should equal exactly E / S, computed without AI involvement.
+
+**Validates: Requirements 11.4**
+
+### Property 29: Daily Entry Instant Response **[NEW]**
+
+*For any* valid daily entry submission, the system should return calculation results in under 1 second without making AWS Bedrock API calls.
+
+**Validates: Requirements 11.5, 15.6**
+
+### Property 30: Daily Entry Storage **[NEW]**
+
+*For any* daily entry submitted with date D, sales S, expenses E, and optional cash C, the session store should contain an entry with those exact values retrievable by session ID.
+
+**Validates: Requirements 11.6**
+
+### Property 31: Health Score Range **[NEW]**
+
+*For any* calculated health score, the value should be between 0 and 100 inclusive, computed deterministically without AI.
+
+**Validates: Requirements 12.1**
+
+### Property 32: Health Score Deterministic Calculation **[NEW]**
+
+*For any* given profitMargin, expenseRatio, cashInHand, and creditSummary, calculating the health score multiple times should always produce the same result without AI involvement.
+
+**Validates: Requirements 12.4, 15.1**
+
+### Property 33: Health Score Color Coding **[NEW]**
+
+*For any* health score value, if score < 50 it should display in red, if 50 ≤ score ≤ 75 in yellow, if score > 75 in green.
+
+**Validates: Requirements 12.7**
+
+### Property 34: Credit Outstanding Calculation **[NEW]**
+
+*For any* set of credit entries, the total outstanding should equal the sum of amounts for all entries where isPaid is false, computed deterministically.
+
+**Validates: Requirements 13.4**
+
+### Property 35: Credit Overdue Calculation **[NEW]**
+
+*For any* set of credit entries and current date D, the total overdue should equal the sum of amounts for unpaid entries where dueDate < D, computed deterministically.
+
+**Validates: Requirements 13.5**
+
+### Property 36: Credit Overdue Count **[NEW]**
+
+*For any* set of credit entries and current date D, the overdue count should equal the number of unpaid entries where dueDate < D, computed deterministically.
+
+**Validates: Requirements 13.6**
+
+### Property 37: Credit Impact on Health Score **[NEW]**
+
+*For any* health score calculation, if overdue credit exists (overdueCount > 0), the credit score component should be reduced compared to when no overdue credit exists.
+
+**Validates: Requirements 13.7**
+
+### Property 38: Trust Banner Visibility **[NEW]**
+
+*For any* page load in any language, the trust banner should be visible and display the privacy message in the selected language.
+
+**Validates: Requirements 14.1, 14.2, 14.3, 14.4**
+
+### Property 39: Deterministic Layer Independence **[NEW]**
+
+*For any* deterministic calculation (profit, expense ratio, health score, credit totals, blocked inventory), the calculation should complete successfully even when AWS Bedrock is unavailable or returns an error.
+
+**Validates: Requirements 15.4, 15.5**
+
+### Property 40: Deterministic Calculation Performance **[NEW]**
+
+*For any* deterministic calculation, the computation should complete in under 1 second.
+
+**Validates: Requirements 15.6**
+
+### Property 41: AI Non-Calculation Constraint **[NEW]**
+
+*For any* numeric output (profit, health score, credit amounts, blocked inventory), the value should be calculated by deterministic code and not by parsing AI responses.
+
+**Validates: Requirements 15.3**
 
 ## Testing Strategy
 

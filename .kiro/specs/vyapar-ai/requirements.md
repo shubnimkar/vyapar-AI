@@ -2,23 +2,34 @@
 
 ## Introduction
 
-Vyapar AI is an AI-powered business health assistant designed for small shop owners in India. The system acts as a "doctor for shop financial health," analyzing sales, expenses, and inventory data to provide actionable insights in local languages. It addresses the critical need for 60+ million small retail shops to understand their true profitability beyond simple cash flow, potentially improving profits by 5-15%.
+Vyapar AI is a daily business health companion designed for small shop owners in India. The system acts as a "doctor for shop financial health," providing instant deterministic calculations for daily business metrics and AI-enhanced explanations in local languages. It addresses the critical need for 60+ million small retail shops to understand their true profitability beyond simple cash flow, potentially improving profits by 5-15%.
 
-The system serves the "AI for Retail, Commerce & Market Intelligence" track by leveraging AI to democratize financial intelligence for small businesses that lack formal accounting expertise.
+**Product Positioning**: Daily Business Health Companion for Small Shop Owners
+
+The system serves the "AI for Retail, Commerce & Market Intelligence" track by combining deterministic business calculations with AI-powered insights to democratize financial intelligence for small businesses that lack formal accounting expertise.
+
+**Architecture Philosophy**: Hybrid Intelligence Model
+- **Deterministic Core**: All numeric calculations (profit, expenses, health score) are computed locally without AI
+- **AI Enhancement Layer**: AI provides explanations, recommendations, and conversational Q&A in simple language
 
 ## Glossary
 
 - **System**: The Vyapar AI web application
 - **Shop_Owner**: The small retail business owner using the system
-- **CSV_File**: Comma-separated values file containing sales, expenses, or inventory data
-- **AI_Engine**: AWS Bedrock service (Claude/Titan models) that analyzes business data
-- **Insight**: AI-generated analysis result about business health
+- **Daily_Entry**: Manual input of daily business summary (sales, expenses, cash)
+- **CSV_File**: Comma-separated values file containing sales, expenses, or inventory data (Advanced Mode)
+- **AI_Engine**: AWS Bedrock service (Claude/Titan models) that provides explanations and recommendations
+- **Insight**: Analysis result about business health (calculated deterministically, explained by AI)
 - **Session**: In-memory data storage duration while user interacts with the system
 - **Language_Preference**: User's selected language (Hindi, Marathi, or English)
 - **Voice_Synthesis**: Web Speech API text-to-speech functionality
 - **True_Profit**: Actual profit after accounting for inventory costs and blocked cash
 - **Cash_Flow**: Movement of money in and out of the business
 - **Blocked_Inventory**: Products sitting unsold that tie up cash
+- **Health_Score**: Deterministic 0-100 score based on margin, expense ratio, cash buffer, and credit risk
+- **Udhaar**: Credit given to customers (Hindi term for informal credit)
+- **Deterministic_Calculation**: Numeric computation performed locally without AI involvement
+- **Hybrid_Intelligence**: Architecture combining deterministic calculations with AI explanations
 
 ## Requirements
 
@@ -148,23 +159,123 @@ The system serves the "AI for Retail, Commerce & Market Intelligence" track by l
 4. WHEN an API call fails, THE System SHALL provide a retry option
 5. WHEN the system is processing, THE System SHALL display a loading indicator with status text
 
-## Why AI is Necessary
+### Requirement 11: Quick Daily Entry Mode (Primary Entry Point)
 
-AI is not optional for Vyapar AI—it is the core value proposition. Here's why:
+**User Story:** As a shop owner, I want to quickly enter my daily sales and expenses each day, so that I can track my business health without uploading CSV files.
 
-1. **Complex Pattern Recognition**: Identifying loss-making products requires analyzing relationships between sales volume, pricing, and inventory costs across potentially hundreds of SKUs. Traditional rule-based systems cannot adapt to the diverse business models of different shops.
+#### Acceptance Criteria
 
-2. **Natural Language Understanding**: Shop owners need to ask questions in Hindi/Marathi using colloquial business terms. AI enables understanding of varied phrasings like "मेरा सबसे ज्यादा नुकसान किस चीज़ में है?" (What's causing my biggest loss?) without rigid command structures.
+1. WHEN a shop owner opens the application, THE System SHALL display the daily entry form prominently as the primary interface
+2. THE daily entry form SHALL accept three fields: totalSalesToday (₹), totalExpenseToday (₹), and cashInHand (₹, optional)
+3. WHEN a shop owner submits daily entry, THE System SHALL calculate EstimatedProfit = totalSalesToday - totalExpenseToday deterministically without AI
+4. WHEN a shop owner submits daily entry, THE System SHALL calculate ExpenseRatio = totalExpenseToday / totalSalesToday deterministically without AI
+5. THE System SHALL display calculation results instantly (< 1 second) without requiring AWS Bedrock calls
+6. THE System SHALL store daily entries in the session store as an array with date, totalSales, totalExpense, and cashInHand fields
+7. WHEN displaying daily entry results, THE System SHALL show profit, expense ratio, and cash position in the user's selected language
+8. THE daily entry feature SHALL work even when AWS Bedrock is unavailable
 
-3. **Contextual Analysis**: Determining "abnormal expenses" requires understanding normal patterns for each specific shop type and location. AI learns from the data context rather than requiring manual threshold configuration.
+### Requirement 12: Business Health Score (Deterministic)
 
-4. **Cashflow Prediction**: Forecasting 7-day cashflow risk involves analyzing seasonal patterns, payment cycles, and expense timing—a task requiring sophisticated time-series analysis that AI handles naturally.
+**User Story:** As a shop owner, I want to see a simple health score for my business, so that I can quickly understand if my business is doing well.
 
-5. **Accessible Insights**: AI translates complex financial concepts into simple, actionable language appropriate for users with limited financial literacy, adapting explanations based on the data context.
+#### Acceptance Criteria
 
-6. **True Profit Calculation**: Distinguishing true profit from cash flow requires understanding inventory valuation, cost of goods sold, and working capital—concepts AI can explain and calculate without requiring accounting expertise from the user.
+1. THE System SHALL calculate a Business Health Score between 0 and 100 using deterministic logic without AI
+2. THE health score calculation SHALL use the following factors:
+   - Margin ratio: +30 points if > 20%
+   - Expense ratio: +30 points if < 60%
+   - Cash buffer: +20 points if positive cash in hand
+   - Credit risk: +20 points if no overdue credit
+3. WHEN displaying the health score, THE System SHALL show "Business Health Score: X/100" with a visual indicator (color-coded)
+4. THE System SHALL calculate the health score locally without making AI API calls
+5. THE AI MAY provide an explanation of the score in simple language, but SHALL NOT calculate the score itself
+6. THE health score SHALL update immediately when daily entries or credit data changes
+7. WHEN the health score is below 50, THE System SHALL display it in red; 50-75 in yellow; above 75 in green
 
-Without AI, the system would be a simple calculator requiring extensive financial knowledge from users, defeating the purpose of democratizing business intelligence for small shops.
+### Requirement 13: Minimal Credit (Udhaar) Module
+
+**User Story:** As a shop owner who gives credit to customers, I want to track outstanding credit and overdue payments, so that I can manage my cash flow better.
+
+#### Acceptance Criteria
+
+1. THE System SHALL provide a credit tracking interface to add customer credit entries
+2. EACH credit entry SHALL contain: customerName (string), amount (number), dueDate (string), isPaid (boolean)
+3. THE System SHALL store credit entries in the session store as an array
+4. THE System SHALL calculate and display total credit outstanding deterministically (sum of unpaid entries)
+5. THE System SHALL calculate and display total overdue amount deterministically (sum of unpaid entries past due date)
+6. THE System SHALL calculate and display count of overdue customers deterministically
+7. WHEN overdue credit exists, THE System SHALL flag this in the health score calculation (reduce score by 20 points)
+8. THE AI MAY suggest actions like "Try collecting ₹X overdue payments" but SHALL NOT calculate credit amounts
+9. THE credit calculations SHALL complete instantly without AI involvement
+
+### Requirement 14: Trust and Privacy Layer
+
+**User Story:** As a shop owner concerned about privacy, I want clear assurance that my data is not connected to government systems, so that I feel safe using the application.
+
+#### Acceptance Criteria
+
+1. THE System SHALL display a persistent trust banner at the top of the interface
+2. THE trust banner SHALL state: "Your data is private. Not connected to GST or any government system."
+3. THE trust banner SHALL be translated into Hindi and Marathi
+4. THE trust banner SHALL be visible on all pages and SHALL NOT be dismissible
+5. THE System SHALL maintain the existing session-based architecture with no persistent storage
+6. THE System SHALL clearly communicate that no data is stored permanently
+
+### Requirement 15: Hybrid Intelligence Model
+
+**User Story:** As a system, I need to separate deterministic calculations from AI enhancements, so that core functionality works reliably even when AI is unavailable.
+
+#### Acceptance Criteria
+
+1. THE System SHALL implement a Deterministic Layer that calculates:
+   - Profit (Sales - Expenses)
+   - Expense ratio (Expenses / Sales)
+   - Blocked inventory cash (sum of quantity × cost_price)
+   - Health score (based on defined formula)
+   - Credit outstanding and overdue amounts
+   - Basic anomaly detection (values outside normal ranges)
+2. THE System SHALL implement an AI Enhancement Layer that provides:
+   - Explanations in simple language
+   - Conversational Q&A
+   - Translation refinement
+   - Action recommendations
+   - Context-aware insights
+3. THE AI SHALL NEVER be the sole calculator of numeric outputs
+4. ALL numeric calculations SHALL be reproducible without AI
+5. WHEN AWS Bedrock is unavailable, THE System SHALL continue to provide deterministic calculations with a message that AI explanations are temporarily unavailable
+6. THE System SHALL complete all deterministic calculations in under 1 second
+7. THE AI explanations MAY take up to 15 seconds but SHALL NOT block deterministic results from displaying
+
+## Why AI is Necessary (But Not Sufficient)
+
+AI remains essential for Vyapar AI, but it serves as an enhancement layer rather than the sole computational engine. Here's the refined role of AI:
+
+1. **Natural Language Understanding**: Shop owners need to ask questions in Hindi/Marathi using colloquial business terms. AI enables understanding of varied phrasings like "मेरा सबसे ज्यादा नुकसान किस चीज़ में है?" (What's causing my biggest loss?) without rigid command structures.
+
+2. **Contextual Explanations**: While the system calculates profit deterministically (Sales - Expenses), AI translates this into simple, actionable language appropriate for users with limited financial literacy. For example, explaining why a 15% margin is concerning for a grocery shop but acceptable for a clothing shop.
+
+3. **Pattern Recognition for Recommendations**: AI identifies patterns in expense categories and suggests specific actions like "Your electricity bill is 3x higher than last month - check for issues" based on contextual analysis rather than simple threshold rules.
+
+4. **Conversational Interface**: AI enables natural Q&A where shop owners can ask follow-up questions and get contextual answers based on their specific data, making the tool accessible to users uncomfortable with traditional software interfaces.
+
+5. **Cultural and Linguistic Adaptation**: AI adapts explanations to be culturally appropriate, using familiar metaphors and examples relevant to Indian small businesses, going beyond simple translation.
+
+6. **Insight Synthesis**: While individual calculations are deterministic, AI synthesizes multiple data points into coherent narratives like "Your profit is good but cash is low because ₹X is stuck in inventory - consider selling Product Y at a discount."
+
+**What AI Does NOT Do**:
+- Calculate profit, expenses, or health scores (deterministic)
+- Compute credit outstanding or overdue amounts (deterministic)
+- Determine blocked inventory cash (deterministic)
+- Generate the health score number (deterministic formula)
+
+**What AI DOES Do**:
+- Explain what the numbers mean in simple language
+- Provide actionable recommendations based on patterns
+- Answer conversational questions about the data
+- Translate complex financial concepts into accessible insights
+- Adapt communication style to user's language and context
+
+This hybrid approach ensures reliability (deterministic core always works) while maintaining accessibility (AI makes it understandable).
 
 ## Non-Functional Requirements
 
@@ -173,24 +284,30 @@ Without AI, the system would be a simple calculator requiring extensive financia
 1. THE System SHALL parse and preview CSV files with up to 10,000 rows within 3 seconds
 2. THE System SHALL return AI analysis results within 15 seconds for typical datasets
 3. THE System SHALL load the initial page within 2 seconds on 3G mobile connections
+4. **THE System SHALL display deterministic calculation results (profit, health score, credit totals) within 1 second**
+5. **THE System SHALL NOT block user interface while waiting for AI responses**
 
 ### Usability
 
 1. THE System SHALL be usable by shop owners with minimal digital literacy
-2. THE System SHALL require no more than 3 clicks to upload data and view insights
+2. **THE System SHALL require no more than 3 fields to enter daily business data**
 3. THE System SHALL use icons and visual cues to minimize reliance on text
+4. **THE daily entry mode SHALL be the primary interface, with CSV upload as advanced mode**
 
 ### Reliability
 
 1. THE System SHALL handle AWS Bedrock API failures gracefully with retry mechanisms
 2. THE System SHALL validate all CSV data before processing to prevent crashes
 3. THE System SHALL maintain session data integrity during the user's active session
+4. **THE System SHALL provide core functionality (daily entry, health score, credit tracking) even when AWS Bedrock is unavailable**
+5. **ALL deterministic calculations SHALL be reproducible and testable without AI**
 
 ### Security
 
 1. THE System SHALL load AWS credentials only from environment variables, never from client-side code
 2. THE System SHALL not log or persist any business data uploaded by users
 3. THE System SHALL use HTTPS for all API communications
+4. **THE System SHALL display trust messaging about data privacy and government non-connection**
 
 ### Compatibility
 
