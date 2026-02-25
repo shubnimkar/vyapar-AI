@@ -25,7 +25,7 @@ An AI-powered business health assistant for small shop owners in India. Analyzes
 
 ### Prerequisites
 
-- Node.js 18+ (Note: Node.js 20+ recommended for AWS SDK v3)
+- Node.js 20+ (required for AWS SDK v3 compatibility)
 - AWS Account with Bedrock access
 - AWS credentials with Bedrock permissions
 

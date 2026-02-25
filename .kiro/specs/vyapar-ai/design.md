@@ -1768,6 +1768,13 @@ The UI should include:
 
 ## Deployment Considerations
 
+### System Requirements
+
+**Node.js Version**: 20.0.0 or higher (required)
+- AWS SDK for JavaScript v3 requires Node.js 20+ for continued support
+- Node.js 18 will no longer be supported by AWS SDK after January 2026
+- Recommended: Node.js 20 LTS or Node.js 22 LTS
+
 ### Environment Variables
 
 Required environment variables:
@@ -1777,6 +1784,7 @@ AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=<your-access-key>
 AWS_SECRET_ACCESS_KEY=<your-secret-key>
 BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
+NODE_ENV=production
 ```
 
 ### Vercel Deployment
@@ -1792,10 +1800,13 @@ Recommended configuration:
   "env": {
     "AWS_REGION": "@aws-region",
     "AWS_ACCESS_KEY_ID": "@aws-access-key-id",
-    "AWS_SECRET_ACCESS_KEY": "@aws-secret-access-key"
+    "AWS_SECRET_ACCESS_KEY": "@aws-secret-access-key",
+    "NODE_VERSION": "20"
   }
 }
 ```
+
+**Note**: Ensure Vercel project settings specify Node.js 20+ in the build configuration.
 
 ### Memory Management
 

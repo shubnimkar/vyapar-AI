@@ -64,7 +64,7 @@ Use the sample CSV files in the `sample-data/` folder:
 ### Build Errors
 - Run `npm install` again
 - Clear `.next` folder: `rm -rf .next`
-- Check Node.js version: `node --version` (18+ required)
+- Check Node.js version: `node --version` (20+ required)
 
 ## 📝 CSV Format Requirements
 
