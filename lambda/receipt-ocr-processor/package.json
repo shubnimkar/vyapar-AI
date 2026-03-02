@@ -1,0 +1,27 @@
+{
+  "name": "receipt-ocr-processor",
+  "version": "1.0.0",
+  "description": "Clean Bedrock Vision OCR processor for Vyapar AI receipts",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.490.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.490.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "bedrock",
+    "ocr",
+    "receipt",
+    "vision"
+  ],
+  "author": "Vyapar AI",
+  "license": "MIT"
+}

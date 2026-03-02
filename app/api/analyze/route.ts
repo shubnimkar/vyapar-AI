@@ -1,4 +1,5 @@
 // API route for AI-powered business analysis
+// HYBRID MODEL: Calculates deterministic metrics first, then AI explains
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session-store';
@@ -6,13 +7,23 @@ import { invokeBedrockModel } from '@/lib/bedrock-client';
 import { buildAnalysisPrompt } from '@/lib/prompts';
 import { Language, BusinessInsights } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { 
+  calculateProfit, 
+  calculateBlockedInventory,
+  calculateExpenseRatio 
+} from '@/lib/calculations';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionId, language = 'en' } = body as {
+    const { sessionId, language = 'en', deterministicResults } = body as {
       sessionId: string;
       language: Language;
+      deterministicResults?: {
+        profit?: number;
+        expenseRatio?: number;
+        blockedInventory?: number;
+      };
     };
     
     // Validate session ID
@@ -49,15 +60,42 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Build analysis prompt
+    // STEP 1: Calculate deterministic metrics FIRST (if not provided)
+    let calculatedMetrics = deterministicResults || {};
+    
+    if (!calculatedMetrics.profit && session.salesData && session.expensesData) {
+      // Calculate total sales and expenses from CSV
+      const totalSales = session.salesData.rows.reduce((sum, row) => {
+        return sum + (Number(row.amount) || 0);
+      }, 0);
+      
+      const totalExpenses = session.expensesData.rows.reduce((sum, row) => {
+        return sum + (Number(row.amount) || 0);
+      }, 0);
+      
+      calculatedMetrics.profit = calculateProfit(totalSales, totalExpenses);
+      calculatedMetrics.expenseRatio = calculateExpenseRatio(totalExpenses, totalSales);
+    }
+    
+    if (!calculatedMetrics.blockedInventory && session.inventoryData) {
+      calculatedMetrics.blockedInventory = calculateBlockedInventory(
+        session.inventoryData.rows.map(row => ({
+          quantity: Number(row.quantity) || 0,
+          cost_price: Number(row.cost_price) || 0,
+        }))
+      );
+    }
+    
+    // STEP 2: Build analysis prompt with PRE-CALCULATED metrics
     const prompt = buildAnalysisPrompt(
       session.salesData,
       session.expensesData,
       session.inventoryData,
-      language
+      language,
+      calculatedMetrics // Pass pre-calculated metrics to prompt
     );
     
-    // Call AWS Bedrock
+    // STEP 3: Call AWS Bedrock for EXPLANATION only (not calculation)
     const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
     
     if (!bedrockResponse.success) {
@@ -73,6 +111,14 @@ export async function POST(request: NextRequest) {
     // Parse AI response into structured insights
     const aiContent = bedrockResponse.content || '';
     const insights = parseInsights(aiContent);
+    
+    // Add calculated metrics to insights
+    if (calculatedMetrics.profit !== undefined) {
+      insights.calculatedProfit = calculatedMetrics.profit;
+    }
+    if (calculatedMetrics.blockedInventory !== undefined) {
+      insights.calculatedBlockedInventory = calculatedMetrics.blockedInventory;
+    }
     
     // Add enhanced features (recommendations, alerts, charts, benchmark)
     const { 
@@ -93,6 +139,7 @@ export async function POST(request: NextRequest) {
       success: true,
       insights,
       benchmark,
+      calculatedMetrics, // Return deterministic calculations
     });
     
   } catch (error: any) {

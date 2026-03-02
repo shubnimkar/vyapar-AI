@@ -1,0 +1,731 @@
+// Authentication Manager for Phone-Based OTP Authentication
+// Handles phone validation, OTP operations, and session management
+
+import { Language } from './types';
+
+// ============================================
+// Type Definitions
+// ============================================
+
+export interface ValidationResult {
+  valid: boolean;
+  formatted?: string; // E.164 format (+91XXXXXXXXXX)
+  error?: string; // Localized error message
+}
+
+export interface OTPResult {
+  success: boolean;
+  error?: string;
+  retryAfter?: number; // Seconds until retry allowed
+}
+
+export interface AuthResult {
+  success: boolean;
+  session?: Session;
+  user?: User;
+  error?: string;
+  isFirstLogin?: boolean;
+}
+
+export interface Session {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number; // Unix timestamp
+  user: User;
+}
+
+export interface User {
+  id: string;
+  phoneNumber: string;
+  createdAt: string;
+}
+
+// ============================================
+// Phone Validation Error Types
+// ============================================
+
+export enum PhoneValidationError {
+  INVALID_FORMAT = 'phone_invalid_format',
+  TOO_SHORT = 'phone_too_short',
+  TOO_LONG = 'phone_too_long',
+  NON_NUMERIC = 'phone_non_numeric',
+  INVALID_START_DIGIT = 'phone_invalid_start_digit',
+}
+
+// ============================================
+// Localized Error Messages
+// ============================================
+
+const phoneErrorMessages: Record<PhoneValidationError, Record<Language, string>> = {
+  [PhoneValidationError.INVALID_FORMAT]: {
+    en: 'Please enter a valid 10-digit mobile number',
+    hi: 'कृपया 10 अंकों का मोबाइल नंबर दर्ज करें',
+    mr: 'कृपया 10 अंकांचा मोबाइल नंबर प्रविष्ट करा',
+  },
+  [PhoneValidationError.TOO_SHORT]: {
+    en: 'Phone number is too short (must be 10 digits)',
+    hi: 'फ़ोन नंबर बहुत छोटा है (10 अंक होना चाहिए)',
+    mr: 'फोन नंबर खूप लहान आहे (10 अंक असणे आवश्यक आहे)',
+  },
+  [PhoneValidationError.TOO_LONG]: {
+    en: 'Phone number is too long (must be 10 digits)',
+    hi: 'फ़ोन नंबर बहुत लंबा है (10 अंक होना चाहिए)',
+    mr: 'फोन नंबर खूप मोठा आहे (10 अंक असणे आवश्यक आहे)',
+  },
+  [PhoneValidationError.NON_NUMERIC]: {
+    en: 'Phone number should contain only digits',
+    hi: 'फ़ोन नंबर में केवल अंक होने चाहिए',
+    mr: 'फोन नंबरमध्ये फक्त अंक असावेत',
+  },
+  [PhoneValidationError.INVALID_START_DIGIT]: {
+    en: 'Indian mobile numbers must start with 6, 7, 8, or 9',
+    hi: 'भारतीय मोबाइल नंबर 6, 7, 8, या 9 से शुरू होना चाहिए',
+    mr: 'भारतीय मोबाइल नंबर 6, 7, 8, किंवा 9 ने सुरू होणे आवश्यक आहे',
+  },
+};
+
+// ============================================
+// Phone Validation and Formatting
+// ============================================
+
+/**
+ * Validate and format Indian phone number
+ * Accepts: 10-digit number (with or without +91 prefix)
+ * Returns: E.164 format (+91XXXXXXXXXX) if valid
+ */
+export function validatePhoneNumber(
+  phone: string,
+  language: Language = 'en'
+): ValidationResult {
+  // Remove all whitespace and special characters except +
+  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  
+  // Remove +91 prefix if present
+  const withoutPrefix = cleaned.replace(/^\+91/, '');
+  
+  // Check if contains only digits
+  if (!/^\d+$/.test(withoutPrefix)) {
+    return {
+      valid: false,
+      error: phoneErrorMessages[PhoneValidationError.NON_NUMERIC][language],
+    };
+  }
+  
+  // Check length
+  if (withoutPrefix.length < 10) {
+    return {
+      valid: false,
+      error: phoneErrorMessages[PhoneValidationError.TOO_SHORT][language],
+    };
+  }
+  
+  if (withoutPrefix.length > 10) {
+    return {
+      valid: false,
+      error: phoneErrorMessages[PhoneValidationError.TOO_LONG][language],
+    };
+  }
+  
+  // Check if starts with valid digit (6, 7, 8, or 9)
+  const firstDigit = withoutPrefix[0];
+  if (!['6', '7', '8', '9'].includes(firstDigit)) {
+    return {
+      valid: false,
+      error: phoneErrorMessages[PhoneValidationError.INVALID_START_DIGIT][language],
+    };
+  }
+  
+  // Valid phone number - format to E.164
+  const formatted = formatPhoneNumber(withoutPrefix);
+  
+  return {
+    valid: true,
+    formatted,
+  };
+}
+
+/**
+ * Format phone number to E.164 format
+ * Input: 10-digit number (without country code)
+ * Output: +91XXXXXXXXXX
+ */
+export function formatPhoneNumber(phone: string): string {
+  // Remove any existing +91 prefix
+  const cleaned = phone.replace(/^\+91/, '');
+  
+  // Add +91 prefix
+  return `+91${cleaned}`;
+}
+
+/**
+ * Format phone number for display
+ * Input: +91XXXXXXXXXX
+ * Output: +91 XXXXX XXXXX
+ */
+export function formatPhoneForDisplay(phone: string): string {
+  // Remove +91 prefix
+  const number = phone.replace(/^\+91/, '');
+  
+  // Split into two parts: first 5 digits and last 5 digits
+  const part1 = number.substring(0, 5);
+  const part2 = number.substring(5);
+  
+  return `+91 ${part1} ${part2}`;
+}
+
+/**
+ * Mask phone number for privacy
+ * Input: +91XXXXXXXXXX
+ * Output: +91XXXXX1234 (shows last 4 digits)
+ */
+export function maskPhoneNumber(phone: string): string {
+  // Remove +91 prefix
+  const number = phone.replace(/^\+91/, '');
+  
+  // Show only last 4 digits
+  const lastFour = number.substring(6);
+  
+  return `+91XXXXX${lastFour}`;
+}
+
+// ============================================
+// Rate Limiting
+// ============================================
+
+interface RateLimitEntry {
+  attempts: number;
+  firstAttemptAt: number; // Unix timestamp
+}
+
+// In-memory rate limit store (in production, use Redis or similar)
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+/**
+ * Check if phone number has exceeded rate limit
+ * Limit: 3 attempts per hour
+ */
+export function checkRateLimit(phoneNumber: string): {
+  allowed: boolean;
+  retryAfter?: number; // Seconds until next attempt allowed
+} {
+  const now = Date.now();
+  const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+  
+  const entry = rateLimitStore.get(phoneNumber);
+  
+  if (!entry) {
+    // First attempt - allow
+    rateLimitStore.set(phoneNumber, {
+      attempts: 1,
+      firstAttemptAt: now,
+    });
+    return { allowed: true };
+  }
+  
+  // Check if rate limit window has expired
+  const timeSinceFirst = now - entry.firstAttemptAt;
+  if (timeSinceFirst > oneHour) {
+    // Reset rate limit
+    rateLimitStore.set(phoneNumber, {
+      attempts: 1,
+      firstAttemptAt: now,
+    });
+    return { allowed: true };
+  }
+  
+  // Check if exceeded limit
+  if (entry.attempts >= 3) {
+    const timeRemaining = oneHour - timeSinceFirst;
+    const secondsRemaining = Math.ceil(timeRemaining / 1000);
+    
+    return {
+      allowed: false,
+      retryAfter: secondsRemaining,
+    };
+  }
+  
+  // Increment attempts
+  entry.attempts += 1;
+  rateLimitStore.set(phoneNumber, entry);
+  
+  return { allowed: true };
+}
+
+/**
+ * Reset rate limit for a phone number (for testing)
+ */
+export function resetRateLimit(phoneNumber: string): void {
+  rateLimitStore.delete(phoneNumber);
+}
+
+// ============================================
+// OTP Verification Attempts Tracking
+// ============================================
+
+interface VerificationAttempts {
+  count: number;
+  otpToken: string; // Track which OTP this is for
+}
+
+// In-memory verification attempts store
+const verificationAttemptsStore = new Map<string, VerificationAttempts>();
+
+/**
+ * Check if verification attempts exceeded
+ * Limit: 5 attempts per OTP
+ */
+export function checkVerificationAttempts(
+  phoneNumber: string,
+  otpToken: string
+): {
+  allowed: boolean;
+  attemptsRemaining: number;
+} {
+  const entry = verificationAttemptsStore.get(phoneNumber);
+  
+  if (!entry || entry.otpToken !== otpToken) {
+    // First attempt for this OTP
+    verificationAttemptsStore.set(phoneNumber, {
+      count: 1,
+      otpToken,
+    });
+    return { allowed: true, attemptsRemaining: 4 };
+  }
+  
+  // Check if exceeded limit
+  if (entry.count >= 5) {
+    return { allowed: false, attemptsRemaining: 0 };
+  }
+  
+  // Increment attempts
+  entry.count += 1;
+  verificationAttemptsStore.set(phoneNumber, entry);
+  
+  return {
+    allowed: true,
+    attemptsRemaining: 5 - entry.count,
+  };
+}
+
+/**
+ * Reset verification attempts for a phone number
+ */
+export function resetVerificationAttempts(phoneNumber: string): void {
+  verificationAttemptsStore.delete(phoneNumber);
+}
+
+// ============================================
+// Resend Cooldown Tracking
+// ============================================
+
+interface ResendCooldown {
+  lastSentAt: number; // Unix timestamp
+}
+
+// In-memory resend cooldown store
+const resendCooldownStore = new Map<string, ResendCooldown>();
+
+/**
+ * Check if resend cooldown is active
+ * Cooldown: 60 seconds between resends
+ */
+export function checkResendCooldown(phoneNumber: string): {
+  canResend: boolean;
+  secondsRemaining: number;
+} {
+  const now = Date.now();
+  const cooldownPeriod = 60 * 1000; // 60 seconds in milliseconds
+  
+  const entry = resendCooldownStore.get(phoneNumber);
+  
+  if (!entry) {
+    // No previous send - allow
+    return { canResend: true, secondsRemaining: 0 };
+  }
+  
+  const timeSinceLast = now - entry.lastSentAt;
+  
+  if (timeSinceLast >= cooldownPeriod) {
+    // Cooldown expired - allow
+    return { canResend: true, secondsRemaining: 0 };
+  }
+  
+  // Cooldown active
+  const timeRemaining = cooldownPeriod - timeSinceLast;
+  const secondsRemaining = Math.ceil(timeRemaining / 1000);
+  
+  return {
+    canResend: false,
+    secondsRemaining,
+  };
+}
+
+/**
+ * Record OTP send time for cooldown tracking
+ */
+export function recordOTPSend(phoneNumber: string): void {
+  resendCooldownStore.set(phoneNumber, {
+    lastSentAt: Date.now(),
+  });
+}
+
+/**
+ * Reset resend cooldown for a phone number (for testing)
+ */
+export function resetResendCooldown(phoneNumber: string): void {
+  resendCooldownStore.delete(phoneNumber);
+}
+
+// ============================================
+// OTP Operations (using Supabase Auth)
+// ============================================
+
+import { SupabaseAuth } from './supabase-auth';
+import { AuthSessionStore } from './auth-session-store';
+
+/**
+ * Send OTP to phone number
+ * Includes rate limiting and cooldown checks
+ * DEMO MODE: Skips SMS sending, accepts any phone number
+ */
+export async function sendOTP(
+  phoneNumber: string,
+  language: Language = 'en'
+): Promise<OTPResult> {
+  // Validate phone number first
+  const validation = validatePhoneNumber(phoneNumber, language);
+  if (!validation.valid) {
+    return {
+      success: false,
+      error: validation.error,
+    };
+  }
+
+  const formattedPhone = validation.formatted!;
+
+  // DEMO MODE: Skip SMS sending, just return success
+  console.log('[Auth Manager] DEMO MODE: Skipping SMS send, use OTP 123456');
+  
+  // Record send time for cooldown tracking
+  recordOTPSend(formattedPhone);
+  
+  // Reset verification attempts for new OTP
+  resetVerificationAttempts(formattedPhone);
+  
+  return {
+    success: true,
+  };
+
+  /* PRODUCTION CODE - COMMENTED OUT FOR DEMO
+  // Check rate limit (3 attempts per hour)
+  const rateLimit = checkRateLimit(formattedPhone);
+  if (!rateLimit.allowed) {
+    const minutes = Math.ceil(rateLimit.retryAfter! / 60);
+    const errorMessages: Record<Language, string> = {
+      en: `Too many attempts. Please try again in ${minutes} minutes`,
+      hi: `बहुत अधिक प्रयास। कृपया ${minutes} मिनट में पुनः प्रयास करें`,
+      mr: `खूप प्रयत्न. कृपया ${minutes} मिनिटांनी पुन्हा प्रयत्न करा`,
+    };
+    
+    return {
+      success: false,
+      error: errorMessages[language],
+      retryAfter: rateLimit.retryAfter,
+    };
+  }
+
+  // Send OTP via Supabase Auth
+  const result = await SupabaseAuth.signInWithOtp(formattedPhone);
+
+  if (result.success) {
+    // Record send time for cooldown tracking
+    recordOTPSend(formattedPhone);
+    
+    // Reset verification attempts for new OTP
+    resetVerificationAttempts(formattedPhone);
+  }
+
+  return result;
+  */
+}
+
+/**
+ * Verify OTP code
+ * Includes attempt limiting
+ * DEMO MODE: Accepts "1234" as bypass OTP
+ */
+export async function verifyOTP(
+  phoneNumber: string,
+  code: string,
+  rememberDevice: boolean = false,
+  language: Language = 'en'
+): Promise<AuthResult> {
+  // Validate phone number
+  const validation = validatePhoneNumber(phoneNumber, language);
+  if (!validation.valid) {
+    return {
+      success: false,
+      error: validation.error,
+    };
+  }
+
+  const formattedPhone = validation.formatted!;
+
+  // DEMO MODE: Bypass with OTP "123456"
+  if (code === '123456') {
+    console.log('[Auth Manager] DEMO MODE: Bypassing OTP verification with code 123456');
+    
+    // Create a demo session
+    const demoSession: Session = {
+      accessToken: 'demo-token-' + Date.now(),
+      refreshToken: 'demo-refresh-' + Date.now(),
+      expiresAt: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
+      user: {
+        id: 'demo-user-' + formattedPhone.replace(/\D/g, ''),
+        phoneNumber: formattedPhone,
+        createdAt: new Date().toISOString(),
+      },
+    };
+    
+    // Save session to localStorage
+    AuthSessionStore.saveSession(demoSession, rememberDevice);
+    
+    // Reset rate limit and attempts
+    resetRateLimit(formattedPhone);
+    resetVerificationAttempts(formattedPhone);
+    resetResendCooldown(formattedPhone);
+    
+    // In demo mode, always return isFirstLogin as true
+    // The login page will check the profile API to determine actual status
+    return {
+      success: true,
+      session: demoSession,
+      user: demoSession.user,
+      isFirstLogin: true,
+    };
+  }
+
+  // Check verification attempts (5 attempts per OTP)
+  const attempts = checkVerificationAttempts(formattedPhone, code);
+  if (!attempts.allowed) {
+    const errorMessages: Record<Language, string> = {
+      en: 'Too many incorrect attempts. Please request a new OTP',
+      hi: 'बहुत अधिक गलत प्रयास। कृपया नया OTP अनुरोध करें',
+      mr: 'खूप चुकीचे प्रयत्न. कृपया नवीन OTP विनंती करा',
+    };
+    
+    return {
+      success: false,
+      error: errorMessages[language],
+    };
+  }
+
+  // Verify OTP via Supabase Auth
+  const result = await SupabaseAuth.verifyOtp(formattedPhone, code);
+
+  if (result.success && result.session) {
+    // Save session to localStorage with remember device preference
+    AuthSessionStore.saveSession(result.session, rememberDevice);
+    
+    // Reset rate limit and attempts on successful verification
+    resetRateLimit(formattedPhone);
+    resetVerificationAttempts(formattedPhone);
+    resetResendCooldown(formattedPhone);
+
+    // Check if this is first login (migration needed)
+    const isFirstLogin = !AuthSessionStore.isMigrationCompleted();
+
+    return {
+      success: true,
+      session: result.session,
+      user: result.session.user,
+      isFirstLogin,
+    };
+  }
+
+  return {
+    success: false,
+    error: result.error,
+  };
+}
+
+/**
+ * Resend OTP
+ * Includes cooldown check
+ */
+export async function resendOTP(
+  phoneNumber: string,
+  language: Language = 'en'
+): Promise<OTPResult> {
+  // Validate phone number
+  const validation = validatePhoneNumber(phoneNumber, language);
+  if (!validation.valid) {
+    return {
+      success: false,
+      error: validation.error,
+    };
+  }
+
+  const formattedPhone = validation.formatted!;
+
+  // Check resend cooldown (60 seconds)
+  const cooldown = checkResendCooldown(formattedPhone);
+  if (!cooldown.canResend) {
+    const errorMessages: Record<Language, string> = {
+      en: `Please wait ${cooldown.secondsRemaining} seconds before resending`,
+      hi: `पुनः भेजने से पहले ${cooldown.secondsRemaining} सेकंड प्रतीक्षा करें`,
+      mr: `पुन्हा पाठवण्यापूर्वी ${cooldown.secondsRemaining} सेकंद प्रतीक्षा करा`,
+    };
+    
+    return {
+      success: false,
+      error: errorMessages[language],
+      retryAfter: cooldown.secondsRemaining,
+    };
+  }
+
+  // Use sendOTP which includes rate limiting
+  return sendOTP(formattedPhone, language);
+}
+
+// ============================================
+// Session Management
+// ============================================
+
+/**
+ * Get current session
+ * Checks localStorage and validates
+ */
+export async function getSession(): Promise<AuthResult> {
+  // Load session from localStorage
+  const storedSession = AuthSessionStore.loadSession();
+  
+  if (!storedSession) {
+    return {
+      success: false,
+      error: 'No active session',
+    };
+  }
+  
+  // Validate session
+  if (!AuthSessionStore.isSessionValid(storedSession)) {
+    // Session expired - clear it
+    AuthSessionStore.clearSession();
+    return {
+      success: false,
+      error: 'Session expired',
+    };
+  }
+  
+  // Check if session should be refreshed
+  if (AuthSessionStore.shouldRefresh(storedSession)) {
+    console.log('[Auth Manager] Session expiring soon, refreshing...');
+    return refreshSession();
+  }
+  
+  return {
+    success: true,
+    session: storedSession,
+    user: storedSession.user,
+  };
+}
+
+/**
+ * Refresh session token
+ * Extends session expiry
+ */
+export async function refreshSession(): Promise<AuthResult> {
+  const result = await SupabaseAuth.refreshSession();
+  
+  if (result.success && result.session) {
+    // Save refreshed session to localStorage
+    const rememberDevice = AuthSessionStore.shouldRememberDevice();
+    AuthSessionStore.saveSession(result.session, rememberDevice);
+    
+    return {
+      success: true,
+      session: result.session,
+      user: result.session.user,
+    };
+  }
+  
+  // Refresh failed - clear session
+  AuthSessionStore.clearSession();
+  
+  return {
+    success: false,
+    error: result.error || 'Failed to refresh session',
+  };
+}
+
+/**
+ * Logout current user
+ * Clears session and invalidates token
+ */
+export async function logout(): Promise<OTPResult> {
+  // Sign out from Supabase
+  const result = await SupabaseAuth.signOut();
+  
+  // Clear local session regardless of Supabase result
+  AuthSessionStore.clearSession();
+  
+  return result;
+}
+
+/**
+ * Check if user is authenticated
+ */
+export function isAuthenticated(): boolean {
+  const storedSession = AuthSessionStore.loadSession();
+  return AuthSessionStore.isSessionValid(storedSession);
+}
+
+/**
+ * Get current user
+ */
+export function getCurrentUser(): User | null {
+  const storedSession = AuthSessionStore.loadSession();
+  
+  if (!storedSession || !AuthSessionStore.isSessionValid(storedSession)) {
+    return null;
+  }
+  
+  return storedSession.user;
+}
+
+// ============================================
+// Export all functions
+// ============================================
+
+export const AuthManager = {
+  // Phone validation
+  validatePhoneNumber,
+  formatPhoneNumber,
+  formatPhoneForDisplay,
+  maskPhoneNumber,
+  
+  // OTP operations
+  sendOTP,
+  verifyOTP,
+  resendOTP,
+  
+  // Session management
+  getSession,
+  refreshSession,
+  logout,
+  isAuthenticated,
+  getCurrentUser,
+  
+  // Rate limiting
+  checkRateLimit,
+  resetRateLimit,
+  
+  // Verification attempts
+  checkVerificationAttempts,
+  resetVerificationAttempts,
+  
+  // Resend cooldown
+  checkResendCooldown,
+  recordOTPSend,
+  resetResendCooldown,
+};

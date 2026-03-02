@@ -45,21 +45,56 @@ function getLanguageInstructions(language: Language): string {
 
 /**
  * Build analysis prompt for business health insights
+ * HYBRID MODEL: Accepts pre-calculated metrics
  */
 export function buildAnalysisPrompt(
   salesData: ParsedCSV | undefined,
   expensesData: ParsedCSV | undefined,
   inventoryData: ParsedCSV | undefined,
-  language: Language
+  language: Language,
+  calculatedMetrics?: {
+    profit?: number;
+    expenseRatio?: number;
+    blockedInventory?: number;
+  }
 ): string {
-  const prompt = `You are a business health advisor for small retail shops in India. Analyze the following data and provide insights.
+  // Build pre-calculated metrics section if provided
+  let metricsSection = '';
+  if (calculatedMetrics) {
+    metricsSection = `
+**IMPORTANT - Pre-Calculated Metrics:**
+These numbers have already been calculated deterministically. Your job is to EXPLAIN what they mean and provide actionable recommendations. DO NOT recalculate these numbers.
+
+${calculatedMetrics.profit !== undefined ? `- Estimated Profit: ₹${calculatedMetrics.profit.toFixed(2)}` : ''}
+${calculatedMetrics.expenseRatio !== undefined ? `- Expense Ratio: ${(calculatedMetrics.expenseRatio * 100).toFixed(1)}%` : ''}
+${calculatedMetrics.blockedInventory !== undefined ? `- Blocked Inventory Cash: ₹${calculatedMetrics.blockedInventory.toFixed(2)}` : ''}
+
+`;
+  }
+
+  const prompt = `You are a business health advisor for small retail shops in India. ${calculatedMetrics ? 'You are explaining pre-calculated business metrics.' : 'Analyze the following data and provide insights.'}
+
+${metricsSection}
 
 ${formatCSVData(salesData, 'Sales Data')}
 ${formatCSVData(expensesData, 'Expenses Data')}
 ${formatCSVData(inventoryData, 'Inventory Data')}
 
-**Analysis Required:**
+**Your Task:**
 
+${calculatedMetrics ? `
+1. **Explain True Profit**: Explain what the profit of ₹${calculatedMetrics.profit?.toFixed(2) || 'N/A'} means. Is it good for this type of shop? How does it compare to the cash flow?
+
+2. **Identify Loss-Making Products**: Based on the sales and inventory data, which products are causing losses? Be specific with product names.
+
+3. **Explain Blocked Inventory**: The shop has ₹${calculatedMetrics.blockedInventory?.toFixed(2) || 'N/A'} stuck in inventory. Which products are slow-moving? What should the owner do?
+
+4. **Highlight Abnormal Expenses**: Look at the expense data. Are there any unusual or concerning expenses? Be specific.
+
+5. **Cashflow Forecast**: Based on recent patterns, will the shop face cash shortage in the next 7 days? Why or why not?
+
+**CRITICAL**: Reference the pre-calculated numbers above. DO NOT recalculate them. Focus on interpretation and advice.
+` : `
 1. **True Profit vs Cash Flow**: Calculate actual profit considering inventory costs and blocked capital. Explain the difference between money in hand (cash flow) and real profit in simple terms.
 
 2. **Loss-Making Products**: Identify products where selling price is below cost price or where inventory holding costs exceed margins. List specific product names.
@@ -69,6 +104,7 @@ ${formatCSVData(inventoryData, 'Inventory Data')}
 4. **Abnormal Expenses**: Detect expenses that are unusually high compared to typical patterns or business size. Be specific about which expenses seem abnormal.
 
 5. **7-Day Cashflow Forecast**: Based on recent patterns, predict if the shop will face cash shortage in the next 7 days. Provide reasoning.
+`}
 
 **Output Format:**
 Provide insights in simple language without financial jargon. Use examples from the actual data. Be specific with numbers and product names.

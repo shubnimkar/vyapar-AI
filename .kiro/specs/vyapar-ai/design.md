@@ -2,7 +2,7 @@
 
 ## Overview
 
-Vyapar AI is a Next.js 14 web application that provides a daily business health companion for small shop owners in India. The system uses a **Hybrid Intelligence Model** combining deterministic calculations with AI-enhanced explanations, built on a stateless, session-based architecture where all data remains in memory during user interaction, with no persistent storage.
+Vyapar AI is a Next.js 14 web application that provides a daily business health companion for small shop owners in India. The system uses a **Hybrid Intelligence Model** combining deterministic calculations with AI-enhanced explanations, built on an authenticated, hybrid sync architecture with Supabase for user accounts and cloud backup.
 
 **Product Positioning**: Daily Business Health Companion (not just CSV analyzer)
 
@@ -11,11 +11,13 @@ The application provides instant deterministic calculations for daily business m
 Key architectural decisions:
 - **Server Components for Static Content**: Next.js App Router with server components for initial page loads
 - **API Routes for Dynamic Operations**: All data processing, AI calls, and CSV parsing happen in API routes
-- **In-Memory Session Storage**: No database—data lives only in memory during the session
+- **Hybrid Sync Storage**: localStorage (primary) + Supabase (cloud backup) for daily entries and credit tracking; offline-first approach
+- **Phone Authentication**: Supabase Auth with SMS OTP for user accounts (Indian phone numbers)
 - **Client-Side Language Preference**: localStorage stores language selection for persistence across visits
 - **Hybrid Intelligence Model**: Deterministic core calculations + AI enhancement layer (NOT AI-first)
 - **Daily Entry Primary**: Quick daily entry is the main interface; CSV upload is advanced mode
 - **Trust-First Design**: Prominent privacy messaging about government non-connection
+- **Data Retention**: 90 days for daily entries, 30 days for paid credits
 
 ## Architecture
 
@@ -25,13 +27,17 @@ Key architectural decisions:
 ┌─────────────────────────────────────────────────────────────┐
 │                        Browser (Client)                      │
 │  ┌────────────────┐  ┌──────────────┐  ┌─────────────────┐ │
-│  │  Daily Entry   │  │  Language    │  │  Voice Synthesis│ │
-│  │  Form          │  │  (localStorage)│ │  (Web Speech)  │ │
+│  │  Phone Auth    │  │  Language    │  │  Voice Synthesis│ │
+│  │  (OTP Login)   │  │  (localStorage)│ │  (Web Speech)  │ │
 │  └────────────────┘  └──────────────┘  └─────────────────┘ │
 │  ┌────────────────┐  ┌──────────────┐  ┌─────────────────┐ │
-│  │  Health Score  │  │  Credit      │  │  File Upload    │ │
-│  │  Display       │  │  Module      │  │  (PapaParse)    │ │
+│  │  Daily Entry   │  │  Health Score│  │  Credit Module  │ │
+│  │  Form          │  │  Display     │  │  (Udhaar)       │ │
 │  └────────────────┘  └──────────────┘  └─────────────────┘ │
+│  ┌────────────────┐  ┌──────────────┐                      │
+│  │  File Upload   │  │  Sync Status │                      │
+│  │  (PapaParse)   │  │  Indicator   │                      │
+│  └────────────────┘  └──────────────┘                      │
 │           │                   │                   │          │
 └───────────┼───────────────────┼───────────────────┼──────────┘
             │                   │                   │
@@ -40,7 +46,8 @@ Key architectural decisions:
 │                    Next.js App Router                        │
 │  ┌────────────────────────────────────────────────────────┐ │
 │  │              Server Components (Static)                 │ │
-│  │  - Landing page with trust banner                       │ │
+│  │  - Login page (phone + OTP)                             │ │
+│  │  - Main app (protected by AuthGuard)                    │ │
 │  │  - Daily entry interface (primary)                      │ │
 │  │  - Health score display                                 │ │
 │  │  - Credit tracking interface                            │ │
@@ -56,27 +63,39 @@ Key architectural decisions:
 │  │  │  profit      │  │ - Validate   │  │- Insights   │  │ │
 │  │  │- Calculate   │  │ - Store in   │  │  Generation │  │ │
 │  │  │  health score│  │   memory     │  │             │  │ │
+│  │  │- Sync to     │  │              │  │             │  │ │
+│  │  │  Supabase    │  │              │  │             │  │ │
 │  │  │- NO AI       │  │              │  │             │  │ │
 │  │  └──────────────┘  └──────────────┘  └─────────────┘  │ │
-│  │  ┌──────────────┐  ┌──────────────┐                    │ │
-│  │  │  /api/ask    │  │/api/explain  │                    │ │
-│  │  │              │  │              │                    │ │
-│  │  │ - Q&A AI     │  │- AI explains │                    │ │
-│  │  │ - Context    │  │  deterministic│                   │ │
-│  │  │   Aware      │  │  results     │                    │ │
-│  │  └──────────────┘  └──────────────┘                    │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐  │ │
+│  │  │  /api/ask    │  │/api/explain  │  │/api/credit  │  │ │
+│  │  │              │  │              │  │             │  │ │
+│  │  │ - Q&A AI     │  │- AI explains │  │- Credit ops │  │ │
+│  │  │ - Context    │  │  deterministic│ │- Sync to    │  │ │
+│  │  │   Aware      │  │  results     │  │  Supabase   │  │ │
+│  │  └──────────────┘  └──────────────┘  └─────────────┘  │ │
 │  │         │                  │                  │         │ │
 │  └─────────┼──────────────────┼──────────────────┼─────────┘ │
 │            │                  │                  │           │
 │            ▼                  ▼                  ▼           │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │            In-Memory Session Store                      │ │
-│  │  - Daily entries (date, sales, expenses, cash)          │ │
-│  │  - Credit entries (customer, amount, dueDate, isPaid)   │ │
+│  │         Hybrid Sync Storage (Offline-First)             │ │
+│  │                                                          │ │
+│  │  localStorage (Primary):                                │ │
+│  │  - Daily entries (90-day retention)                     │ │
+│  │  - Credit entries (30-day retention)                    │ │
+│  │  - Auth session (7-30 days)                             │ │
+│  │  - Sync metadata (timestamps, pending changes)          │ │
+│  │                                                          │ │
+│  │  In-Memory (Session Only):                              │ │
 │  │  - Uploaded CSV data (sales, expenses, inventory)       │ │
 │  │  - Parsed data structures                               │ │
 │  │  - Conversation history                                 │ │
-│  │  - Session ID mapping                                   │ │
+│  │                                                          │ │
+│  │  Sync Engine:                                           │ │
+│  │  - Automatic background sync when online                │ │
+│  │  - Conflict resolution (last-write-wins)                │ │
+│  │  - Retry logic with exponential backoff                 │ │
 │  └────────────────────────────────────────────────────────┘ │
 │                                                              │
 │  ┌────────────────────────────────────────────────────────┐ │
@@ -90,34 +109,115 @@ Key architectural decisions:
 │  │  → ALL calculations < 1 second, NO AI                   │ │
 │  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-                    ┌──────────────────┐
-                    │   AWS Bedrock    │
-                    │  (Claude/Titan)  │
-                    │                  │
-                    │ - Explanations   │
-                    │ - Q&A            │
-                    │ - Recommendations│
-                    │ - Translation    │
-                    │   refinement     │
-                    │                  │
-                    │ NOT for numeric  │
-                    │ calculations!    │
-                    └──────────────────┘
+                    │                       │
+                    ▼                       ▼
+          ┌──────────────────┐    ┌──────────────────┐
+          │   AWS Bedrock    │    │    Supabase      │
+          │  (Claude/Titan)  │    │                  │
+          │                  │    │ - Auth (SMS OTP) │
+          │ - Explanations   │    │ - PostgreSQL DB  │
+          │ - Q&A            │    │ - RLS Policies   │
+          │ - Recommendations│    │ - Cloud Backup   │
+          │ - Translation    │    │                  │
+          │   refinement     │    │ Tables:          │
+          │                  │    │ - users          │
+          │ NOT for numeric  │    │ - daily_entries  │
+          │ calculations!    │    │ - credit_entries │
+          └──────────────────┘    └──────────────────┘
 ```
 
 ### Technology Stack
 
 - **Frontend**: Next.js 14 App Router, React Server Components, Tailwind CSS
+- **Authentication**: Supabase Auth with SMS OTP (Twilio integration)
+- **Database**: Supabase PostgreSQL with Row Level Security (RLS)
+- **Storage**: Hybrid approach - localStorage (primary) + Supabase (cloud backup)
 - **CSV Parsing**: PapaParse (client-side for preview, server-side for processing)
 - **AI Engine**: AWS Bedrock (Claude 3 or Titan models)
 - **Voice**: Web Speech API (browser native)
-- **Storage**: In-memory JavaScript objects (no database)
 - **Language Persistence**: Browser localStorage
 - **Deployment**: Vercel or AWS Lambda (serverless)
 
 ## Components and Interfaces
+
+### 0. Authentication Components **[NEW - PHONE AUTH]**
+
+#### 0.1 PhoneInput Component (Client)
+
+**Purpose**: Collect and validate Indian phone numbers
+
+**Interface**:
+```typescript
+interface PhoneInputProps {
+  onSubmit: (phoneNumber: string) => Promise<void>;
+  language: Language;
+}
+```
+
+**Behavior**:
+- Input field for 10-digit phone number
+- Validation: starts with 6/7/8/9, exactly 10 digits
+- Auto-format with +91 prefix for display
+- Show validation errors in selected language
+- Disable submit until valid
+
+#### 0.2 OTPInput Component (Client)
+
+**Purpose**: Collect 6-digit OTP code
+
+**Interface**:
+```typescript
+interface OTPInputProps {
+  phoneNumber: string;
+  onVerify: (otp: string) => Promise<void>;
+  onResend: () => Promise<void>;
+  language: Language;
+}
+```
+
+**Behavior**:
+- 6 separate input boxes for OTP digits
+- Auto-focus next box on digit entry
+- Auto-submit when 6 digits entered
+- Resend OTP button (disabled for 60 seconds after send)
+- Show countdown timer for resend
+- Display errors in selected language
+
+#### 0.3 AuthGuard Component (Client)
+
+**Purpose**: Protect routes requiring authentication
+
+**Interface**:
+```typescript
+interface AuthGuardProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+```
+
+**Behavior**:
+- Check for valid session in localStorage
+- Verify session not expired
+- Redirect to /login if not authenticated
+- Show loading state during check
+- Trigger data migration on first login
+
+#### 0.4 UserProfile Component (Client)
+
+**Purpose**: Display user info and logout option
+
+**Interface**:
+```typescript
+interface UserProfileProps {
+  language: Language;
+}
+```
+
+**Behavior**:
+- Display masked phone number (e.g., +91 98765xxxxx)
+- Logout button
+- Clear session on logout
+- Redirect to login page after logout
 
 ### 1. Trust Banner Component (Client) **[NEW]**
 
@@ -556,6 +656,123 @@ interface AskResponse {
 5. Return answer in requested language
 
 ## Data Models
+
+### Supabase Database Schema **[NEW]**
+
+```sql
+-- Users table (managed by Supabase Auth)
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  phone_number TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_login_at TIMESTAMPTZ
+);
+
+-- Daily entries table
+CREATE TABLE daily_entries (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  device_id TEXT, -- For backward compatibility
+  date DATE NOT NULL,
+  total_sales DECIMAL(12,2) NOT NULL,
+  total_expense DECIMAL(12,2) NOT NULL,
+  cash_in_hand DECIMAL(12,2),
+  estimated_profit DECIMAL(12,2) NOT NULL,
+  expense_ratio DECIMAL(5,4) NOT NULL,
+  profit_margin DECIMAL(5,4) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, date)
+);
+
+-- Credit entries table
+CREATE TABLE credit_entries (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  device_id TEXT, -- For backward compatibility
+  customer_name TEXT NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  due_date DATE NOT NULL,
+  is_paid BOOLEAN DEFAULT FALSE,
+  paid_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Row Level Security (RLS) Policies
+ALTER TABLE daily_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_entries ENABLE ROW LEVEL SECURITY;
+
+-- Users can only access their own data
+CREATE POLICY "Users can view own daily entries"
+  ON daily_entries FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own daily entries"
+  ON daily_entries FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own daily entries"
+  ON daily_entries FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own daily entries"
+  ON daily_entries FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Similar policies for credit_entries
+CREATE POLICY "Users can view own credit entries"
+  ON credit_entries FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own credit entries"
+  ON credit_entries FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own credit entries"
+  ON credit_entries FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own credit entries"
+  ON credit_entries FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Indexes for performance
+CREATE INDEX idx_daily_entries_user_date ON daily_entries(user_id, date DESC);
+CREATE INDEX idx_credit_entries_user ON credit_entries(user_id, is_paid, due_date);
+```
+
+### Client-Side Storage (localStorage) **[NEW]**
+
+```typescript
+// Auth session storage
+interface AuthSession {
+  userId: string;
+  phoneNumber: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: number; // Unix timestamp
+  rememberDevice: boolean;
+}
+
+// Sync metadata
+interface SyncMetadata {
+  lastSyncAt: number; // Unix timestamp
+  pendingChanges: {
+    dailyEntries: string[]; // Array of entry IDs
+    creditEntries: string[]; // Array of entry IDs
+  };
+}
+
+// localStorage keys
+const STORAGE_KEYS = {
+  AUTH_SESSION: 'vyapar-auth-session',
+  DAILY_ENTRIES: 'vyapar-daily-entries',
+  CREDIT_ENTRIES: 'vyapar-credit-entries',
+  SYNC_METADATA: 'vyapar-sync-metadata',
+  LANGUAGE: 'vyapar-lang'
+};
+```
 
 ### Session Store (In-Memory) **[UPDATED]**
 

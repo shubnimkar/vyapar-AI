@@ -16,6 +16,36 @@ import { FileType, Language, ParsedCSV } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if this is a session initialization request (JSON body)
+    const contentType = request.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      if (body.init === true) {
+        // Check if they're trying to restore a session
+        if (body.restoreSessionId) {
+          const existingSession = getSession(body.restoreSessionId);
+          if (existingSession) {
+            console.log('[Upload API] Restored existing session:', body.restoreSessionId);
+            return NextResponse.json({
+              success: true,
+              sessionId: body.restoreSessionId,
+            });
+          }
+          // Session doesn't exist, create new one
+          console.log('[Upload API] Session not found, creating new one');
+        }
+        
+        // Initialize new session
+        const session = createSession();
+        return NextResponse.json({
+          success: true,
+          sessionId: session.sessionId,
+        });
+      }
+    }
+    
+    // Otherwise, handle file upload (FormData)
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const fileType = formData.get('fileType') as FileType;
