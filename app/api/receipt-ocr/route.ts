@@ -2,7 +2,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
+  region: process.env.AWS_S3_REGION || process.env.AWS_REGION!,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
@@ -69,12 +69,13 @@ export async function POST(request: NextRequest) {
       filename: filename,
       timestamp: timestamp,
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Receipt upload error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to upload receipt";
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message || "Failed to upload receipt" 
+        error: errorMessage
       },
       { status: 500 }
     );

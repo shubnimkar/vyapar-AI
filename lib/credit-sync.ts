@@ -1,8 +1,7 @@
 // Credit Entry Hybrid Sync Manager
 // Manages offline-first credit entries with DynamoDB cloud backup
 
-import { CreditEntry, CreditEntryService } from './dynamodb-client';
-import { v4 as uuidv4 } from 'uuid';
+import type { CreditEntry } from './dynamodb-client';
 
 const STORAGE_KEY = 'vyapar-credit-entries';
 const SYNC_STATUS_KEY = 'vyapar-credit-sync-status';
@@ -137,19 +136,26 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
   
   for (const localEntry of pending) {
     try {
-      // Convert local entry to DynamoDB entry
-      const dbEntry: CreditEntry = {
-        userId,
-        id: localEntry.id,
-        customerName: localEntry.customerName,
-        amount: localEntry.amount,
-        dueDate: localEntry.dueDate,
-        isPaid: localEntry.isPaid,
-        createdAt: localEntry.createdAt,
-        paidAt: localEntry.paidAt,
-      };
-      
-      await CreditEntryService.saveEntry(dbEntry);
+      // Sync via API route (server handles DynamoDB)
+      const response = await fetch('/api/credit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          id: localEntry.id,
+          customerName: localEntry.customerName,
+          amount: localEntry.amount,
+          dueDate: localEntry.dueDate,
+          isPaid: localEntry.isPaid,
+          createdAt: localEntry.createdAt,
+          paidAt: localEntry.paidAt,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Credit sync failed');
+      }
       
       // Update local entry status
       localEntry.syncStatus = 'synced';
@@ -188,8 +194,21 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
   try {
     console.log('[CreditSync] Pulling entries from cloud');
     
-    // Get all entries from DynamoDB
-    const cloudEntries = await CreditEntryService.getEntries(userId);
+    // Get all entries from server API (which reads DynamoDB)
+    const response = await fetch(`/api/credit?userId=${encodeURIComponent(userId)}`);
+    const result = await response.json();
+    
+    // Handle authentication errors gracefully
+    if (response.status === 401 || response.status === 403) {
+      console.warn('[CreditSync] Not authenticated, skipping cloud pull');
+      return;
+    }
+    
+    if (!response.ok || !result.success) {
+      console.warn('[CreditSync] Failed to pull entries:', result.error);
+      throw new Error(result.error || 'Failed to pull credit entries');
+    }
+    const cloudEntries: CreditEntry[] = result.data || [];
     
     // Get local entries
     const localEntries = getLocalEntries();
@@ -219,8 +238,8 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
     
     console.log('[CreditSync] Pull complete, merged', cloudEntries.length, 'cloud entries');
   } catch (error) {
-    console.error('[CreditSync] Failed to pull entries from cloud:', error);
-    throw error;
+    console.warn('[CreditSync] Failed to pull entries from cloud:', error);
+    // Don't throw - allow offline operation
   }
 }
 
@@ -233,7 +252,7 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
     
     // Pull from cloud first
     await pullEntriesFromCloud(userId);
-    const cloudEntries = await CreditEntryService.getEntries(userId);
+    const cloudEntries = getLocalEntries().filter((entry) => entry.syncStatus === 'synced');
     
     // Push pending entries
     const { success, failed } = await syncPendingEntries(userId);
@@ -248,6 +267,54 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
   } catch (error) {
     console.error('[CreditSync] Full sync failed:', error);
     throw error;
+  }
+}
+
+/**
+ * Sync single credit entry instantly to DynamoDB
+ * Returns true if sync succeeded, false otherwise
+ */
+export async function instantSyncCreditEntry(userId: string, entry: LocalCreditEntry): Promise<boolean> {
+  try {
+    console.log('[CreditSync] Instant sync for entry:', entry.id);
+    
+    const response = await fetch('/api/credit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        id: entry.id,
+        customerName: entry.customerName,
+        amount: entry.amount,
+        type: entry.type,
+        dueDate: entry.dueDate,
+        notes: entry.notes,
+        isPaid: entry.isPaid,
+        paidDate: entry.paidDate,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'Instant sync failed');
+    }
+    
+    // Update local entry status
+    entry.syncStatus = 'synced';
+    entry.lastSyncAttempt = new Date().toISOString();
+    saveLocalEntry(entry);
+    
+    console.log('[CreditSync] Instant sync succeeded');
+    return true;
+  } catch (error) {
+    console.error('[CreditSync] Instant sync failed:', error);
+    
+    // Mark as pending for retry
+    entry.syncStatus = 'pending';
+    entry.lastSyncAttempt = new Date().toISOString();
+    saveLocalEntry(entry);
+    
+    return false;
   }
 }
 

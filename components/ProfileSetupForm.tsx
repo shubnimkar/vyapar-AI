@@ -18,7 +18,6 @@ export default function ProfileSetupForm({
   phoneNumber,
   userId,
   onComplete,
-  onSkip,
   language,
   initialData,
   isEditMode = false,
@@ -42,7 +41,7 @@ export default function ProfileSetupForm({
     shopNameRef.current?.focus();
   }, []);
 
-  const validateForm = (skipOptional: boolean = false): boolean => {
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.shopName.trim()) {
@@ -112,7 +111,7 @@ export default function ProfileSetupForm({
       } else {
         if (result.errors) {
           const errorMap: Record<string, string> = {};
-          result.errors.forEach((err: any) => {
+          result.errors.forEach((err: { field: string; message: string }) => {
             errorMap[err.field] = err.message;
           });
           setErrors(errorMap);

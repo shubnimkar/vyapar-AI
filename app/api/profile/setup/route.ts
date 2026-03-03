@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ProfileService, type UserProfile as DynamoProfile } from '@/lib/dynamodb-client';
-import { ProfileSetupData, APIResponse, UserProfile, ValidationError } from '@/lib/types';
+import { APIResponse, UserProfile, ValidationError } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
   try {

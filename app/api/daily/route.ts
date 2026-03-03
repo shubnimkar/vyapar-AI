@@ -4,7 +4,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { DailyEntryService } from '@/lib/dynamodb-client';
-import { SessionManager } from '@/lib/session-manager';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -50,11 +49,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { 
       userId,
+      entryId,
       date, 
       totalSales, 
       totalExpense, 
       cashInHand,
       notes,
+      createdAt,
     } = body;
 
     // Validate required fields
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
     // Create entry
     const entry = {
       userId,
-      entryId: uuidv4(),
+      entryId: entryId || uuidv4(),
       date: date || new Date().toISOString().split('T')[0],
       totalSales,
       totalExpense,
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
       estimatedProfit,
       expenseRatio,
       profitMargin,
-      createdAt: new Date().toISOString(),
+      createdAt: createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 

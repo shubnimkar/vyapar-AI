@@ -51,9 +51,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { 
       userId,
+      id,
       customerName, 
       amount, 
       dueDate,
+      isPaid,
+      createdAt,
+      paidAt,
     } = body;
 
     // Validate required fields
@@ -81,12 +85,13 @@ export async function POST(request: NextRequest) {
     // Create entry
     const entry = {
       userId,
-      id: `credit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: id || `credit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       customerName,
       amount: parseFloat(amount.toString()),
       dueDate,
-      isPaid: false,
-      createdAt: new Date().toISOString(),
+      isPaid: Boolean(isPaid),
+      createdAt: createdAt || new Date().toISOString(),
+      paidAt: paidAt || undefined,
     };
 
     // Instant sync to DynamoDB (user is connected)

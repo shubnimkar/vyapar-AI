@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       answer,
     });
     
-  } catch (error: any) {
+  } catch (error) {
     console.error('Q&A error:', error);
     return NextResponse.json(
       {

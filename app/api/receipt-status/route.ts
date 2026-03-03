@@ -2,7 +2,7 @@ import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
 
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
+  region: process.env.AWS_S3_REGION || process.env.AWS_REGION!,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
@@ -60,9 +60,9 @@ export async function GET(request: NextRequest) {
           error: parsedResult.extractedData?.error || "Processing failed",
         });
       }
-    } catch (s3Error: any) {
+    } catch (s3Error) {
       // If file doesn't exist yet, Lambda is still processing
-      if (s3Error.name === "NoSuchKey") {
+      if (s3Error && typeof s3Error === 'object' && 'name' in s3Error && s3Error.name === "NoSuchKey") {
         return NextResponse.json({
           status: "processing",
           message: "Lambda is processing your receipt...",
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       }
       throw s3Error;
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("Receipt status check error:", error);
     return NextResponse.json(
       {

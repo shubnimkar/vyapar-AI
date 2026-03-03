@@ -13,7 +13,7 @@ import {
   getSyncStatus,
   fullSync,
 } from '@/lib/daily-entry-sync';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, History, Plus, Edit2, Trash2, Cloud, CloudOff, RefreshCw, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar, History, Plus, Edit2, Trash2, Cloud, CloudOff, RefreshCw, X } from 'lucide-react';
 
 interface DailyEntryFormProps {
   language: Language;
@@ -25,7 +25,6 @@ type ViewMode = 'form' | 'history' | 'calendar';
 export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntryFormProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('form');
   const [entries, setEntries] = useState<LocalDailyEntry[]>([]);
-  const [selectedEntry, setSelectedEntry] = useState<LocalDailyEntry | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
   // Form state
@@ -184,8 +183,9 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
       }
 
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      setError(err.message || t('analysisFailed', language));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t('analysisFailed', language);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -229,8 +229,9 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
       loadEntries();
       setSuccess(t('daily.deleteEntry', language));
       setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      setError(err.message || t('analysisFailed', language));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t('analysisFailed', language);
+      setError(errorMessage);
     } finally {
       setLoading(false);
       setShowDeleteConfirm(false);

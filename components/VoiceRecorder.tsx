@@ -142,8 +142,8 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
       timerRef.current = setInterval(() => {
         setRecordingDuration((prev) => prev + 1);
       }, 1000);
-    } catch (error: any) {
-      if (error.name === 'NotAllowedError') {
+    } catch (error) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'NotAllowedError') {
         setErrorMessage(t.micPermissionDenied);
       } else {
         setErrorMessage(t.micNotSupported);
@@ -217,9 +217,10 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
       } else {
         throw new Error(result.error || 'Processing failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       setUploadStatus('error');
-      setErrorMessage(error.message || t.uploadFailed);
+      const errorMessage = error instanceof Error ? error.message : t.uploadFailed;
+      setErrorMessage(errorMessage);
     }
   };
 

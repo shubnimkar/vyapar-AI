@@ -14,13 +14,15 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { jest } from '@jest/globals';
 import UserProfile from '../UserProfile';
-import { getCurrentUser, logout } from '@/lib/simple-auth-manager';
+import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 
-// Mock the auth manager
-jest.mock('@/lib/simple-auth-manager', () => ({
-  getCurrentUser: jest.fn(),
-  logout: jest.fn(),
+// Mock the session manager
+jest.mock('@/lib/session-manager', () => ({
+  SessionManager: {
+    getCurrentUser: jest.fn(),
+    clearSession: jest.fn(),
+  },
 }));
 
 // Mock the router
@@ -61,8 +63,8 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
       createdAt: '2024-01-15T10:30:00.000Z',
     };
 
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-    (logout as jest.Mock).mockResolvedValue({ success: true });
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.clearSession as jest.Mock).mockResolvedValue({ success: true });
 
     // Act: Render component and click logout
     render(<UserProfile language="en" />);
@@ -76,7 +78,7 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
 
     // Assert: Logout behavior must be preserved
     await waitFor(() => {
-      expect(logout).toHaveBeenCalled();
+      expect(SessionManager.clearSession).toHaveBeenCalled();
       expect(mockPush).toHaveBeenCalledWith('/login');
     });
   });
@@ -113,7 +115,7 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
         createdAt: '2024-01-15T10:30:00.000Z',
       };
 
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+      (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
       // Act
       const { unmount } = render(<UserProfile language="en" />);
@@ -139,7 +141,7 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
       createdAt: testDate,
     };
 
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     // Test English formatting
     const { unmount: unmountEn } = render(<UserProfile language="en" />);
@@ -174,7 +176,7 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
    */
   test('should preserve behavior of returning null for unauthenticated users', async () => {
     // Arrange: No authenticated user
-    (getCurrentUser as jest.Mock).mockResolvedValue(null);
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(null);
 
     // Act
     const { container } = render(<UserProfile language="en" />);
@@ -196,7 +198,7 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
       createdAt: '2024-01-15T10:30:00.000Z',
     };
 
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     // Test that translation keys are used correctly
     render(<UserProfile language="en" />);
@@ -220,10 +222,10 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
       createdAt: '2024-01-15T10:30:00.000Z',
     };
 
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
     
     // Mock logout to be slow so we can test loading state
-    (logout as jest.Mock).mockImplementation(() => 
+    (SessionManager.clearSession as jest.Mock).mockImplementation(() => 
       new Promise(resolve => setTimeout(() => resolve({ success: true }), 100))
     );
 
@@ -262,8 +264,8 @@ describe('UserProfile Preservation Tests - Authentication and Formatting Behavio
       createdAt: '2024-01-15T10:30:00.000Z',
     };
 
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-    (logout as jest.Mock).mockRejectedValue(new Error('Network error'));
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.clearSession as jest.Mock).mockRejectedValue(new Error('Network error'));
 
     // Mock console.error to avoid test output noise
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});

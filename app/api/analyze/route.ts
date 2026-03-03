@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
     
     // STEP 1: Calculate deterministic metrics FIRST (if not provided)
-    let calculatedMetrics = deterministicResults || {};
+    const calculatedMetrics = deterministicResults || {};
     
     if (!calculatedMetrics.profit && session.salesData && session.expensesData) {
       // Calculate total sales and expenses from CSV
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       calculatedMetrics, // Return deterministic calculations
     });
     
-  } catch (error: any) {
+  } catch (error) {
     console.error('Analysis error:', error);
     return NextResponse.json(
       {

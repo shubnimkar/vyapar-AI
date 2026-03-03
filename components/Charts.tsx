@@ -16,7 +16,6 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ChartData, Language } from '@/lib/types';
-import { t } from '@/lib/translations';
 
 interface ChartsProps {
   chartData: ChartData;

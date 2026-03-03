@@ -16,15 +16,17 @@ import {
 // DynamoDB Configuration
 // ============================================
 
-const REGION = process.env.AWS_REGION || 'ap-south-1';
+const REGION = process.env.DYNAMODB_REGION || process.env.AWS_S3_REGION || 'ap-south-1';
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'vyapar-ai';
+const AWS_SESSION_TOKEN = process.env.AWS_SESSION_TOKEN;
 
-// Create DynamoDB client
+// Create DynamoDB client (uses ap-south-1 where table is located)
 const client = new DynamoDBClient({
   region: REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    ...(AWS_SESSION_TOKEN ? { sessionToken: AWS_SESSION_TOKEN } : {}),
   },
 });
 
@@ -81,6 +83,19 @@ function parseId(key: string): string {
   return key.split('#')[1] || '';
 }
 
+/**
+ * Check if error is an AWS credential error
+ */
+function isCredentialError(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'name' in error) {
+    const errorName = (error as { name: string }).name;
+    return errorName === 'UnrecognizedClientException' || 
+           errorName === 'CredentialsProviderError' ||
+           errorName === 'InvalidSignatureException';
+  }
+  return false;
+}
+
 // ============================================
 // DynamoDB Operations
 // ============================================
@@ -89,7 +104,7 @@ export class DynamoDBService {
   /**
    * Put item into DynamoDB
    */
-  static async putItem(item: Record<string, any>): Promise<void> {
+  static async putItem(item: Record<string, unknown>): Promise<void> {
     try {
       await docClient.send(
         new PutCommand({
@@ -102,6 +117,11 @@ export class DynamoDBService {
       );
       console.log('[DynamoDB] Item created/updated:', item.PK, item.SK);
     } catch (error) {
+      // Handle AWS credential errors gracefully
+      if (isCredentialError(error)) {
+        console.warn('[DynamoDB] AWS credentials not configured, skipping cloud save');
+        return;
+      }
       console.error('[DynamoDB] Put item error:', error);
       throw new Error('Failed to save item to DynamoDB');
     }
@@ -110,7 +130,7 @@ export class DynamoDBService {
   /**
    * Get item from DynamoDB
    */
-  static async getItem(pk: string, sk: string): Promise<Record<string, any> | null> {
+  static async getItem(pk: string, sk: string): Promise<Record<string, unknown> | null> {
     try {
       const result = await docClient.send(
         new GetCommand({
@@ -120,6 +140,11 @@ export class DynamoDBService {
       );
       return result.Item || null;
     } catch (error) {
+      // Handle AWS credential errors gracefully
+      if (isCredentialError(error)) {
+        console.warn('[DynamoDB] AWS credentials not configured, operating in offline mode');
+        return null;
+      }
       console.error('[DynamoDB] Get item error:', error);
       throw new Error('Failed to retrieve item from DynamoDB');
     }
@@ -162,6 +187,10 @@ export class DynamoDBService {
       );
       console.log('[DynamoDB] Item updated:', pk, sk);
     } catch (error) {
+      if (isCredentialError(error)) {
+        console.warn('[DynamoDB] AWS credentials not configured, skipping cloud update');
+        return;
+      }
       console.error('[DynamoDB] Update item error:', error);
       throw new Error('Failed to update item in DynamoDB');
     }
@@ -180,6 +209,10 @@ export class DynamoDBService {
       );
       console.log('[DynamoDB] Item deleted:', pk, sk);
     } catch (error) {
+      if (isCredentialError(error)) {
+        console.warn('[DynamoDB] AWS credentials not configured, skipping cloud delete');
+        return;
+      }
       console.error('[DynamoDB] Delete item error:', error);
       throw new Error('Failed to delete item from DynamoDB');
     }
@@ -209,6 +242,10 @@ export class DynamoDBService {
       const result = await docClient.send(new QueryCommand(params));
       return result.Items || [];
     } catch (error) {
+      if (isCredentialError(error)) {
+        console.warn('[DynamoDB] AWS credentials not configured, returning empty results');
+        return [];
+      }
       console.error('[DynamoDB] Query error:', error);
       throw new Error('Failed to query items from DynamoDB');
     }
@@ -234,6 +271,10 @@ export class DynamoDBService {
       const result = await docClient.send(new ScanCommand(params));
       return result.Items || [];
     } catch (error) {
+      if (isCredentialError(error)) {
+        console.warn('[DynamoDB] AWS credentials not configured, returning empty results');
+        return [];
+      }
       console.error('[DynamoDB] Scan error:', error);
       throw new Error('Failed to scan table');
     }

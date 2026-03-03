@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InvokeCommand } from '@aws-sdk/client-lambda';
-import { lambdaClient, LAMBDA_FUNCTIONS, createErrorResponse, logError, logInfo } from '@/lib/aws-config';
+import { lambdaClient, LAMBDA_FUNCTIONS, logError, logInfo } from '@/lib/aws-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     logInfo('expense-alert', 'Lambda invocation successful');
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error) {
     logError('expense-alert', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Alert check failed' },

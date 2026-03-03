@@ -14,13 +14,14 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { jest } from '@jest/globals';
 import UserProfile from '../UserProfile';
-import { getCurrentUser } from '@/lib/simple-auth-manager';
+import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 
-// Mock the auth manager
-jest.mock('@/lib/simple-auth-manager', () => ({
-  getCurrentUser: jest.fn(),
-  logout: jest.fn(),
+// Mock the session manager
+jest.mock('@/lib/session-manager', () => ({
+  SessionManager: {
+    getCurrentUser: jest.fn(),
+  },
 }));
 
 // Mock the router
@@ -76,7 +77,7 @@ describe('UserProfile Bug Exploration - Business Profile Display Missing', () =>
     };
 
     // Mock the getCurrentUser to return basic auth session data (current behavior)
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     // Mock the profile API response with complete business profile data
     const mockProfileData = {
@@ -113,7 +114,7 @@ describe('UserProfile Bug Exploration - Business Profile Display Missing', () =>
 
     // Wait for component to load user data
     await waitFor(() => {
-      expect(getCurrentUser).toHaveBeenCalled();
+      expect(SessionManager.getCurrentUser).toHaveBeenCalled();
     });
 
     // Assert: Expected behavior - Business profile information should be displayed prominently
@@ -173,7 +174,7 @@ describe('UserProfile Bug Exploration - Business Profile Display Missing', () =>
       createdAt: '2024-02-01T09:00:00.000Z',
     };
 
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     const mockProfileResponse = {
       success: true,
@@ -230,7 +231,7 @@ describe('UserProfile Bug Exploration - Business Profile Display Missing', () =>
       createdAt: '2024-01-20T14:00:00.000Z',
     };
 
-    (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+    (SessionManager.getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
     // Mock profile API response
     mockFetch.mockResolvedValueOnce({

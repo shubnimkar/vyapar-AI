@@ -3,12 +3,17 @@ import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedroc
 
 // Initialize AWS clients
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
+const BEDROCK_REGION = process.env.BEDROCK_REGION || 'us-east-1';
 const s3Client = new S3Client({ region: AWS_REGION });
-const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
+const bedrockClient = new BedrockRuntimeClient({ region: BEDROCK_REGION });
 
 // Configuration from environment variables
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'apac.anthropic.claude-3-haiku-20240307-v1:0';
+const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 const RESULTS_BUCKET = process.env.RESULTS_BUCKET || 'vyapar-receipts-output';
+
+// Detect model type
+const isNovaModel = BEDROCK_MODEL_ID.includes('nova');
+const isClaudeModel = BEDROCK_MODEL_ID.includes('claude') || BEDROCK_MODEL_ID.includes('anthropic');
 
 export const handler = async (event) => {
   const startTime = Date.now();
@@ -127,60 +132,104 @@ async function processWithBedrockVision(imageBytes, contentType) {
 
 EXTRACTION RULES:
 1. DATE: Look for date patterns (DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY). Convert to YYYY-MM-DD format.
-2. AMOUNT: Find the TOTAL amount paid. Look for keywords like "TOTAL", "AMOUNT", "CASH", "GRAND TOTAL".
+2. AMOUNT: Find the FINAL TOTAL amount paid. This is CRITICAL - read carefully!
+   - Look for "GRAND TOTAL", "TOTAL", "NET TOTAL", "AMOUNT PAYABLE", "BILL AMOUNT"
+   - This is usually the LAST and LARGEST number on the receipt
+   - Ignore subtotals, item prices, and intermediate calculations
+   - The amount can be 3-5 digits (₹100 to ₹99,999 typically)
 3. VENDOR: Store/restaurant name (usually at the top, may include location).
 4. ITEMS: List of purchased items (food items, products, services).
 
-CRITICAL RULES FOR INDIAN RECEIPTS:
-- DO NOT confuse phone numbers with amounts (phone numbers have 10+ digits)
-- DO NOT include table numbers, bill numbers, or reference numbers as amounts
-- The total amount should be reasonable (₹10 to ₹50,000 range typically)
+CRITICAL RULES FOR AMOUNT EXTRACTION:
+- ALWAYS look for the BOTTOM-MOST total on the receipt
+- DO NOT use subtotals or intermediate amounts
+- DO NOT confuse phone numbers (10+ digits) with amounts
+- DO NOT include table numbers, bill numbers, or reference numbers
+- The GRAND TOTAL is typically after all items, taxes, and charges
+- If you see multiple totals, use the LARGEST one (usually the final total)
+- Common patterns: "GRAND TOTAL: 2464", "Total Rs. 2464", "Amount: ₹2464.00"
+- Amounts can be written WITHOUT decimals (2464 means ₹2464, not ₹24.64)
+
+AMOUNT EXAMPLES:
+- "GRAND TOTAL: 2464" → amount: 2464.00 (NOT 246.4 or 24.64)
+- "Sub Total: 200.00\nGRAND TOTAL: 2464" → amount: 2464.00 (use GRAND TOTAL, not subtotal)
+- "TOTAL Rs. 1250" → amount: 1250.00
+- "Amount Payable: ₹3500.00" → amount: 3500.00
+
+OTHER RULES:
 - Item names are usually in CAPS or Title Case
-- Handle decimal separators: "200.00" and "200-00" both mean ₹200
-- If amount is unclear, estimate based on items (meal: ₹100-500, snacks: ₹50-200)
 - Ignore headers like "DESCRIPTION", "QTY", "RATE"
 - Ignore footers like "THANK YOU", "VISIT AGAIN"
-
-EXAMPLES:
-- "BUTTER CHICKEN 1 × 250.00 = 250.00" → item: "BUTTER CHICKEN", amount: 250.00
-- "TOTAL: ₹450.00" → amount: 450.00
-- "CAFE COFFEE DAY, MG ROAD" → vendor: "CAFE COFFEE DAY, MG ROAD"
-- "DATE: 15-02-2026" → date: "2026-02-15"
 
 Return ONLY valid JSON in this exact format:
 {
   "date": "YYYY-MM-DD",
-  "amount": 200.00,
+  "amount": 2464.00,
   "vendor": "Restaurant Name",
   "items": ["Item 1", "Item 2"]
 }`;
 
-    const bedrockPayload = {
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 1000,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: contentType,
-                data: base64Image,
+    // Build payload based on model type
+    let bedrockPayload;
+    
+    if (isNovaModel) {
+      // Amazon Nova format
+      bedrockPayload = {
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                image: {
+                  format: contentType.split('/')[1], // "jpeg", "png", etc.
+                  source: {
+                    bytes: base64Image
+                  }
+                }
               },
-            },
-            {
-              type: "text",
-              text: prompt,
-            },
-          ],
-        },
-      ],
-    };
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        inferenceConfig: {
+          max_new_tokens: 1000,
+          temperature: 0.1
+        }
+      };
+    } else if (isClaudeModel) {
+      // Claude format
+      bedrockPayload = {
+        anthropic_version: "bedrock-2023-05-31",
+        max_tokens: 1000,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: {
+                  type: "base64",
+                  media_type: contentType,
+                  data: base64Image,
+                },
+              },
+              {
+                type: "text",
+                text: prompt,
+              },
+            ],
+          },
+        ],
+      };
+    } else {
+      throw new Error(`Unsupported model type: ${BEDROCK_MODEL_ID}`);
+    }
 
     console.log("📡 Calling Bedrock Vision API...");
-    console.log(`🌍 Region: ${AWS_REGION}`);
+    console.log(`🌍 S3 Region: ${AWS_REGION}`);
+    console.log(`🌍 Bedrock Region: ${BEDROCK_REGION}`);
     console.log(`🤖 Model ID: ${BEDROCK_MODEL_ID}`);
     
     const bedrockCommand = new InvokeModelCommand({
@@ -196,8 +245,21 @@ Return ONLY valid JSON in this exact format:
     console.log("✅ Bedrock response received");
     console.log("📄 Response:", JSON.stringify(responseBody, null, 2));
 
-    // Extract and parse JSON from Claude's response
-    const extractedText = responseBody.content[0].text;
+    // Extract and parse JSON from response (handles both Claude and Nova formats)
+    let extractedText;
+    if (isClaudeModel && responseBody.content) {
+      extractedText = responseBody.content[0].text;
+    } else if (isNovaModel && responseBody.output) {
+      // Nova format: output.message.content is an array of content blocks
+      const contentBlocks = responseBody.output.message.content;
+      const textBlock = contentBlocks.find(block => block.text);
+      if (!textBlock) {
+        throw new Error("No text content found in Nova response");
+      }
+      extractedText = textBlock.text;
+    } else {
+      throw new Error("Unsupported model response format");
+    }
     const jsonMatch = extractedText.match(/\{[\s\S]*\}/);
     
     if (!jsonMatch) {

@@ -67,8 +67,9 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       } else {
         setPredictions(result.predictions || []);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

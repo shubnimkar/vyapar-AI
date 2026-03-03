@@ -134,9 +134,10 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
       const extractedData = await pollForResults(result.filename);
       setExtractedData(extractedData);
       setStatus("success");
-    } catch (err: any) {
-      console.error("Receipt OCR error:", err);
-      setError(err.message || "Failed to process receipt");
+    } catch (error) {
+      console.error("Receipt OCR error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to process receipt";
+      setError(errorMessage);
       setStatus("error");
     }
   };

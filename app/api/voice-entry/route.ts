@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { s3Client, S3_BUCKETS, createErrorResponse, logError, logInfo } from '@/lib/aws-config';
+import { s3Client, S3_BUCKETS, logError, logInfo } from '@/lib/aws-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         error: 'Processing timeout - please try again',
       }, { status: 408 });
     }
-  } catch (error: any) {
+  } catch (error) {
     logError('voice-entry', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Upload failed' },
@@ -91,8 +91,8 @@ async function pollForResult(filename: string, maxAttempts = 30): Promise<any> {
         const result = JSON.parse(body);
         return result.extractedData;
       }
-    } catch (error: any) {
-      if (error.name !== 'NoSuchKey') {
+    } catch (error) {
+      if (error && typeof error === 'object' && 'name' in error && error.name !== 'NoSuchKey') {
         logError('voice-entry-poll', error);
       }
     }

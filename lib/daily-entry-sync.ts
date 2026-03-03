@@ -1,7 +1,7 @@
 // Daily Entry Hybrid Sync Manager
 // Manages offline-first daily entries with DynamoDB cloud backup
 
-import { DailyEntry, DailyEntryService } from './dynamodb-client';
+import type { DailyEntry } from './dynamodb-client';
 import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = 'vyapar-daily-entries';
@@ -137,23 +137,25 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
   
   for (const localEntry of pending) {
     try {
-      // Convert local entry to DynamoDB entry
-      const dbEntry: DailyEntry = {
-        userId,
-        entryId: localEntry.entryId,
-        date: localEntry.date,
-        totalSales: localEntry.totalSales,
-        totalExpense: localEntry.totalExpense,
-        cashInHand: localEntry.cashInHand,
-        notes: localEntry.notes,
-        estimatedProfit: localEntry.estimatedProfit,
-        expenseRatio: localEntry.expenseRatio,
-        profitMargin: localEntry.profitMargin,
-        createdAt: localEntry.createdAt,
-        updatedAt: localEntry.updatedAt,
-      };
-      
-      await DailyEntryService.saveEntry(dbEntry);
+      // Sync via API route (server handles DynamoDB)
+      const response = await fetch('/api/daily', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          entryId: localEntry.entryId,
+          date: localEntry.date,
+          totalSales: localEntry.totalSales,
+          totalExpense: localEntry.totalExpense,
+          cashInHand: localEntry.cashInHand,
+          notes: localEntry.notes,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Daily entry sync failed');
+      }
       
       // Update local entry status
       localEntry.syncStatus = 'synced';
@@ -192,8 +194,21 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
   try {
     console.log('[DailyEntrySync] Pulling entries from cloud');
     
-    // Get all entries from DynamoDB
-    const cloudEntries = await DailyEntryService.getEntries(userId);
+    // Get all entries from server API (which reads DynamoDB)
+    const response = await fetch(`/api/daily?userId=${encodeURIComponent(userId)}`);
+    const result = await response.json();
+    
+    // Handle authentication errors gracefully
+    if (response.status === 401 || response.status === 403) {
+      console.warn('[DailyEntrySync] Not authenticated, skipping cloud pull');
+      return;
+    }
+    
+    if (!response.ok || !result.success) {
+      console.warn('[DailyEntrySync] Failed to pull entries:', result.error);
+      throw new Error(result.error || 'Failed to pull daily entries');
+    }
+    const cloudEntries: DailyEntry[] = result.data || [];
     
     // Get local entries
     const localEntries = getLocalEntries();
@@ -223,8 +238,8 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
     
     console.log('[DailyEntrySync] Pull complete, merged', cloudEntries.length, 'cloud entries');
   } catch (error) {
-    console.error('[DailyEntrySync] Failed to pull entries from cloud:', error);
-    throw error;
+    console.warn('[DailyEntrySync] Failed to pull entries from cloud:', error);
+    // Don't throw - allow offline operation
   }
 }
 
@@ -237,7 +252,7 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
     
     // Pull from cloud first
     await pullEntriesFromCloud(userId);
-    const cloudEntries = await DailyEntryService.getEntries(userId);
+    const cloudEntries = getLocalEntries().filter((entry) => entry.syncStatus === 'synced');
     
     // Push pending entries
     const { success, failed } = await syncPendingEntries(userId);
@@ -252,6 +267,52 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
   } catch (error) {
     console.error('[DailyEntrySync] Full sync failed:', error);
     throw error;
+  }
+}
+
+/**
+ * Sync single entry instantly to DynamoDB
+ * Returns true if sync succeeded, false otherwise
+ */
+export async function instantSyncEntry(userId: string, entry: LocalDailyEntry): Promise<boolean> {
+  try {
+    console.log('[DailyEntrySync] Instant sync for entry:', entry.date);
+    
+    const response = await fetch('/api/daily', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        entryId: entry.entryId,
+        date: entry.date,
+        totalSales: entry.totalSales,
+        totalExpense: entry.totalExpense,
+        cashInHand: entry.cashInHand,
+        notes: entry.notes,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'Instant sync failed');
+    }
+    
+    // Update local entry status
+    entry.syncStatus = 'synced';
+    entry.lastSyncAttempt = new Date().toISOString();
+    saveLocalEntry(entry);
+    
+    console.log('[DailyEntrySync] Instant sync succeeded');
+    return true;
+  } catch (error) {
+    console.error('[DailyEntrySync] Instant sync failed:', error);
+    
+    // Mark as pending for retry
+    entry.syncStatus = 'pending';
+    entry.lastSyncAttempt = new Date().toISOString();
+    saveLocalEntry(entry);
+    
+    return false;
   }
 }
 

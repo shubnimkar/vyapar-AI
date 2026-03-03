@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     
     // Extract headers and rows
     const headers = parseResult.meta.fields || [];
-    const rows = parseResult.data as Record<string, any>[];
+    const rows = parseResult.data as Record<string, unknown>[];
     
     // Validate CSV structure
     const headerValidation = validateCSVHeaders(headers, fileType);
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Store data in session based on file type
-    const updates: any = {};
+    const updates: Record<string, ParsedCSV> = {};
     if (fileType === 'sales') {
       updates.salesData = parsedCSV;
     } else if (fileType === 'expenses') {
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
       updates.inventoryData = parsedCSV;
     }
     
-    const updatedSession = updateSession(session.sessionId, updates);
+    updateSession(session.sessionId, updates);
     
     // Create preview (first 5 rows)
     const previewRows = rows.slice(0, 5);
@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
       },
     });
     
-  } catch (error: any) {
+  } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
       {

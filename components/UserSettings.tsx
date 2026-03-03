@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Language, UserProfile } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { SessionManager } from '@/lib/session-manager';
 import AccountDeletion from './AccountDeletion';
 
 interface UserSettingsProps {
@@ -39,7 +40,15 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
     setError('');
     
     try {
-      const response = await fetch('/api/profile');
+      // Get current user from SessionManager
+      const currentUser = SessionManager.getCurrentUser();
+      if (!currentUser) {
+        setError(t('error.notLoggedIn', language));
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch(`/api/profile?userId=${currentUser.userId}`);
       const result = await response.json();
 
       if (result.success && result.data) {
@@ -65,7 +74,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
     }
   };
 
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, value: string) => {
     setEditableData(prev => ({ ...prev, [field]: value }));
     setHasChanges(true);
     setSuccessMessage('');
@@ -77,10 +86,19 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
     setSuccessMessage('');
 
     try {
+      // Get current user from SessionManager
+      const currentUser = SessionManager.getCurrentUser();
+      if (!currentUser) {
+        setError(t('error.notLoggedIn', language));
+        setIsSaving(false);
+        return;
+      }
+
       const response = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: currentUser.userId,
           shopName: editableData.shopName,
           userName: editableData.userName,
           language: editableData.language,

@@ -90,7 +90,7 @@ export default function QAChat({ sessionId, language }: QAChatProps) {
       } else {
         setError(data.error || t('questionFailed', language));
       }
-    } catch (err) {
+    } catch {
       setError(t('questionFailed', language));
     } finally {
       setLoading(false);

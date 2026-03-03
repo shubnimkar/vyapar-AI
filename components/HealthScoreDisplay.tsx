@@ -26,6 +26,13 @@ export default function HealthScoreDisplay({
   const [explaining, setExplaining] = useState(false);
   const [explanation, setExplanation] = useState('');
 
+  // Safety check: ensure breakdown is valid
+  if (!breakdown || typeof breakdown !== 'object' || 
+      'success' in breakdown || 'error' in breakdown || 'errorType' in breakdown) {
+    console.error('[HealthScoreDisplay] Invalid breakdown received:', breakdown);
+    return null;
+  }
+
   const getScoreColor = (score: number) => {
     if (score >= 70) return 'text-green-600';
     if (score >= 40) return 'text-yellow-600';
@@ -56,11 +63,15 @@ export default function HealthScoreDisplay({
       });
 
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.explanation) {
         setExplanation(data.explanation);
+      } else {
+        console.warn('[HealthScore] Explain failed:', data.error);
+        setExplanation('Unable to generate explanation at this time.');
       }
     } catch (err) {
       console.error('Failed to get explanation:', err);
+      setExplanation('Unable to generate explanation at this time.');
     } finally {
       setExplaining(false);
     }

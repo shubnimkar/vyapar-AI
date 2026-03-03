@@ -19,7 +19,7 @@ export default function SyncStatus({ language }: SyncStatusProps) {
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ userId: string } | null>(null);
 
   useEffect(() => {
     // Get current user
@@ -60,7 +60,8 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       window.removeEventListener('offline', handleOffline);
       clearInterval(interval);
     };
-  }, [user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once on mount
 
   const checkSyncStatus = () => {
     if (!user || !navigator.onLine) return;

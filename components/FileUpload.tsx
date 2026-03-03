@@ -14,7 +14,7 @@ interface FileUploadProps {
 
 interface PreviewData {
   headers: string[];
-  rows: any[];
+  rows: Record<string, unknown>[];
   totalRows: number;
 }
 
@@ -94,7 +94,7 @@ export default function FileUpload({
       } else {
         setError(data.error || t('uploadFailed', language));
       }
-    } catch (err) {
+    } catch {
       setError(t('uploadFailed', language));
     } finally {
       setUploading(false);
