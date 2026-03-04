@@ -26,13 +26,11 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
     "lucide-react": "^0.575.0",
-    "mongodb": "^7.1.0",
     "next": "16.1.6",
     "papaparse": "^5.5.3",
     "react": "^18",
     "react-dom": "^18",
     "recharts": "^3.7.0",
-    "twilio": "^5.12.2",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
