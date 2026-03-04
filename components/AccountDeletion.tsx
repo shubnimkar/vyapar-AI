@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { logger } from '@/lib/logger';
 
 interface AccountDeletionProps {
   language: Language;
@@ -47,7 +48,7 @@ export default function AccountDeletion({
         setError(result.error || t('error.profileUpdateFailed', language));
       }
     } catch (err) {
-      console.error('[AccountDeletion] Error requesting deletion:', err);
+      logger.error('[AccountDeletion] Error requesting deletion', { error: err });
       setError(t('networkError', language));
     } finally {
       setIsProcessing(false);
@@ -72,7 +73,7 @@ export default function AccountDeletion({
         setError(result.error || t('error.profileUpdateFailed', language));
       }
     } catch (err) {
-      console.error('[AccountDeletion] Error cancelling deletion:', err);
+      logger.error('[AccountDeletion] Error cancelling deletion', { error: err });
       setError(t('networkError', language));
     } finally {
       setIsProcessing(false);

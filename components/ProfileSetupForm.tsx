@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Language, ProfileSetupData } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { logger } from '@/lib/logger';
 
 interface ProfileSetupFormProps {
   phoneNumber: string;
@@ -120,7 +121,7 @@ export default function ProfileSetupForm({
         }
       }
     } catch (error) {
-      console.error('[ProfileSetup] Error:', error);
+      logger.error('[ProfileSetup] Error', { error });
       setErrors({ general: t('networkError', language) });
     } finally {
       setIsSubmitting(false);

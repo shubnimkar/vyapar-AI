@@ -14,6 +14,7 @@ import {
   fullSync,
 } from '@/lib/daily-entry-sync';
 import { TrendingUp, TrendingDown, Calendar, History, Plus, Edit2, Trash2, Cloud, CloudOff, RefreshCw, X } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface DailyEntryFormProps {
   language: Language;
@@ -61,7 +62,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
       await fullSync(user.userId);
       loadEntries();
     } catch (error) {
-      console.error('[DailyEntry] Auto-sync failed:', error);
+      logger.error('[DailyEntry] Auto-sync failed', { error });
     } finally {
       setSyncing(false);
     }
@@ -82,7 +83,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
       setSuccess(t('daily.syncSuccess', language));
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      console.error('[DailyEntry] Sync failed:', error);
+      logger.error('[DailyEntry] Sync failed', { error });
       setError(t('daily.syncError', language));
     } finally {
       setSyncing(false);
@@ -149,7 +150,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
         }
       } catch (apiError) {
         // API failed - save offline with pending status
-        console.warn('[DailyEntry] API failed, saving offline:', apiError);
+        logger.warn('[DailyEntry] API failed, saving offline', { error: apiError });
         
         if (isEditing) {
           updateDailyEntry(date, {
@@ -221,7 +222,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
           throw new Error(result.error);
         }
       } catch (apiError) {
-        console.warn('[DailyEntry] API delete failed:', apiError);
+        logger.warn('[DailyEntry] API delete failed', { error: apiError });
       }
 
       // Always delete from localStorage

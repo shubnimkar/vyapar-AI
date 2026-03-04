@@ -6,16 +6,33 @@ import { getSession } from '@/lib/session-store';
 import { invokeBedrockModel } from '@/lib/bedrock-client';
 import { buildAnalysisPrompt } from '@/lib/prompts';
 import { Language, BusinessInsights } from '@/lib/types';
-import { t } from '@/lib/translations';
 import { 
   calculateProfit, 
   calculateBlockedInventory,
   calculateExpenseRatio 
 } from '@/lib/calculations';
+import { logger } from '@/lib/logger';
+import {
+  checkBodySize,
+  logAndReturnError,
+  createErrorResponse,
+  ErrorCode,
+  BODY_SIZE_LIMITS
+} from '@/lib/error-utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    logger.info('Analysis request received', {
+      path: '/api/analyze'
+    });
+
+    // Validate body size (1MB limit for AI endpoints)
+    const bodyCheck = await checkBodySize(request, BODY_SIZE_LIMITS.AI);
+    if ('error' in bodyCheck) {
+      return NextResponse.json(bodyCheck.error, { status: 413 });
+    }
+
+    const body = JSON.parse(bodyCheck.bodyText);
     const { sessionId, language = 'en', deterministicResults } = body as {
       sessionId: string;
       language: Language;
@@ -28,11 +45,9 @@ export async function POST(request: NextRequest) {
     
     // Validate session ID
     if (!sessionId) {
+      logger.warn('Missing session ID in analysis request');
       return NextResponse.json(
-        {
-          success: false,
-          error: t('uploadDataFirst', language),
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
         { status: 400 }
       );
     }
@@ -40,22 +55,18 @@ export async function POST(request: NextRequest) {
     // Get session data
     const session = getSession(sessionId);
     if (!session) {
+      logger.warn('Session not found', { sessionId });
       return NextResponse.json(
-        {
-          success: false,
-          error: t('sessionExpired', language),
-        },
+        createErrorResponse(ErrorCode.NOT_FOUND, 'errors.notFound', language),
         { status: 404 }
       );
     }
     
     // Check if at least one dataset is uploaded
     if (!session.salesData && !session.expensesData && !session.inventoryData) {
+      logger.warn('No data uploaded for analysis', { sessionId });
       return NextResponse.json(
-        {
-          success: false,
-          error: t('uploadDataFirst', language),
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
         { status: 400 }
       );
     }
@@ -86,69 +97,89 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // STEP 2: Build analysis prompt with PRE-CALCULATED metrics
-    const prompt = buildAnalysisPrompt(
-      session.salesData,
-      session.expensesData,
-      session.inventoryData,
-      language,
-      calculatedMetrics // Pass pre-calculated metrics to prompt
-    );
-    
     // STEP 3: Call AWS Bedrock for EXPLANATION only (not calculation)
-    const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
-    
-    if (!bedrockResponse.success) {
+    try {
+      // STEP 2: Build analysis prompt with PRE-CALCULATED metrics
+      const prompt = buildAnalysisPrompt(
+        session.salesData,
+        session.expensesData,
+        session.inventoryData,
+        language,
+        calculatedMetrics // Pass pre-calculated metrics to prompt
+      );
+      
+      const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
+      
+      if (!bedrockResponse.success) {
+        return NextResponse.json(
+          logAndReturnError(
+            new Error(bedrockResponse.error || 'Bedrock invocation failed'),
+            ErrorCode.BEDROCK_ERROR,
+            'errors.bedrockError',
+            language,
+            { path: '/api/analyze', sessionId }
+          ),
+          { status: 503 }
+        );
+      }
+      
+      // Parse AI response into structured insights
+      const aiContent = bedrockResponse.content || '';
+      const insights = parseInsights(aiContent);
+      
+      // Add calculated metrics to insights
+      if (calculatedMetrics.profit !== undefined) {
+        insights.calculatedProfit = calculatedMetrics.profit;
+      }
+      if (calculatedMetrics.blockedInventory !== undefined) {
+        insights.calculatedBlockedInventory = calculatedMetrics.blockedInventory;
+      }
+      
+      // Add enhanced features (recommendations, alerts, charts, benchmark)
+      const { 
+        generateMockRecommendations, 
+        generateMockAlerts, 
+        generateMockChartData,
+        generateMockBenchmark 
+      } = await import('@/lib/bedrock-client-mock');
+      
+      insights.recommendations = generateMockRecommendations(language);
+      insights.alerts = generateMockAlerts(language);
+      insights.chartData = generateMockChartData();
+      
+      // Add benchmark data
+      const benchmark = generateMockBenchmark(language);
+      
+      logger.info('Analysis completed successfully', { sessionId });
+      
+      return NextResponse.json({
+        success: true,
+        insights,
+        benchmark,
+        calculatedMetrics, // Return deterministic calculations
+      });
+    } catch (bedrockError) {
       return NextResponse.json(
-        {
-          success: false,
-          error: bedrockResponse.error || t('analysisFailed', language),
-        },
+        logAndReturnError(
+          bedrockError as Error,
+          ErrorCode.BEDROCK_ERROR,
+          'errors.bedrockError',
+          language,
+          { path: '/api/analyze', sessionId }
+        ),
         { status: 503 }
       );
     }
     
-    // Parse AI response into structured insights
-    const aiContent = bedrockResponse.content || '';
-    const insights = parseInsights(aiContent);
-    
-    // Add calculated metrics to insights
-    if (calculatedMetrics.profit !== undefined) {
-      insights.calculatedProfit = calculatedMetrics.profit;
-    }
-    if (calculatedMetrics.blockedInventory !== undefined) {
-      insights.calculatedBlockedInventory = calculatedMetrics.blockedInventory;
-    }
-    
-    // Add enhanced features (recommendations, alerts, charts, benchmark)
-    const { 
-      generateMockRecommendations, 
-      generateMockAlerts, 
-      generateMockChartData,
-      generateMockBenchmark 
-    } = await import('@/lib/bedrock-client-mock');
-    
-    insights.recommendations = generateMockRecommendations(language);
-    insights.alerts = generateMockAlerts(language);
-    insights.chartData = generateMockChartData();
-    
-    // Add benchmark data
-    const benchmark = generateMockBenchmark(language);
-    
-    return NextResponse.json({
-      success: true,
-      insights,
-      benchmark,
-      calculatedMetrics, // Return deterministic calculations
-    });
-    
   } catch (error) {
-    console.error('Analysis error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Analysis failed. Please try again.',
-      },
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/analyze' }
+      ),
       { status: 500 }
     );
   }

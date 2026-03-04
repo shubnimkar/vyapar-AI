@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionManager } from '@/lib/session-manager';
 import { Language, UserProfile as UserProfileType } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { logger } from '@/lib/logger';
 
 interface UserProfileProps {
   language: Language;
@@ -44,17 +45,17 @@ export default function UserProfile({ language }: UserProfileProps) {
       } else {
         // Profile not found or incomplete - user hasn't completed profile setup
         // This is normal for new users, so don't set it as an error
-        console.log('[UserProfile] Profile not found or incomplete:', result.error);
+        logger.debug('[UserProfile] Profile not found or incomplete', { error: result.error });
         setProfileData(null);
       }
     } catch (error) {
       // Network error or API failure - handle gracefully
-      console.warn('[UserProfile] Failed to load profile data:', error);
+      logger.warn('[UserProfile] Failed to load profile data', { error });
       const errorMsg = error instanceof Error ? error.message : String(error);
       
       // Check for common connection issues (ISP blocks in India)
       if (errorMsg.includes('fetch failed') || errorMsg.includes('ECONNRESET')) {
-        console.warn('[UserProfile] Connection error detected - using fallback display');
+        logger.warn('[UserProfile] Connection error detected - using fallback display');
         setProfileError('connection');
       } else {
         setProfileError('api');
@@ -70,13 +71,13 @@ export default function UserProfile({ language }: UserProfileProps) {
     try {
       // Sync data to cloud before logging out (best effort)
       if (user) {
-        console.log('[UserProfile] Syncing data before logout...');
+        logger.info('[UserProfile] Syncing data before logout...');
         try {
           const { HybridSyncManager } = await import('@/lib/hybrid-sync-dynamodb');
           await HybridSyncManager.syncToCloud(user.userId);
-          console.log('[UserProfile] Data synced successfully');
+          logger.info('[UserProfile] Data synced successfully');
         } catch (syncError) {
-          console.error('[UserProfile] Failed to sync data before logout:', syncError);
+          logger.error('[UserProfile] Failed to sync data before logout', { error: syncError });
           // Continue with logout anyway - data remains in localStorage for offline use
         }
       }
@@ -85,7 +86,7 @@ export default function UserProfile({ language }: UserProfileProps) {
       SessionManager.clearSession();
       router.push('/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error', { error });
     } finally {
       setLoading(false);
     }

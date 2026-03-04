@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import ProfileSetupForm from '@/components/ProfileSetupForm';
 import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
+import { logger } from '@/lib/logger';
 
 export default function ProfileSetupPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function ProfileSetupPage() {
         setIsEditMode(true);
       }
     } catch (err) {
-      console.error('Failed to load profile:', err);
+      logger.error('Failed to load profile', { error: err });
       // Continue with creation mode
     }
 

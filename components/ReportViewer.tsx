@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { DailyReport } from '@/lib/types';
+import { logger } from '@/lib/logger';
 
 interface ReportViewerProps {
   userId: string;
@@ -66,7 +67,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         setIsAutomationEnabled(result.automationEnabled ?? true);
       }
     } catch (error) {
-      console.error('Failed to fetch reports:', error);
+      logger.error('Failed to fetch reports', { error });
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +91,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         setIsAutomationEnabled(result.automationEnabled);
       }
     } catch (error) {
-      console.error('Failed to toggle automation:', error);
+      logger.error('Failed to toggle automation', { error });
     } finally {
       setIsUpdating(false);
     }

@@ -1,5 +1,6 @@
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 const s3Client = new S3Client({
   region: process.env.AWS_S3_REGION || process.env.AWS_REGION!,
@@ -26,7 +27,11 @@ export async function GET(request: NextRequest) {
     // Lambda saves results as: filename.json (replacing image extension)
     const resultKey = filename.replace(/\.[^.]+$/, '.json');
 
-    console.log(`Checking for results: ${resultKey} in ${RESULTS_BUCKET}`);
+    logger.info('Checking for receipt processing results', { 
+      path: '/api/receipt-status',
+      resultKey, 
+      bucket: RESULTS_BUCKET 
+    });
 
     try {
       const command = new GetObjectCommand({
@@ -71,11 +76,15 @@ export async function GET(request: NextRequest) {
       throw s3Error;
     }
   } catch (error) {
-    console.error("Receipt status check error:", error);
+    logger.error('Receipt status check error', { 
+      path: '/api/receipt-status',
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
       {
         status: "error",
-        error: error.message || "Failed to check receipt status",
+        error: error instanceof Error ? error.message : "Failed to check receipt status",
       },
       { status: 500 }
     );

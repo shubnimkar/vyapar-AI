@@ -5,11 +5,28 @@ import { getSession, updateSession } from '@/lib/session-store';
 import { invokeBedrockModel } from '@/lib/bedrock-client';
 import { buildQAPrompt } from '@/lib/prompts';
 import { Language, ChatMessage } from '@/lib/types';
-import { t } from '@/lib/translations';
+import { logger } from '@/lib/logger';
+import {
+  checkBodySize,
+  logAndReturnError,
+  createErrorResponse,
+  ErrorCode,
+  BODY_SIZE_LIMITS
+} from '@/lib/error-utils';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    logger.info('Q&A request received', {
+      path: '/api/ask'
+    });
+
+    // Validate body size (1MB limit for AI endpoints)
+    const bodyCheck = await checkBodySize(request, BODY_SIZE_LIMITS.AI);
+    if ('error' in bodyCheck) {
+      return NextResponse.json(bodyCheck.error, { status: 413 });
+    }
+
+    const body = JSON.parse(bodyCheck.bodyText);
     const { sessionId, question, language = 'en' } = body as {
       sessionId: string;
       question: string;
@@ -18,11 +35,9 @@ export async function POST(request: NextRequest) {
     
     // Validate inputs
     if (!sessionId || !question) {
+      logger.warn('Missing required fields in Q&A request', { sessionId: !!sessionId, question: !!question });
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Session ID and question are required',
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
         { status: 400 }
       );
     }
@@ -30,88 +45,103 @@ export async function POST(request: NextRequest) {
     // Get session data
     const session = getSession(sessionId);
     if (!session) {
+      logger.warn('Session not found', { sessionId });
       return NextResponse.json(
-        {
-          success: false,
-          error: t('sessionExpired', language),
-        },
+        createErrorResponse(ErrorCode.NOT_FOUND, 'errors.notFound', language),
         { status: 404 }
       );
     }
     
     // Check if data is uploaded
     if (!session.salesData && !session.expensesData && !session.inventoryData) {
+      logger.warn('No data uploaded for Q&A', { sessionId });
       return NextResponse.json(
-        {
-          success: false,
-          error: t('uploadDataFirst', language),
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
         { status: 400 }
       );
     }
     
-    // Build Q&A prompt with context
-    const prompt = buildQAPrompt(
-      question,
-      session.salesData,
-      session.expensesData,
-      session.inventoryData,
-      session.conversationHistory,
-      language
-    );
-    
     // Call AWS Bedrock
-    const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
-    
-    if (!bedrockResponse.success) {
+    try {
+      // Build Q&A prompt with context
+      const prompt = buildQAPrompt(
+        question,
+        session.salesData,
+        session.expensesData,
+        session.inventoryData,
+        session.conversationHistory,
+        language
+      );
+      
+      const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
+      
+      if (!bedrockResponse.success) {
+        return NextResponse.json(
+          logAndReturnError(
+            new Error(bedrockResponse.error || 'Bedrock invocation failed'),
+            ErrorCode.BEDROCK_ERROR,
+            'errors.bedrockError',
+            language,
+            { path: '/api/ask', sessionId }
+          ),
+          { status: 503 }
+        );
+      }
+      
+      const answer = bedrockResponse.content || '';
+      
+      // Store question and answer in conversation history
+      const userMessage: ChatMessage = {
+        role: 'user',
+        content: question,
+        timestamp: new Date(),
+      };
+      
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: answer,
+        timestamp: new Date(),
+      };
+      
+      const updatedHistory = [
+        ...session.conversationHistory,
+        userMessage,
+        assistantMessage,
+      ];
+      
+      // Update session with new conversation history
+      updateSession(sessionId, {
+        conversationHistory: updatedHistory,
+      });
+      
+      logger.info('Q&A completed successfully', { sessionId });
+      
+      return NextResponse.json({
+        success: true,
+        answer,
+      });
+    } catch (bedrockError) {
       return NextResponse.json(
-        {
-          success: false,
-          error: bedrockResponse.error || t('questionFailed', language),
-        },
+        logAndReturnError(
+          bedrockError as Error,
+          ErrorCode.BEDROCK_ERROR,
+          'errors.bedrockError',
+          language,
+          { path: '/api/ask', sessionId }
+        ),
         { status: 503 }
       );
     }
-    
-    const answer = bedrockResponse.content || '';
-    
-    // Store question and answer in conversation history
-    const userMessage: ChatMessage = {
-      role: 'user',
-      content: question,
-      timestamp: new Date(),
-    };
-    
-    const assistantMessage: ChatMessage = {
-      role: 'assistant',
-      content: answer,
-      timestamp: new Date(),
-    };
-    
-    const updatedHistory = [
-      ...session.conversationHistory,
-      userMessage,
-      assistantMessage,
-    ];
-    
-    // Update session with new conversation history
-    updateSession(sessionId, {
-      conversationHistory: updatedHistory,
-    });
-    
-    return NextResponse.json({
-      success: true,
-      answer,
-    });
-    
   } catch (error) {
-    console.error('Q&A error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to get answer. Please try again.',
-      },
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/ask' }
+      ),
       { status: 500 }
-      );
+    );
   }
 }

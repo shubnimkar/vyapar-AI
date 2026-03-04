@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ExtractedVoiceData } from '@/lib/types';
+import { logger } from '@/lib/logger';
 
 interface VoiceRecorderProps {
   onDataExtracted: (data: ExtractedVoiceData) => void;
@@ -250,7 +251,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
           setQueuedUploads(queue.length);
         }
       } catch (error) {
-        console.error('Failed to process queued upload:', error);
+        logger.error('Failed to process queued upload', { error });
         break;
       }
     }

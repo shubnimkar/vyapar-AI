@@ -6,6 +6,7 @@ import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 import { fullSync as dailyFullSync, getSyncStatus as getDailySyncStatus } from '@/lib/daily-entry-sync';
 import { fullSync as creditFullSync, getSyncStatus as getCreditSyncStatus } from '@/lib/credit-sync';
+import { logger } from '@/lib/logger';
 
 interface SyncStatusProps {
   language: Language;
@@ -95,7 +96,7 @@ export default function SyncStatus({ language }: SyncStatusProps) {
         setLastSyncTime(creditTime);
       }
     } catch (error) {
-      console.warn('[SyncStatus] Failed to check sync status:', error);
+      logger.warn('[SyncStatus] Failed to check sync status', { error });
       setSyncStatus('error');
     }
   };
@@ -110,11 +111,11 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       // Sync both daily entries and credit entries
       const [dailyResult, creditResult] = await Promise.all([
         dailyFullSync(user.userId).catch(err => {
-          console.error('[SyncStatus] Daily sync failed:', err);
+          logger.error('[SyncStatus] Daily sync failed', { error: err });
           return { pulled: 0, pushed: 0, failed: 1 };
         }),
         creditFullSync(user.userId).catch(err => {
-          console.error('[SyncStatus] Credit sync failed:', err);
+          logger.error('[SyncStatus] Credit sync failed', { error: err });
           return { pulled: 0, pushed: 0, failed: 1 };
         })
       ]);
@@ -132,7 +133,7 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       // Recheck status after sync
       setTimeout(checkSyncStatus, 500);
     } catch (error) {
-      console.error('[SyncStatus] Sync failed:', error);
+      logger.error('[SyncStatus] Sync failed', { error });
       setSyncStatus('error');
     } finally {
       setSyncing(false);

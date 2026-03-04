@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Camera, Upload, Loader2, CheckCircle, XCircle, X } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface ExtractedData {
   date: string;
@@ -92,7 +93,7 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
         // Wait 2 seconds before next poll
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (err) {
-        console.error("Polling error:", err);
+        logger.error("Polling error", { error: err });
       }
     }
 
@@ -135,7 +136,7 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
       setExtractedData(extractedData);
       setStatus("success");
     } catch (error) {
-      console.error("Receipt OCR error:", error);
+      logger.error("Receipt OCR error", { error });
       const errorMessage = error instanceof Error ? error.message : "Failed to process receipt";
       setError(errorMessage);
       setStatus("error");

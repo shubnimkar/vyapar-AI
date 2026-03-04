@@ -4,17 +4,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ProfileService } from '@/lib/dynamodb-client';
 import { APIResponse, DeletionInfo } from '@/lib/types';
+import { logger } from '@/lib/logger';
+import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('Profile deletion request received', { path: '/api/profile/delete' });
+    
     const { userId } = await request.json();
 
     if (!userId) {
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'User ID is required',
-        },
+      logger.warn('Profile deletion missing userId', { path: '/api/profile/delete' });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 401 }
       );
     }
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
         daysRemaining: 30,
       };
 
+      logger.info('Profile deletion scheduled', { userId, scheduledAt: deletionInfo.scheduledAt });
       return NextResponse.json<APIResponse<DeletionInfo>>(
         {
           success: true,
@@ -37,22 +40,26 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
     } catch (error) {
-      console.error('[Profile Delete] DynamoDB error:', error);
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'Failed to delete profile',
-        },
+      return NextResponse.json(
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/profile/delete', operation: 'deleteProfile', userId }
+        ),
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('[Profile Delete] Unexpected error:', error);
-    return NextResponse.json<APIResponse<null>>(
-      {
-        success: false,
-        error: 'Internal server error',
-      },
+    return NextResponse.json(
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/profile/delete', method: 'POST' }
+      ),
       { status: 500 }
     );
   }

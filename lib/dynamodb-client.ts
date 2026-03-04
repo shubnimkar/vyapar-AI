@@ -11,6 +11,7 @@ import {
   QueryCommand,
   ScanCommand,
 } from '@aws-sdk/lib-dynamodb';
+import { logger } from './logger';
 
 // ============================================
 // DynamoDB Configuration
@@ -115,14 +116,14 @@ export class DynamoDBService {
           },
         })
       );
-      console.log('[DynamoDB] Item created/updated:', item.PK, item.SK);
+      logger.debug('Item created/updated', { PK: item.PK, SK: item.SK });
     } catch (error) {
       // Handle AWS credential errors gracefully
       if (isCredentialError(error)) {
-        console.warn('[DynamoDB] AWS credentials not configured, skipping cloud save');
+        logger.warn('AWS credentials not configured, skipping cloud save');
         return;
       }
-      console.error('[DynamoDB] Put item error:', error);
+      logger.error('Put item error', { error });
       throw new Error('Failed to save item to DynamoDB');
     }
   }
@@ -142,10 +143,10 @@ export class DynamoDBService {
     } catch (error) {
       // Handle AWS credential errors gracefully
       if (isCredentialError(error)) {
-        console.warn('[DynamoDB] AWS credentials not configured, operating in offline mode');
+        logger.warn('AWS credentials not configured, operating in offline mode');
         return null;
       }
-      console.error('[DynamoDB] Get item error:', error);
+      logger.error('Get item error', { error });
       throw new Error('Failed to retrieve item from DynamoDB');
     }
   }
@@ -185,13 +186,13 @@ export class DynamoDBService {
           ExpressionAttributeValues: expressionAttributeValues,
         })
       );
-      console.log('[DynamoDB] Item updated:', pk, sk);
+      logger.debug('Item updated', { pk, sk });
     } catch (error) {
       if (isCredentialError(error)) {
-        console.warn('[DynamoDB] AWS credentials not configured, skipping cloud update');
+        logger.warn('AWS credentials not configured, skipping cloud update');
         return;
       }
-      console.error('[DynamoDB] Update item error:', error);
+      logger.error('Update item error', { error });
       throw new Error('Failed to update item in DynamoDB');
     }
   }
@@ -207,13 +208,13 @@ export class DynamoDBService {
           Key: { PK: pk, SK: sk },
         })
       );
-      console.log('[DynamoDB] Item deleted:', pk, sk);
+      logger.debug('Item deleted', { pk, sk });
     } catch (error) {
       if (isCredentialError(error)) {
-        console.warn('[DynamoDB] AWS credentials not configured, skipping cloud delete');
+        logger.warn('AWS credentials not configured, skipping cloud delete');
         return;
       }
-      console.error('[DynamoDB] Delete item error:', error);
+      logger.error('Delete item error', { error });
       throw new Error('Failed to delete item from DynamoDB');
     }
   }
@@ -243,10 +244,10 @@ export class DynamoDBService {
       return result.Items || [];
     } catch (error) {
       if (isCredentialError(error)) {
-        console.warn('[DynamoDB] AWS credentials not configured, returning empty results');
+        logger.warn('AWS credentials not configured, returning empty results');
         return [];
       }
-      console.error('[DynamoDB] Query error:', error);
+      logger.error('Query error', { error });
       throw new Error('Failed to query items from DynamoDB');
     }
   }
@@ -272,10 +273,10 @@ export class DynamoDBService {
       return result.Items || [];
     } catch (error) {
       if (isCredentialError(error)) {
-        console.warn('[DynamoDB] AWS credentials not configured, returning empty results');
+        logger.warn('AWS credentials not configured, returning empty results');
         return [];
       }
-      console.error('[DynamoDB] Scan error:', error);
+      logger.error('Scan error', { error });
       throw new Error('Failed to scan table');
     }
   }

@@ -4,17 +4,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ProfileService } from '@/lib/dynamodb-client';
 import { APIResponse } from '@/lib/types';
+import { logger } from '@/lib/logger';
+import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('Cancel deletion request received', { path: '/api/profile/cancel-deletion' });
+    
     const { userId } = await request.json();
 
     if (!userId) {
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'User ID is required',
-        },
+      logger.warn('Cancel deletion missing userId', { path: '/api/profile/cancel-deletion' });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 401 }
       );
     }
@@ -24,16 +26,15 @@ export async function POST(request: NextRequest) {
       const profile = await ProfileService.getProfile(userId);
 
       if (!profile) {
-        return NextResponse.json<APIResponse<null>>(
-          {
-            success: false,
-            error: 'Profile not found',
-          },
+        logger.warn('Profile not found for cancel deletion', { userId });
+        return NextResponse.json(
+          createErrorResponse(ErrorCode.NOT_FOUND, 'errors.notFound'),
           { status: 404 }
         );
       }
 
       // Profile exists, deletion cancelled (no special flag needed in DynamoDB)
+      logger.info('Deletion cancelled successfully', { userId });
       return NextResponse.json<APIResponse<null>>(
         {
           success: true,
@@ -42,22 +43,26 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
     } catch (error) {
-      console.error('[Cancel Deletion] DynamoDB error:', error);
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'Failed to cancel deletion',
-        },
+      return NextResponse.json(
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/profile/cancel-deletion', operation: 'getProfile', userId }
+        ),
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('[Cancel Deletion] Unexpected error:', error);
-    return NextResponse.json<APIResponse<null>>(
-      {
-        success: false,
-        error: 'Internal server error',
-      },
+    return NextResponse.json(
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/profile/cancel-deletion', method: 'POST' }
+      ),
       { status: 500 }
     );
   }

@@ -2,6 +2,7 @@
 // Validates username format and checks availability in DynamoDB
 
 import { DynamoDBService } from './dynamodb-client';
+import { logger } from './logger';
 
 // ============================================
 // Types and Interfaces
@@ -95,7 +96,7 @@ export class UsernameValidator {
         available: true,
       };
     } catch (error) {
-      console.error('[UsernameValidator] Error checking availability:', error);
+      logger.error('Error checking availability', { error });
       return {
         valid: false,
         error: 'Unable to check username availability',

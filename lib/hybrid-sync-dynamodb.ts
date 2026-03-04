@@ -10,6 +10,7 @@ import {
   type DailyEntry,
   type CreditEntry,
 } from './dynamodb-client';
+import { logger } from './logger';
 
 // ============================================
 // Sync Status Types
@@ -58,7 +59,7 @@ export class HybridSyncManager {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.error('[Hybrid Sync] Error reading sync status:', error);
+      logger.error('Error reading sync status', { error });
     }
 
     return {
@@ -78,7 +79,7 @@ export class HybridSyncManager {
       const updated = { ...current, ...status };
       localStorage.setItem(STORAGE_KEYS.SYNC_STATUS, JSON.stringify(updated));
     } catch (error) {
-      console.error('[Hybrid Sync] Error updating sync status:', error);
+      logger.error('Error updating sync status', { error });
     }
   }
 
@@ -94,7 +95,7 @@ export class HybridSyncManager {
    */
   static async syncToCloud(userId: string): Promise<SyncResult> {
     if (this.syncInProgress) {
-      console.log('[Hybrid Sync] Sync already in progress');
+      logger.info('Sync already in progress');
       return {
         success: false,
         synced: 0,
@@ -102,9 +103,8 @@ export class HybridSyncManager {
         errors: ['Sync already in progress'],
       };
     }
-
     if (!this.isOnline()) {
-      console.log('[Hybrid Sync] Offline - skipping sync');
+      logger.info('Offline - skipping sync');
       return {
         success: false,
         synced: 0,
@@ -122,9 +122,8 @@ export class HybridSyncManager {
       failed: 0,
       errors: [],
     };
-
     try {
-      console.log('[Hybrid Sync] Starting sync to DynamoDB...');
+      logger.info('Starting sync to DynamoDB...');
 
       // Sync profile
       await this.syncProfile(userId, result);
@@ -143,9 +142,9 @@ export class HybridSyncManager {
         error: null,
       });
 
-      console.log('[Hybrid Sync] Sync completed:', result);
+      logger.info('Sync completed', result);
     } catch (error) {
-      console.error('[Hybrid Sync] Sync error:', error);
+      logger.error('Sync error', { error });
       result.success = false;
       result.errors.push(error instanceof Error ? error.message : 'Unknown error');
       
@@ -167,16 +166,16 @@ export class HybridSyncManager {
     try {
       const profileData = localStorage.getItem(STORAGE_KEYS.PROFILE);
       if (!profileData) {
-        console.log('[Hybrid Sync] No profile data to sync');
+        logger.info('No profile data to sync');
         return;
       }
 
       const profile: UserProfile = JSON.parse(profileData);
       await ProfileService.saveProfile({ ...profile, userId });
       result.synced++;
-      console.log('[Hybrid Sync] Profile synced');
+      logger.info('Profile synced');
     } catch (error) {
-      console.error('[Hybrid Sync] Profile sync error:', error);
+      logger.error('Profile sync error', { error });
       result.failed++;
       result.errors.push('Failed to sync profile');
     }
@@ -189,7 +188,7 @@ export class HybridSyncManager {
     try {
       const entriesData = localStorage.getItem(STORAGE_KEYS.DAILY_ENTRIES);
       if (!entriesData) {
-        console.log('[Hybrid Sync] No daily entries to sync');
+        logger.info('No daily entries to sync');
         return;
       }
 
@@ -200,15 +199,15 @@ export class HybridSyncManager {
           await DailyEntryService.saveEntry({ ...entry, userId });
           result.synced++;
         } catch (error) {
-          console.error('[Hybrid Sync] Entry sync error:', error);
+          logger.error('Entry sync error', { error });
           result.failed++;
           result.errors.push(`Failed to sync entry ${entry.entryId}`);
         }
       }
 
-      console.log('[Hybrid Sync] Daily entries synced:', entries.length);
+      logger.info('Daily entries synced', { count: entries.length });
     } catch (error) {
-      console.error('[Hybrid Sync] Daily entries sync error:', error);
+      logger.error('Daily entries sync error', { error });
       result.failed++;
       result.errors.push('Failed to sync daily entries');
     }
@@ -221,7 +220,7 @@ export class HybridSyncManager {
     try {
       const creditsData = localStorage.getItem(STORAGE_KEYS.CREDITS);
       if (!creditsData) {
-        console.log('[Hybrid Sync] No credits to sync');
+        logger.info('No credits to sync');
         return;
       }
 
@@ -232,15 +231,15 @@ export class HybridSyncManager {
           await CreditEntryService.saveEntry({ ...credit, userId });
           result.synced++;
         } catch (error) {
-          console.error('[Hybrid Sync] Credit sync error:', error);
+          logger.error('Credit sync error', { error });
           result.failed++;
           result.errors.push(`Failed to sync credit ${credit.id}`);
         }
       }
 
-      console.log('[Hybrid Sync] Credits synced:', credits.length);
+      logger.info('Credits synced', { count: credits.length });
     } catch (error) {
-      console.error('[Hybrid Sync] Credits sync error:', error);
+      logger.error('Credits sync error', { error });
       result.failed++;
       result.errors.push('Failed to sync credits');
     }
@@ -251,7 +250,7 @@ export class HybridSyncManager {
    */
   static async pullFromCloud(userId: string): Promise<SyncResult> {
     if (!this.isOnline()) {
-      console.log('[Hybrid Sync] Offline - skipping pull');
+      logger.info('Offline - skipping pull');
       return {
         success: false,
         synced: 0,
@@ -266,9 +265,8 @@ export class HybridSyncManager {
       failed: 0,
       errors: [],
     };
-
     try {
-      console.log('[Hybrid Sync] Pulling data from DynamoDB...');
+      logger.info('Pulling data from DynamoDB...');
 
       // Pull profile
       const profile = await ProfileService.getProfile(userId);
@@ -291,9 +289,9 @@ export class HybridSyncManager {
         result.synced += credits.length;
       }
 
-      console.log('[Hybrid Sync] Pull completed:', result);
+      logger.info('Pull completed', result);
     } catch (error) {
-      console.error('[Hybrid Sync] Pull error:', error);
+      logger.error('Pull error', { error });
       result.success = false;
       result.errors.push(error instanceof Error ? error.message : 'Unknown error');
     }
@@ -317,7 +315,7 @@ export class HybridSyncManager {
 
     // Sync on online event
     window.addEventListener('online', () => {
-      console.log('[Hybrid Sync] Device back online - syncing...');
+      logger.info('Device back online - syncing...');
       this.syncToCloud(userId);
     });
   }
@@ -342,9 +340,9 @@ export class HybridSyncManager {
       localStorage.removeItem(STORAGE_KEYS.CREDITS);
       localStorage.removeItem(STORAGE_KEYS.SYNC_STATUS);
       localStorage.removeItem(STORAGE_KEYS.PENDING_SYNC);
-      console.log('[Hybrid Sync] Local data cleared');
+      logger.info('Local data cleared');
     } catch (error) {
-      console.error('[Hybrid Sync] Error clearing local data:', error);
+      logger.error('Error clearing local data', { error });
     }
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionManager } from '@/lib/session-manager';
+import { logger } from '@/lib/logger';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -20,18 +21,18 @@ export default function AuthGuard({ children, fallback }: AuthGuardProps) {
 
   const checkAuth = async () => {
     try {
-      console.log('[AuthGuard] Checking authentication...');
+      logger.debug('[AuthGuard] Checking authentication...');
       
       // Check if user is authenticated
       if (SessionManager.isAuthenticated()) {
-        console.log('[AuthGuard] User is authenticated');
+        logger.debug('[AuthGuard] User is authenticated');
         setAuthenticated(true);
       } else {
-        console.log('[AuthGuard] User not authenticated, redirecting to login');
+        logger.debug('[AuthGuard] User not authenticated, redirecting to login');
         router.push('/login');
       }
     } catch (error) {
-      console.error('[AuthGuard] Auth check failed:', error);
+      logger.error('[AuthGuard] Auth check failed', { error });
       router.push('/login');
     } finally {
       setLoading(false);

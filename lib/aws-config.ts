@@ -2,6 +2,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { LambdaClient } from "@aws-sdk/client-lambda";
 import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 import { TranscribeClient } from "@aws-sdk/client-transcribe";
+import { logger } from './logger';
 
 // AWS SDK v3 Configuration
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
@@ -10,7 +11,7 @@ const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 const AWS_SESSION_TOKEN = process.env.AWS_SESSION_TOKEN;
 
 if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-  console.warn('AWS credentials not configured. Some features may not work.');
+  logger.warn('AWS credentials not configured. Some features may not work.');
 }
 
 const awsConfig = {
@@ -64,7 +65,7 @@ export function createErrorResponse(error: Error, details?: any): LambdaErrorRes
 }
 
 export function logError(context: string, error: Error, additionalInfo?: any): void {
-  console.error(`[${context}] Error:`, {
+  logger.error(`[${context}] Error`, {
     name: error.name,
     message: error.message,
     stack: error.stack,
@@ -73,9 +74,9 @@ export function logError(context: string, error: Error, additionalInfo?: any): v
 }
 
 export function logInfo(context: string, message: string, data?: any): void {
-  console.log(`[${context}] ${message}`, data || '');
+  logger.info(`[${context}] ${message}`, data || undefined);
 }
 
 export function logMilestone(context: string, milestone: string, data?: any): void {
-  console.log(`[${context}] MILESTONE: ${milestone}`, data || '');
+  logger.info(`[${context}] MILESTONE: ${milestone}`, data || undefined);
 }

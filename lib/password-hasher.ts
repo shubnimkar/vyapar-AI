@@ -8,6 +8,7 @@
  */
 
 import bcrypt from 'bcryptjs';
+import { logger } from './logger';
 
 const SALT_ROUNDS = 10;
 
@@ -57,7 +58,7 @@ export class PasswordHasher {
         hash
       };
     } catch (error) {
-      console.error('Password hashing error:', error);
+      logger.error('Password hashing error', { error });
       return {
         success: false,
         error: 'Failed to hash password'
@@ -97,7 +98,7 @@ export class PasswordHasher {
         match
       };
     } catch (error) {
-      console.error('Password verification error:', error);
+      logger.error('Password verification error', { error });
       return {
         success: false,
         match: false,

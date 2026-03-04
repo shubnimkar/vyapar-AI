@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { logger } from '@/lib/logger';
 
 interface SignupFormProps {
   onSubmit: (data: SignupData) => Promise<void>;
@@ -132,7 +133,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
           setErrors(prev => ({ ...prev, username: result.error || 'Invalid username' }));
         }
       } catch (err) {
-        console.error('Username check error:', err);
+        logger.error('Username check error', { error: err });
       } finally {
         setUsernameChecking(false);
       }

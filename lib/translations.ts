@@ -1020,3 +1020,66 @@ export function getLanguageTranslations(language: Language): Record<string, stri
   
   return result;
 }
+
+/**
+ * Error message translations for standardized error responses
+ */
+export const errorTranslations: Translations = {
+  'errors.authRequired': {
+    en: 'Authentication required. Please log in.',
+    hi: 'प्रमाणीकरण आवश्यक है। कृपया लॉग इन करें।',
+    mr: 'प्रमाणीकरण आवश्यक आहे. कृपया लॉग इन करा.'
+  },
+  'errors.invalidInput': {
+    en: 'Invalid input. Please check your data.',
+    hi: 'अमान्य इनपुट। कृपया अपना डेटा जांचें।',
+    mr: 'अवैध इनपुट. कृपया तुमचा डेटा तपासा.'
+  },
+  'errors.notFound': {
+    en: 'Resource not found.',
+    hi: 'संसाधन नहीं मिला।',
+    mr: 'संसाधन सापडले नाही.'
+  },
+  'errors.serverError': {
+    en: 'Server error. Please try again later.',
+    hi: 'सर्वर त्रुटि। कृपया बाद में पुनः प्रयास करें।',
+    mr: 'सर्व्हर त्रुटी. कृपया नंतर पुन्हा प्रयत्न करा.'
+  },
+  'errors.rateLimitExceeded': {
+    en: 'Too many requests. Please wait and try again.',
+    hi: 'बहुत अधिक अनुरोध। कृपया प्रतीक्षा करें और पुनः प्रयास करें।',
+    mr: 'खूप विनंत्या. कृपया प्रतीक्षा करा आणि पुन्हा प्रयत्न करा.'
+  },
+  'errors.bodyTooLarge': {
+    en: 'Request too large. Please reduce file size.',
+    hi: 'अनुरोध बहुत बड़ा है। कृपया फ़ाइल का आकार कम करें।',
+    mr: 'विनंती खूप मोठी आहे. कृपया फाइल आकार कमी करा.'
+  },
+  'errors.bedrockError': {
+    en: 'AI service error. Please try again.',
+    hi: 'AI सेवा त्रुटि। कृपया पुनः प्रयास करें।',
+    mr: 'AI सेवा त्रुटी. कृपया पुन्हा प्रयत्न करा.'
+  },
+  'errors.dynamodbError': {
+    en: 'Database error. Please try again.',
+    hi: 'डेटाबेस त्रुटि। कृपया पुनः प्रयास करें।',
+    mr: 'डेटाबेस त्रुटी. कृपया पुन्हा प्रयत्न करा.'
+  }
+};
+
+/**
+ * Get error message in specified language with fallback to English
+ * 
+ * @param key - Translation key for error message (e.g., 'errors.authRequired')
+ * @param language - User's preferred language
+ * @returns Translated error message
+ */
+export function getErrorMessage(key: string, language: Language): string {
+  const translations = errorTranslations[key];
+  
+  if (!translations) {
+    return 'An error occurred';
+  }
+  
+  return translations[language] || translations.en;
+}

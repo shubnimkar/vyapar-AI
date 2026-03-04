@@ -18,6 +18,7 @@ import Charts from '@/components/Charts';
 import Recommendations from '@/components/Recommendations';
 import Alerts from '@/components/Alerts';
 import Benchmark from '@/components/Benchmark';
+import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
 import ExportPDF from '@/components/ExportPDF';
 import { Language, BusinessInsights, FileType, BenchmarkData } from '@/lib/types';
@@ -48,14 +49,14 @@ type HealthBreakdown = {
 
 function isValidHealthBreakdown(value: unknown): value is HealthBreakdown {
   if (!value || typeof value !== 'object') {
-    console.log('[Validation] healthBreakdown is not an object:', value);
+    logger.debug('healthBreakdown is not an object', { value });
     return false;
   }
   const breakdown = value as Record<string, unknown>;
   
   // Check if it's an error object
   if ('success' in breakdown || 'error' in breakdown || 'errorType' in breakdown) {
-    console.log('[Validation] healthBreakdown is an error object:', breakdown);
+    logger.debug('healthBreakdown is an error object', { breakdown });
     return false;
   }
   
@@ -71,7 +72,7 @@ function isValidHealthBreakdown(value: unknown): value is HealthBreakdown {
   );
   
   if (!isValid) {
-    console.log('[Validation] healthBreakdown has invalid structure:', breakdown);
+    logger.debug('healthBreakdown has invalid structure', { breakdown });
   }
   
   return isValid;
@@ -99,9 +100,9 @@ export default function Home() {
 
         try {
           await HybridSyncManager.syncToCloud(currentUser.userId);
-          console.log('[App] Initial sync completed');
+          logger.info('Initial sync completed');
         } catch (syncError) {
-          console.warn('[App] Initial sync failed:', syncError);
+          logger.warn('Initial sync failed', { error: syncError });
         }
       }
 
@@ -120,7 +121,7 @@ export default function Home() {
             return;
           }
         } catch {
-          console.error('Failed to restore session');
+          logger.error('Failed to restore session');
         }
       }
 
@@ -137,10 +138,10 @@ export default function Home() {
             sessionStorage.setItem('vyapar-session-id', data.sessionId);
           }
         } else {
-          console.error('Session initialization failed:', data);
+          logger.error('Session initialization failed', { data });
         }
       } catch {
-        console.error('Failed to initialize session');
+        logger.error('Failed to initialize session');
       }
     };
 
@@ -227,12 +228,12 @@ export default function Home() {
         setHealthScore(result.score);
         setHealthBreakdown(result.breakdown);
       } else {
-        console.warn('[App] Invalid health score payload:', result);
+        logger.warn('Invalid health score payload', { result });
         setHealthScore(null);
         setHealthBreakdown(null);
       }
     } catch (calcError) {
-      console.error('[App] Failed to refresh health score:', calcError);
+      logger.error('Failed to refresh health score', { error: calcError });
       setHealthScore(null);
       setHealthBreakdown(null);
     }
@@ -307,7 +308,7 @@ export default function Home() {
           handleUploadComplete(data.sessionId, type);
         }
       } catch (uploadError) {
-        console.error('Sample data upload failed:', uploadError);
+        logger.error('Sample data upload failed', { error: uploadError });
       }
     }
   };
@@ -346,7 +347,7 @@ export default function Home() {
 
       alert(message);
     } catch (error) {
-      console.error('Failed to add receipt to daily entries:', error);
+      logger.error('Failed to add receipt to daily entries', { error });
       const errorMessage =
         language === 'hi'
           ? 'खर्च जोड़ने में विफल। कृपया मैन्युअल रूप से जोड़ें।'

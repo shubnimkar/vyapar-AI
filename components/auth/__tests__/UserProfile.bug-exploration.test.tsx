@@ -1,4 +1,6 @@
 /**
+ * @jest-environment jsdom
+ * 
  * Bug Condition Exploration Test for UserProfile Component
  * 
  * CRITICAL: This test MUST FAIL on unfixed code - failure confirms the bug exists

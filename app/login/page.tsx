@@ -7,6 +7,7 @@ import LoginForm from '@/components/auth/LoginForm';
 import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { logger } from '@/lib/logger';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -40,7 +41,7 @@ export default function LoginPage() {
     setError('');
     
     try {
-      console.log('[Signup] Submitting signup form:', { username: data.username });
+      logger.info('Submitting signup form', { username: data.username });
       
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -51,7 +52,7 @@ export default function LoginPage() {
       const result = await response.json();
       
       if (result.success) {
-        console.log('[Signup] Account created successfully:', result.userId);
+        logger.info('Account created successfully', { userId: result.userId });
         
         // Create session
         const session = SessionManager.createSession(
@@ -67,11 +68,11 @@ export default function LoginPage() {
         // Redirect to home
         router.push('/');
       } else {
-        console.log('[Signup] Signup failed:', result.error);
+        logger.warn('Signup failed', { error: result.error });
         setError(result.error || t('connectionError', language));
       }
     } catch (err) {
-      console.error('[Signup] Network error:', err);
+      logger.error('Signup network error', { error: err });
       setError(t('connectionError', language));
     } finally {
       setLoading(false);
@@ -83,7 +84,7 @@ export default function LoginPage() {
     setError('');
     
     try {
-      console.log('[Login] Submitting login form:', { username });
+      logger.info('Submitting login form', { username });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -94,7 +95,7 @@ export default function LoginPage() {
       const result = await response.json();
       
       if (result.success && result.user) {
-        console.log('[Login] Login successful:', result.user.id);
+        logger.info('Login successful', { userId: result.user.id });
         
         // Create session
         const session = SessionManager.createSession(
@@ -109,7 +110,7 @@ export default function LoginPage() {
           const { HybridSyncManager } = await import('@/lib/hybrid-sync-dynamodb');
           await HybridSyncManager.pullFromCloud(result.user.id);
         } catch (pullError) {
-          console.warn('[Login] Failed to pull data from cloud:', pullError);
+          logger.warn('Failed to pull data from cloud', { error: pullError });
         }
         
         // Check if profile exists
@@ -118,22 +119,22 @@ export default function LoginPage() {
           const profileResult = await profileResponse.json();
           
           if (profileResult.success && profileResult.data) {
-            console.log('[Login] Profile found, redirecting to home');
+            logger.info('Profile found, redirecting to home');
             router.push('/');
           } else {
-            console.log('[Login] Profile not found, redirecting to profile setup');
+            logger.info('Profile not found, redirecting to profile setup');
             router.push('/profile-setup');
           }
         } catch (profileError) {
-          console.error('[Login] Error checking profile:', profileError);
+          logger.error('Error checking profile', { error: profileError });
           router.push('/');
         }
       } else {
-        console.log('[Login] Login failed:', result.error);
+        logger.warn('Login failed', { error: result.error });
         setError(result.error || t('authenticationFailed', language));
       }
     } catch (err) {
-      console.error('[Login] Network error:', err);
+      logger.error('Login network error', { error: err });
       setError(t('connectionError', language));
     } finally {
       setLoading(false);

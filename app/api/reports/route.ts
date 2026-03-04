@@ -2,48 +2,71 @@
 // Handles report generation and retrieval
 
 import { NextRequest, NextResponse } from 'next/server';
-import { logError, logInfo } from '@/lib/aws-config';
 import { DynamoDBService } from '@/lib/dynamodb-client';
+import { logger } from '@/lib/logger';
+import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('Reports GET request received', { path: '/api/reports' });
+    
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
     if (!userId) {
+      logger.warn('Reports GET missing userId', { path: '/api/reports' });
       return NextResponse.json(
-        { success: false, error: 'userId is required' },
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 400 }
       );
     }
 
-    logInfo('reports-get', `Fetching reports for user ${userId}`);
+    try {
+      logger.info('Fetching reports for user', { userId });
 
-    // Query reports from DynamoDB
-    const reports = await DynamoDBService.queryByPK(
-      `USER#${userId}`,
-      'REPORT#'
-    );
+      // Query reports from DynamoDB
+      const reports = await DynamoDBService.queryByPK(
+        `USER#${userId}`,
+        'REPORT#'
+      );
 
-    // Sort by date descending (most recent first)
-    const sortedReports = reports
-      .map(item => ({
-        reportId: item.reportId,
-        reportType: item.reportType,
-        date: item.date,
-        reportData: item.reportData,
-        createdAt: item.createdAt,
-      }))
-      .sort((a, b) => b.date.localeCompare(a.date));
+      // Sort by date descending (most recent first)
+      const sortedReports = reports
+        .map(item => ({
+          reportId: item.reportId,
+          reportType: item.reportType,
+          date: item.date,
+          reportData: item.reportData,
+          createdAt: item.createdAt,
+        }))
+        .sort((a, b) => b.date.localeCompare(a.date));
 
-    return NextResponse.json({
-      success: true,
-      data: sortedReports,
-    });
+      logger.info('Reports retrieved successfully', { userId, count: sortedReports.length });
+      return NextResponse.json({
+        success: true,
+        data: sortedReports,
+      });
+    } catch (error) {
+      return NextResponse.json(
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/reports', operation: 'queryReports', userId }
+        ),
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    logError('reports-get', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch reports' },
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/reports', method: 'GET' }
+      ),
       { status: 500 }
     );
   }
@@ -51,40 +74,62 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('Reports POST request received', { path: '/api/reports' });
+    
     const body = await request.json();
     const { userId, automationEnabled } = body;
 
     if (!userId) {
+      logger.warn('Reports POST missing userId', { path: '/api/reports' });
       return NextResponse.json(
-        { success: false, error: 'userId is required' },
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 400 }
       );
     }
 
-    logInfo('reports-post', `Updating automation preferences for user ${userId}`);
+    try {
+      logger.info('Updating automation preferences for user', { userId, automationEnabled });
 
-    // Update user preferences in DynamoDB
-    await DynamoDBService.putItem({
-      PK: `USER#${userId}`,
-      SK: 'PREFERENCES',
-      entityType: 'PREFERENCES',
-      userId,
-      automationEnabled: automationEnabled ?? false,
-      updatedAt: new Date().toISOString(),
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: {
+      // Update user preferences in DynamoDB
+      await DynamoDBService.putItem({
+        PK: `USER#${userId}`,
+        SK: 'PREFERENCES',
+        entityType: 'PREFERENCES',
         userId,
         automationEnabled: automationEnabled ?? false,
         updatedAt: new Date().toISOString(),
-      },
-    });
+      });
+
+      logger.info('Automation preferences updated successfully', { userId });
+      return NextResponse.json({
+        success: true,
+        data: {
+          userId,
+          automationEnabled: automationEnabled ?? false,
+          updatedAt: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      return NextResponse.json(
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/reports', operation: 'updatePreferences', userId }
+        ),
+        { status: 500 }
+      );
+    }
   } catch (error) {
-    logError('reports-post', error instanceof Error ? error : new Error(String(error)));
     return NextResponse.json(
-      { success: false, error: 'Failed to update preferences' },
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/reports', method: 'POST' }
+      ),
       { status: 500 }
     );
   }

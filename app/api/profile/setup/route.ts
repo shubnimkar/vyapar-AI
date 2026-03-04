@@ -4,9 +4,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ProfileService, type UserProfile as DynamoProfile } from '@/lib/dynamodb-client';
 import { APIResponse, UserProfile, ValidationError } from '@/lib/types';
+import { logger } from '@/lib/logger';
+import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('Profile setup request received', { path: '/api/profile/setup' });
+    
     const body = await request.json();
     const { shopName, userName, language, businessType, city, userId, phoneNumber } = body;
 
@@ -38,6 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!userId) {
+      logger.warn('Profile setup missing userId', { path: '/api/profile/setup' });
       errors.push({
         field: 'auth',
         message: 'User authentication required',
@@ -46,6 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (errors.length > 0) {
+      logger.warn('Profile setup validation failed', { errors });
       return NextResponse.json<APIResponse<null>>(
         {
           success: false,
@@ -61,6 +67,7 @@ export async function POST(request: NextRequest) {
       const cleaned = phoneNumber.replace(/[\s-]/g, '');
       const isValid = /^(\+91)?[6-9]\d{9}$/.test(cleaned);
       if (!isValid) {
+        logger.warn('Invalid phone number format', { phoneNumber });
         errors.push({
           field: 'phoneNumber',
           message: 'Invalid phone number format. Must be a valid Indian mobile number.',
@@ -120,6 +127,7 @@ export async function POST(request: NextRequest) {
         deletionScheduledAt: undefined,
       };
 
+      logger.info('Profile setup completed successfully', { userId });
       return NextResponse.json<APIResponse<UserProfile>>(
         {
           success: true,
@@ -128,22 +136,26 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
     } catch (error) {
-      console.error('[Profile Setup] DynamoDB error:', error);
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'Failed to create profile',
-        },
+      return NextResponse.json(
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/profile/setup', operation: 'saveProfile', userId }
+        ),
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('[Profile Setup] Unexpected error:', error);
-    return NextResponse.json<APIResponse<null>>(
-      {
-        success: false,
-        error: 'Internal server error',
-      },
+    return NextResponse.json(
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/profile/setup', method: 'POST' }
+      ),
       { status: 500 }
     );
   }

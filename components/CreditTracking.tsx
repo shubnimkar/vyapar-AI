@@ -13,6 +13,7 @@ import {
   LocalCreditEntry
 } from '@/lib/credit-sync';
 import { calculateCreditSummary } from '@/lib/calculations';
+import { logger } from '@/lib/logger';
 
 interface CreditTrackingProps {
   userId: string;
@@ -52,7 +53,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       await fullSync(userId);
       loadEntries();
     } catch (error) {
-      console.error('[CreditTracking] Auto-sync failed:', error);
+      logger.error('[CreditTracking] Auto-sync failed', { error });
     }
   };
 
@@ -82,12 +83,12 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       if (data.success) {
         // API call succeeded - save to localStorage as synced
         createCreditEntry(customerName, parseFloat(amount), dueDate, true);
-        console.log('[CreditTracking] Entry synced to cloud');
+        logger.info('[CreditTracking] Entry synced to cloud');
       } else {
         throw new Error(data.error || 'Failed to sync');
       }
     } catch (error) {
-      console.error('[CreditTracking] Failed to sync, saving offline:', error);
+      logger.error('[CreditTracking] Failed to sync, saving offline', { error });
       // API call failed - save to localStorage as pending
       createCreditEntry(customerName, parseFloat(amount), dueDate, false);
     }
@@ -126,12 +127,12 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       if (data.success) {
         // API call succeeded - update localStorage as synced
         updateCreditEntry(id, { isPaid: true, paidAt: new Date().toISOString() }, true);
-        console.log('[CreditTracking] Entry marked paid and synced');
+        logger.info('[CreditTracking] Entry marked paid and synced');
       } else {
         throw new Error(data.error || 'Failed to sync');
       }
     } catch (error) {
-      console.error('[CreditTracking] Failed to sync, saving offline:', error);
+      logger.error('[CreditTracking] Failed to sync, saving offline', { error });
       // API call failed - update localStorage as pending
       updateCreditEntry(id, { isPaid: true, paidAt: new Date().toISOString() }, false);
     }
@@ -157,12 +158,12 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       const data = await response.json();
       
       if (data.success) {
-        console.log('[CreditTracking] Entry deleted from cloud');
+        logger.info('[CreditTracking] Entry deleted from cloud');
       } else {
         throw new Error(data.error || 'Failed to delete');
       }
     } catch (error) {
-      console.error('[CreditTracking] Failed to delete from cloud:', error);
+      logger.error('[CreditTracking] Failed to delete from cloud', { error });
     }
 
     // Delete from localStorage regardless

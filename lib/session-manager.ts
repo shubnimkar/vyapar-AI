@@ -1,6 +1,8 @@
 // Session Manager Service
 // Manages authenticated user sessions with localStorage
 
+import { logger } from './logger';
+
 export interface UserSession {
   userId: string;
   username: string;
@@ -44,9 +46,9 @@ export function saveSession(session: UserSession): void {
   
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    console.log('[Session Manager] Session saved for user:', session.username);
+    logger.debug('[Session Manager] Session saved for user', { username: session.username });
   } catch (error) {
-    console.error('[Session Manager] Failed to save session:', error);
+    logger.error('[Session Manager] Failed to save session', { error });
   }
 }
 
@@ -63,7 +65,7 @@ export function loadSession(): UserSession | null {
     const session: UserSession = JSON.parse(stored);
     return session;
   } catch (error) {
-    console.error('[Session Manager] Failed to load session:', error);
+    logger.error('[Session Manager] Failed to load session', { error });
     return null;
   }
 }
@@ -76,9 +78,9 @@ export function clearSession(): void {
   
   try {
     localStorage.removeItem(SESSION_KEY);
-    console.log('[Session Manager] Session cleared');
+    logger.debug('[Session Manager] Session cleared');
   } catch (error) {
-    console.error('[Session Manager] Failed to clear session:', error);
+    logger.error('[Session Manager] Failed to clear session', { error });
   }
 }
 
@@ -91,7 +93,7 @@ export function isSessionValid(session: UserSession | null): boolean {
   const now = Math.floor(Date.now() / 1000);
   
   if (session.expiresAt <= now) {
-    console.log('[Session Manager] Session expired');
+    logger.debug('[Session Manager] Session expired');
     return false;
   }
   

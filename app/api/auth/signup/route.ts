@@ -8,6 +8,8 @@ import { PasswordHasher } from '@/lib/password-hasher';
 import { UsernameValidator } from '@/lib/username-validator';
 import { InputSanitizer } from '@/lib/input-sanitizer';
 import { RateLimiter, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logger } from '@/lib/logger';
+import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 interface SignupRequest {
   username: string;
@@ -22,6 +24,8 @@ interface SignupRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('Signup request received', { path: '/api/auth/signup' });
+
     // Get IP address for rate limiting
     const ip = request.headers.get('x-forwarded-for') || 
                request.headers.get('x-real-ip') || 
@@ -33,12 +37,9 @@ export async function POST(request: NextRequest) {
     
     if (!rateLimit.allowed) {
       const retryAfter = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
+      logger.warn('Rate limit exceeded for signup', { ip });
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Too many signup attempts. Please try again later.',
-          code: 'RATE_LIMIT_EXCEEDED'
-        },
+        createErrorResponse(ErrorCode.RATE_LIMIT_EXCEEDED, 'errors.rateLimitExceeded'),
         { 
           status: 429,
           headers: { 'Retry-After': retryAfter.toString() }
@@ -51,12 +52,9 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!username || !password || !shopName || !ownerName || !businessType || !city || !language) {
+      logger.warn('Missing required fields in signup request');
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'All required fields must be provided',
-          code: 'MISSING_FIELDS'
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
@@ -72,12 +70,9 @@ export async function POST(request: NextRequest) {
     if (InputSanitizer.detectSqlKeywords(username) || 
         InputSanitizer.detectSqlKeywords(shopName) ||
         InputSanitizer.detectSqlKeywords(ownerName)) {
+      logger.warn('SQL injection attempt detected in signup');
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Invalid input detected',
-          code: 'INVALID_INPUT'
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
@@ -85,13 +80,9 @@ export async function POST(request: NextRequest) {
     // Validate username format
     const usernameValidation = UsernameValidator.validateFormat(sanitizedUsername);
     if (!usernameValidation.valid) {
+      logger.warn('Invalid username format in signup', { username: sanitizedUsername });
       return NextResponse.json(
-        { 
-          success: false, 
-          error: usernameValidation.error || 'Invalid username format',
-          code: 'INVALID_USERNAME',
-          field: 'username'
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
@@ -99,13 +90,9 @@ export async function POST(request: NextRequest) {
     // Check username availability
     const usernameExists = await UserService.usernameExists(sanitizedUsername);
     if (usernameExists) {
+      logger.warn('Username already taken', { username: sanitizedUsername });
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Username already taken',
-          code: 'USERNAME_TAKEN',
-          field: 'username'
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 409 }
       );
     }
@@ -113,34 +100,32 @@ export async function POST(request: NextRequest) {
     // Validate password strength
     const passwordValidation = PasswordHasher.validateStrength(password);
     if (!passwordValidation.valid) {
+      logger.warn('Weak password in signup');
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Password does not meet requirements',
-          code: 'WEAK_PASSWORD',
-          field: 'password',
-          details: passwordValidation.errors
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
 
     // Validate field lengths
     if (sanitizedShopName.length < 1 || sanitizedShopName.length > 100) {
+      logger.warn('Invalid shop name length');
       return NextResponse.json(
-        { success: false, error: 'Shop name must be 1-100 characters', field: 'shopName' },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
     if (sanitizedOwnerName.length < 1 || sanitizedOwnerName.length > 100) {
+      logger.warn('Invalid owner name length');
       return NextResponse.json(
-        { success: false, error: 'Owner name must be 1-100 characters', field: 'ownerName' },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
     if (sanitizedCity.length < 1 || sanitizedCity.length > 100) {
+      logger.warn('Invalid city length');
       return NextResponse.json(
-        { success: false, error: 'City must be 1-100 characters', field: 'city' },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
@@ -148,13 +133,9 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashResult = await PasswordHasher.hash(password);
     if (!hashResult.success || !hashResult.hash) {
-      console.error('[Signup] Password hashing failed:', hashResult.error);
+      logger.error('Password hashing failed', { error: hashResult.error });
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Failed to process request',
-          code: 'SERVER_ERROR'
-        },
+        createErrorResponse(ErrorCode.SERVER_ERROR, 'errors.serverError'),
         { status: 500 }
       );
     }
@@ -191,7 +172,7 @@ export async function POST(request: NextRequest) {
       await UserService.createUser(userRecord);
       await ProfileService.saveProfile(profileRecord);
       
-      console.log('[Signup] User created successfully:', userId);
+      logger.info('User created successfully', { userId });
       
       return NextResponse.json(
         { 
@@ -202,25 +183,27 @@ export async function POST(request: NextRequest) {
         { status: 201 }
       );
     } catch (error) {
-      console.error('[Signup] DynamoDB error:', error);
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Failed to create account',
-          code: 'DATABASE_ERROR'
-        },
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/auth/signup' }
+        ),
         { status: 500 }
       );
     }
 
   } catch (error) {
-    console.error('[Signup] Unexpected error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error',
-        code: 'SERVER_ERROR'
-      },
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/auth/signup' }
+      ),
       { status: 500 }
     );
   }

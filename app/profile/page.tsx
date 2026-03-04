@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionManager } from '@/lib/session-manager';
 import { Language, UserProfile as UserProfileType } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { logger } from '@/lib/logger';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function ProfilePage() {
         setError('Profile not found');
       }
     } catch (err) {
-      console.error('Failed to load profile:', err);
+      logger.error('Failed to load profile', { error: err });
       setError('Failed to load profile data');
     }
   };

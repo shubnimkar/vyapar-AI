@@ -1,6 +1,8 @@
 // Rate Limiter Service
 // Prevents abuse of authentication endpoints using in-memory storage
 
+import { logger } from './logger';
+
 export interface RateLimitConfig {
   maxAttempts: number;
   windowMs: number;
@@ -93,7 +95,7 @@ export function cleanup(): void {
   }
   
   if (cleaned > 0) {
-    console.log(`[Rate Limiter] Cleaned up ${cleaned} expired entries`);
+    logger.debug('Cleaned up expired rate limit entries', { count: cleaned });
   }
 }
 

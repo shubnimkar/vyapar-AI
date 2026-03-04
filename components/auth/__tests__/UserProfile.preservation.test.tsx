@@ -1,4 +1,6 @@
 /**
+ * @jest-environment jsdom
+ * 
  * Preservation Property Tests for UserProfile Component
  * 
  * IMPORTANT: Follow observation-first methodology

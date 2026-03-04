@@ -2,6 +2,7 @@
 // Manages session persistence in localStorage for phone auth
 
 import type { AuthSession } from './supabase-auth';
+import { logger } from './logger';
 
 // ============================================
 // LocalStorage Keys
@@ -59,12 +60,12 @@ export function getDeviceId(): string {
       // Generate new device ID
       deviceId = `device_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
       localStorage.setItem(STORAGE_KEYS.DEVICE_ID, deviceId);
-      console.log('[Auth Session] Generated new device ID:', deviceId);
+      logger.debug('Generated new device ID', { deviceId });
     }
     
     return deviceId;
   } catch (error) {
-    console.error('[Auth Session] Failed to get device ID:', error);
+    logger.error('Failed to get device ID', { error });
     return `device_${Date.now()}_fallback`;
   }
 }
@@ -92,13 +93,13 @@ export function saveSession(session: AuthSession, rememberDevice: boolean = fals
     localStorage.setItem(STORAGE_KEYS.AUTH_SESSION, JSON.stringify(storedSession));
     localStorage.setItem(STORAGE_KEYS.REMEMBER_DEVICE, rememberDevice.toString());
     
-    console.log('[Auth Session] Session saved:', {
+    logger.info('Session saved', {
       userId: session.user.id,
       rememberDevice,
       expiresAt: new Date(session.expiresAt * 1000).toISOString(),
     });
   } catch (error) {
-    console.error('[Auth Session] Failed to save session:', error);
+    logger.error('Failed to save session', { error });
   }
 }
 
@@ -114,7 +115,7 @@ export function loadSession(): StoredSession | null {
     
     const session: StoredSession = JSON.parse(stored);
     
-    console.log('[Auth Session] Session loaded:', {
+    logger.debug('Session loaded', {
       userId: session.user.id,
       rememberDevice: session.rememberDevice,
       expiresAt: new Date(session.expiresAt * 1000).toISOString(),
@@ -122,7 +123,7 @@ export function loadSession(): StoredSession | null {
     
     return session;
   } catch (error) {
-    console.error('[Auth Session] Failed to load session:', error);
+    logger.error('Failed to load session', { error });
     return null;
   }
 }
@@ -136,9 +137,9 @@ export function clearSession(): void {
   try {
     localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
     localStorage.removeItem(STORAGE_KEYS.REMEMBER_DEVICE);
-    console.log('[Auth Session] Session cleared');
+    logger.info('Session cleared');
   } catch (error) {
-    console.error('[Auth Session] Failed to clear session:', error);
+    logger.error('Failed to clear session', { error });
   }
 }
 
@@ -154,9 +155,9 @@ export function setRememberDevice(remember: boolean): void {
   
   try {
     localStorage.setItem(STORAGE_KEYS.REMEMBER_DEVICE, remember.toString());
-    console.log('[Auth Session] Remember device set:', remember);
+    logger.debug('Remember device set', { remember });
   } catch (error) {
-    console.error('[Auth Session] Failed to set remember device:', error);
+    logger.error('Failed to set remember device', { error });
   }
 }
 
@@ -170,7 +171,7 @@ export function shouldRememberDevice(): boolean {
     const stored = localStorage.getItem(STORAGE_KEYS.REMEMBER_DEVICE);
     return stored === 'true';
   } catch (error) {
-    console.error('[Auth Session] Failed to get remember device:', error);
+    logger.error('Failed to get remember device', { error });
     return false;
   }
 }
@@ -189,7 +190,7 @@ export function isSessionValid(session: StoredSession | null): boolean {
   
   // Check if session has expired
   if (session.expiresAt <= now) {
-    console.log('[Auth Session] Session expired:', {
+    logger.info('Session expired', {
       expiresAt: new Date(session.expiresAt * 1000).toISOString(),
       now: new Date(now * 1000).toISOString(),
     });
@@ -221,7 +222,7 @@ export function shouldRefresh(session: StoredSession | null): boolean {
   const shouldRefresh = timeUntilExpiry <= SESSION_DURATION.REFRESH_THRESHOLD;
   
   if (shouldRefresh) {
-    console.log('[Auth Session] Session should be refreshed:', {
+    logger.info('Session should be refreshed', {
       timeUntilExpiry: Math.floor(timeUntilExpiry / 1000 / 60), // minutes
       threshold: Math.floor(SESSION_DURATION.REFRESH_THRESHOLD / 1000 / 60), // minutes
     });
@@ -254,7 +255,7 @@ export function isMigrationCompleted(): boolean {
     const status: MigrationStatus = JSON.parse(stored);
     return status.completed;
   } catch (error) {
-    console.error('[Auth Session] Failed to check migration status:', error);
+    logger.error('Failed to check migration status', { error });
     return false;
   }
 }
@@ -271,7 +272,7 @@ export function getMigrationStatus(): MigrationStatus | null {
     
     return JSON.parse(stored);
   } catch (error) {
-    console.error('[Auth Session] Failed to get migration status:', error);
+    logger.error('Failed to get migration status', { error });
     return null;
   }
 }
@@ -295,9 +296,9 @@ export function markMigrationCompleted(
     
     localStorage.setItem(STORAGE_KEYS.MIGRATION_STATUS, JSON.stringify(status));
     
-    console.log('[Auth Session] Migration marked as completed:', status);
+    logger.info('Migration marked as completed', { status });
   } catch (error) {
-    console.error('[Auth Session] Failed to mark migration completed:', error);
+    logger.error('Failed to mark migration completed', { error });
   }
 }
 
@@ -309,9 +310,9 @@ export function resetMigrationStatus(): void {
   
   try {
     localStorage.removeItem(STORAGE_KEYS.MIGRATION_STATUS);
-    console.log('[Auth Session] Migration status reset');
+    logger.info('Migration status reset');
   } catch (error) {
-    console.error('[Auth Session] Failed to reset migration status:', error);
+    logger.error('Failed to reset migration status', { error });
   }
 }
 

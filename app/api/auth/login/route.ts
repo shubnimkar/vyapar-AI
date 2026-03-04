@@ -6,6 +6,8 @@ import { UserService } from '@/lib/dynamodb-client';
 import { PasswordHasher } from '@/lib/password-hasher';
 import { InputSanitizer } from '@/lib/input-sanitizer';
 import { RateLimiter, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logger } from '@/lib/logger';
+import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 interface LoginRequest {
   username: string;
@@ -15,6 +17,8 @@ interface LoginRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('Login request received', { path: '/api/auth/login' });
+
     // Get IP address for rate limiting
     const ip = request.headers.get('x-forwarded-for') || 
                request.headers.get('x-real-ip') || 
@@ -27,15 +31,10 @@ export async function POST(request: NextRequest) {
     if (!rateLimit.allowed) {
       const retryAfter = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
       
-      // Log failed attempt
-      console.warn('[Login] Rate limit exceeded:', { ip, timestamp: new Date().toISOString() });
+      logger.warn('Rate limit exceeded for login', { ip });
       
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Too many login attempts. Please try again later.',
-          code: 'RATE_LIMIT_EXCEEDED'
-        },
+        createErrorResponse(ErrorCode.RATE_LIMIT_EXCEEDED, 'errors.rateLimitExceeded'),
         { 
           status: 429,
           headers: { 'Retry-After': retryAfter.toString() }
@@ -48,12 +47,9 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!username || !password) {
+      logger.warn('Missing required fields in login request');
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Username and password are required',
-          code: 'MISSING_FIELDS'
-        },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
@@ -65,15 +61,10 @@ export async function POST(request: NextRequest) {
     const user = await UserService.getUserByUsername(sanitizedUsername);
     
     if (!user) {
-      // Log failed attempt
-      console.warn('[Login] User not found:', { username: sanitizedUsername, ip, timestamp: new Date().toISOString() });
+      logger.warn('User not found during login', { username: sanitizedUsername, ip });
       
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Invalid username or password',
-          code: 'INVALID_CREDENTIALS'
-        },
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 401 }
       );
     }
@@ -82,20 +73,14 @@ export async function POST(request: NextRequest) {
     const verifyResult = await PasswordHasher.verify(password, user.passwordHash);
     
     if (!verifyResult.success || !verifyResult.match) {
-      // Log failed attempt
-      console.warn('[Login] Invalid password:', { 
+      logger.warn('Invalid password during login', { 
         username: sanitizedUsername, 
         userId: user.userId,
-        ip, 
-        timestamp: new Date().toISOString() 
+        ip
       });
       
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Invalid username or password',
-          code: 'INVALID_CREDENTIALS'
-        },
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 401 }
       );
     }
@@ -104,14 +89,16 @@ export async function POST(request: NextRequest) {
     try {
       await UserService.updateLoginStats(user.userId, sanitizedUsername);
     } catch (error) {
-      console.error('[Login] Failed to update login stats:', error);
+      logger.error('Failed to update login stats', { 
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: user.userId 
+      });
       // Don't fail login if stats update fails
     }
 
-    console.log('[Login] Successful login:', { 
+    logger.info('Successful login', { 
       username: sanitizedUsername, 
-      userId: user.userId,
-      timestamp: new Date().toISOString() 
+      userId: user.userId
     });
 
     // Return success with user data
@@ -128,13 +115,14 @@ export async function POST(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[Login] Unexpected error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error',
-        code: 'SERVER_ERROR'
-      },
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/auth/login' }
+      ),
       { status: 500 }
     );
   }

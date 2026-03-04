@@ -1,5 +1,12 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
+import {
+  createErrorResponse,
+  logAndReturnError,
+  ErrorCode,
+  BODY_SIZE_LIMITS
+} from "@/lib/error-utils";
 
 const s3Client = new S3Client({
   region: process.env.AWS_S3_REGION || process.env.AWS_REGION!,
@@ -13,28 +20,38 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET_RECEIPTS || "vyapar-receipts-input
 
 export async function POST(request: NextRequest) {
   try {
+    logger.info('Receipt OCR request received', {
+      path: '/api/receipt-ocr'
+    });
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     
     if (!file) {
+      logger.warn('No file provided in receipt OCR request');
       return NextResponse.json(
-        { success: false, error: "No file provided" },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
+      );
+    }
+
+    // Validate body size (10MB limit for uploads)
+    if (file.size > BODY_SIZE_LIMITS.UPLOAD) {
+      logger.warn('File size exceeds upload limit', {
+        size: file.size,
+        limit: BODY_SIZE_LIMITS.UPLOAD
+      });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.BODY_TOO_LARGE, 'errors.bodyTooLarge'),
+        { status: 413 }
       );
     }
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
+      logger.warn('Invalid file type in receipt OCR request', { fileType: file.type });
       return NextResponse.json(
-        { success: false, error: "File must be an image" },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json(
-        { success: false, error: "File size must be less than 5MB" },
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
       );
     }
@@ -60,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     await s3Client.send(command);
 
-    console.log(`Receipt uploaded successfully: ${filename}`);
+    logger.info('Receipt uploaded successfully', { filename });
 
     // Return success - Lambda will process asynchronously
     return NextResponse.json({
@@ -70,13 +87,14 @@ export async function POST(request: NextRequest) {
       timestamp: timestamp,
     });
   } catch (error) {
-    console.error("Receipt upload error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to upload receipt";
     return NextResponse.json(
-      { 
-        success: false, 
-        error: errorMessage
-      },
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/receipt-ocr' }
+      ),
       { status: 500 }
     );
   }

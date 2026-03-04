@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { Heart, Info } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface HealthScoreDisplayProps {
   score: number;
@@ -29,7 +30,7 @@ export default function HealthScoreDisplay({
   // Safety check: ensure breakdown is valid
   if (!breakdown || typeof breakdown !== 'object' || 
       'success' in breakdown || 'error' in breakdown || 'errorType' in breakdown) {
-    console.error('[HealthScoreDisplay] Invalid breakdown received:', breakdown);
+    logger.error('[HealthScoreDisplay] Invalid breakdown received', { breakdown });
     return null;
   }
 
@@ -66,11 +67,11 @@ export default function HealthScoreDisplay({
       if (data.success && data.explanation) {
         setExplanation(data.explanation);
       } else {
-        console.warn('[HealthScore] Explain failed:', data.error);
+        logger.warn('[HealthScore] Explain failed', { error: data.error });
         setExplanation('Unable to generate explanation at this time.');
       }
     } catch (err) {
-      console.error('Failed to get explanation:', err);
+      logger.error('Failed to get explanation', { error: err });
       setExplanation('Unable to generate explanation at this time.');
     } finally {
       setExplaining(false);

@@ -4,6 +4,7 @@
 
 import { SessionData, DailyEntry, CreditEntry } from './types';
 import { randomBytes } from 'crypto';
+import { logger } from './logger';
 
 // Use global to persist across hot reloads in development
 const globalForSession = global as typeof globalThis & {
@@ -34,10 +35,10 @@ export function loadDailyEntriesFromStorage(): DailyEntry[] {
     if (!stored) return [];
     
     const entries = JSON.parse(stored);
-    console.log('[Storage] Loaded daily entries:', entries.length);
+    logger.debug('[Storage] Loaded daily entries', { count: entries.length });
     return entries;
   } catch (error) {
-    console.error('[Storage] Failed to load daily entries:', error);
+    logger.error('[Storage] Failed to load daily entries', { error });
     return [];
   }
 }
@@ -50,9 +51,9 @@ export function saveDailyEntriesToStorage(entries: DailyEntry[]): void {
   
   try {
     localStorage.setItem(STORAGE_KEYS.DAILY_ENTRIES, JSON.stringify(entries));
-    console.log('[Storage] Saved daily entries:', entries.length);
+    logger.debug('[Storage] Saved daily entries', { count: entries.length });
   } catch (error) {
-    console.error('[Storage] Failed to save daily entries:', error);
+    logger.error('[Storage] Failed to save daily entries', { error });
   }
 }
 
@@ -67,10 +68,10 @@ export function loadCreditEntriesFromStorage(): CreditEntry[] {
     if (!stored) return [];
     
     const entries = JSON.parse(stored);
-    console.log('[Storage] Loaded credit entries:', entries.length);
+    logger.debug('[Storage] Loaded credit entries', { count: entries.length });
     return entries;
   } catch (error) {
-    console.error('[Storage] Failed to load credit entries:', error);
+    logger.error('[Storage] Failed to load credit entries', { error });
     return [];
   }
 }
@@ -83,9 +84,9 @@ export function saveCreditEntriesToStorage(entries: CreditEntry[]): void {
   
   try {
     localStorage.setItem(STORAGE_KEYS.CREDIT_ENTRIES, JSON.stringify(entries));
-    console.log('[Storage] Saved credit entries:', entries.length);
+    logger.debug('[Storage] Saved credit entries', { count: entries.length });
   } catch (error) {
-    console.error('[Storage] Failed to save credit entries:', error);
+    logger.error('[Storage] Failed to save credit entries', { error });
   }
 }
 
@@ -120,8 +121,8 @@ export function createSession(): SessionData {
   };
   
   sessionStore.set(sessionId, session);
-  console.log('[Session Store] Created session:', sessionId, 'Total sessions:', sessionStore.size);
-  console.log('[Session Store] Loaded from storage - Daily:', dailyEntries.length, 'Credit:', creditEntries.length);
+  logger.debug('[Session Store] Created session', { sessionId, totalSessions: sessionStore.size });
+  logger.debug('[Session Store] Loaded from storage', { dailyCount: dailyEntries.length, creditCount: creditEntries.length });
   return session;
 }
 
@@ -135,7 +136,7 @@ export function getSession(sessionId: string): SessionData | undefined {
     // Update last accessed time
     session.lastAccessedAt = new Date();
   } else {
-    console.log('[Session Store] Session not found:', sessionId, 'Available sessions:', Array.from(sessionStore.keys()));
+    logger.debug('[Session Store] Session not found', { sessionId, availableSessions: Array.from(sessionStore.keys()) });
   }
   
   return session;

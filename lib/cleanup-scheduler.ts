@@ -1,6 +1,7 @@
 // Periodic cleanup scheduler for expired sessions
 
 import { cleanupExpiredSessions } from './session-store';
+import { logger } from './logger';
 
 // Cleanup interval: 30 minutes
 const CLEANUP_INTERVAL_MS = 30 * 60 * 1000;
@@ -22,11 +23,11 @@ export function startCleanupScheduler(): void {
   cleanupTimer = setInterval(() => {
     const deletedCount = cleanupExpiredSessions();
     if (deletedCount > 0) {
-      console.log(`[Cleanup] Removed ${deletedCount} expired sessions`);
+      logger.info('Removed expired sessions', { count: deletedCount });
     }
   }, CLEANUP_INTERVAL_MS);
   
-  console.log('[Cleanup] Session cleanup scheduler started');
+  logger.info('Session cleanup scheduler started');
 }
 
 /**
@@ -36,7 +37,7 @@ export function stopCleanupScheduler(): void {
   if (cleanupTimer) {
     clearInterval(cleanupTimer);
     cleanupTimer = null;
-    console.log('[Cleanup] Session cleanup scheduler stopped');
+    logger.info('Session cleanup scheduler stopped');
   }
 }
 

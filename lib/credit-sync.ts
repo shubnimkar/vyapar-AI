@@ -2,6 +2,7 @@
 // Manages offline-first credit entries with DynamoDB cloud backup
 
 import type { CreditEntry } from './dynamodb-client';
+import { logger } from './logger';
 
 const STORAGE_KEY = 'vyapar-credit-entries';
 const SYNC_STATUS_KEY = 'vyapar-credit-sync-status';
@@ -30,7 +31,7 @@ export function getLocalEntries(): LocalCreditEntry[] {
     const entries: LocalCreditEntry[] = JSON.parse(stored);
     return entries.sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // Newest first
   } catch (error) {
-    console.error('[CreditSync] Failed to load local entries:', error);
+    logger.error('Failed to load local entries', { error });
     return [];
   }
 }
@@ -43,9 +44,9 @@ export function saveLocalEntries(entries: LocalCreditEntry[]): void {
   
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-    console.log('[CreditSync] Saved', entries.length, 'entries to localStorage');
+    logger.debug('Saved entries to localStorage', { count: entries.length });
   } catch (error) {
-    console.error('[CreditSync] Failed to save local entries:', error);
+    logger.error('Failed to save local entries', { error });
   }
 }
 
@@ -97,7 +98,7 @@ export function getSyncStatus(): SyncStatus {
     }
     return JSON.parse(stored);
   } catch (error) {
-    console.error('[CreditSync] Failed to load sync status:', error);
+    logger.error('Failed to load sync status', { error });
     return { lastSyncTime: '', pendingCount: 0, errorCount: 0 };
   }
 }
@@ -113,7 +114,7 @@ export function updateSyncStatus(status: Partial<SyncStatus>): void {
     const updated = { ...current, ...status };
     localStorage.setItem(SYNC_STATUS_KEY, JSON.stringify(updated));
   } catch (error) {
-    console.error('[CreditSync] Failed to update sync status:', error);
+    logger.error('Failed to update sync status', { error });
   }
 }
 
@@ -125,11 +126,11 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
   const pending = entries.filter(e => e.syncStatus === 'pending' || e.syncStatus === 'error');
   
   if (pending.length === 0) {
-    console.log('[CreditSync] No pending entries to sync');
+    logger.info('No pending entries to sync');
     return { success: 0, failed: 0 };
   }
   
-  console.log('[CreditSync] Syncing', pending.length, 'pending entries');
+  logger.info('Syncing pending entries', { count: pending.length });
   
   let successCount = 0;
   let failedCount = 0;
@@ -164,7 +165,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
       
       successCount++;
     } catch (error) {
-      console.error('[CreditSync] Failed to sync entry:', localEntry.id, error);
+      logger.error('Failed to sync entry', { id: localEntry.id, error });
       
       // Update local entry status
       localEntry.syncStatus = 'error';
@@ -182,7 +183,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
     errorCount: failedCount,
   });
   
-  console.log('[CreditSync] Sync complete:', successCount, 'success,', failedCount, 'failed');
+  logger.info('Sync complete', { success: successCount, failed: failedCount });
   
   return { success: successCount, failed: failedCount };
 }
@@ -192,7 +193,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
  */
 export async function pullEntriesFromCloud(userId: string): Promise<void> {
   try {
-    console.log('[CreditSync] Pulling entries from cloud');
+    logger.info('Pulling entries from cloud');
     
     // Get all entries from server API (which reads DynamoDB)
     const response = await fetch(`/api/credit?userId=${encodeURIComponent(userId)}`);
@@ -200,12 +201,12 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
     
     // Handle authentication errors gracefully
     if (response.status === 401 || response.status === 403) {
-      console.warn('[CreditSync] Not authenticated, skipping cloud pull');
+      logger.warn('Not authenticated, skipping cloud pull');
       return;
     }
     
     if (!response.ok || !result.success) {
-      console.warn('[CreditSync] Failed to pull entries:', result.error);
+      logger.warn('Failed to pull entries', { error: result.error });
       throw new Error(result.error || 'Failed to pull credit entries');
     }
     const cloudEntries: CreditEntry[] = result.data || [];
@@ -236,9 +237,9 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
       // If local is pending/error, keep local version (will sync later)
     }
     
-    console.log('[CreditSync] Pull complete, merged', cloudEntries.length, 'cloud entries');
+    logger.info('Pull complete, merged cloud entries', { count: cloudEntries.length });
   } catch (error) {
-    console.warn('[CreditSync] Failed to pull entries from cloud:', error);
+    logger.warn('Failed to pull entries from cloud', { error });
     // Don't throw - allow offline operation
   }
 }
@@ -248,7 +249,7 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
  */
 export async function fullSync(userId: string): Promise<{ pulled: number; pushed: number; failed: number }> {
   try {
-    console.log('[CreditSync] Starting full sync');
+    logger.info('Starting full sync');
     
     // Pull from cloud first
     await pullEntriesFromCloud(userId);
@@ -257,7 +258,7 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
     // Push pending entries
     const { success, failed } = await syncPendingEntries(userId);
     
-    console.log('[CreditSync] Full sync complete');
+    logger.info('Full sync complete');
     
     return {
       pulled: cloudEntries.length,
@@ -265,7 +266,7 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
       failed,
     };
   } catch (error) {
-    console.error('[CreditSync] Full sync failed:', error);
+    logger.error('Full sync failed', { error });
     throw error;
   }
 }
@@ -276,7 +277,7 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
  */
 export async function instantSyncCreditEntry(userId: string, entry: LocalCreditEntry): Promise<boolean> {
   try {
-    console.log('[CreditSync] Instant sync for entry:', entry.id);
+    logger.info('Instant sync for entry', { id: entry.id });
     
     const response = await fetch('/api/credit', {
       method: 'POST',
@@ -304,10 +305,10 @@ export async function instantSyncCreditEntry(userId: string, entry: LocalCreditE
     entry.lastSyncAttempt = new Date().toISOString();
     saveLocalEntry(entry);
     
-    console.log('[CreditSync] Instant sync succeeded');
+    logger.info('Instant sync succeeded');
     return true;
   } catch (error) {
-    console.error('[CreditSync] Instant sync failed:', error);
+    logger.error('Instant sync failed', { error });
     
     // Mark as pending for retry
     entry.syncStatus = 'pending';
@@ -401,8 +402,8 @@ export function clearLocalData(): void {
   try {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(SYNC_STATUS_KEY);
-    console.log('[CreditSync] Cleared all local data');
+    logger.info('Cleared all local data');
   } catch (error) {
-    console.error('[CreditSync] Failed to clear local data:', error);
+    logger.error('Failed to clear local data', { error });
   }
 }

@@ -5,19 +5,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ProfileService, type UserProfile as DynamoProfile } from '@/lib/dynamodb-client';
 import { APIResponse, UserProfile, ValidationError } from '@/lib/types';
+import { logger } from '@/lib/logger';
+import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 export async function GET(request: NextRequest) {
   try {
+    logger.info('Profile GET request received', { path: '/api/profile' });
+    
     // Get userId from query params
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
     if (!userId) {
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'User ID is required',
-        },
+      logger.warn('Profile GET request missing userId', { path: '/api/profile' });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 401 }
       );
     }
@@ -29,6 +31,7 @@ export async function GET(request: NextRequest) {
       if (!profile) {
         // Return demo profile for demo users
         if (userId.startsWith('demo-user-')) {
+          logger.debug('Returning demo profile', { userId });
           const demoProfile: UserProfile = {
             id: userId,
             phoneNumber: userId.replace('demo-user-', '+91'),
@@ -58,11 +61,9 @@ export async function GET(request: NextRequest) {
           );
         }
         
-        return NextResponse.json<APIResponse<null>>(
-          {
-            success: false,
-            error: 'Profile not found',
-          },
+        logger.warn('Profile not found', { userId, path: '/api/profile' });
+        return NextResponse.json(
+          createErrorResponse(ErrorCode.NOT_FOUND, 'errors.notFound'),
           { status: 404 }
         );
       }
@@ -88,6 +89,7 @@ export async function GET(request: NextRequest) {
         },
       };
 
+      logger.info('Profile retrieved successfully', { userId });
       return NextResponse.json<APIResponse<UserProfile>>(
         {
           success: true,
@@ -96,22 +98,26 @@ export async function GET(request: NextRequest) {
         { status: 200 }
       );
     } catch (error) {
-      console.error('[Profile GET] DynamoDB error:', error);
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'Database error',
-        },
+      return NextResponse.json(
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/profile', operation: 'getProfile', userId }
+        ),
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('[Profile GET] Unexpected error:', error);
-    return NextResponse.json<APIResponse<null>>(
-      {
-        success: false,
-        error: 'Internal server error',
-      },
+    return NextResponse.json(
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/profile', method: 'GET' }
+      ),
       { status: 500 }
     );
   }
@@ -119,15 +125,15 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    logger.info('Profile PUT request received', { path: '/api/profile' });
+    
     const body = await request.json();
     const { userId, shopName, userName, language, businessType, city, phoneNumber, preferences } = body;
 
     if (!userId) {
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'User ID is required',
-        },
+      logger.warn('Profile PUT request missing userId', { path: '/api/profile' });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
         { status: 401 }
       );
     }
@@ -168,6 +174,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (errors.length > 0) {
+      logger.warn('Profile PUT validation failed', { errors, userId });
       return NextResponse.json<APIResponse<null>>(
         {
           success: false,
@@ -218,6 +225,7 @@ export async function PUT(request: NextRequest) {
         },
       };
 
+      logger.info('Profile updated successfully', { userId });
       return NextResponse.json<APIResponse<UserProfile>>(
         {
           success: true,
@@ -226,22 +234,26 @@ export async function PUT(request: NextRequest) {
         { status: 200 }
       );
     } catch (error) {
-      console.error('[Profile PUT] DynamoDB error:', error);
-      return NextResponse.json<APIResponse<null>>(
-        {
-          success: false,
-          error: 'Failed to update profile',
-        },
+      return NextResponse.json(
+        logAndReturnError(
+          error as Error,
+          ErrorCode.DYNAMODB_ERROR,
+          'errors.dynamodbError',
+          'en',
+          { path: '/api/profile', operation: 'saveProfile', userId }
+        ),
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('[Profile PUT] Unexpected error:', error);
-    return NextResponse.json<APIResponse<null>>(
-      {
-        success: false,
-        error: 'Internal server error',
-      },
+    return NextResponse.json(
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/profile', method: 'PUT' }
+      ),
       { status: 500 }
     );
   }

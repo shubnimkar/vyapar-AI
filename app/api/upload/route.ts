@@ -13,6 +13,7 @@ import {
   getValidationErrorMessage,
 } from '@/lib/csv-validation';
 import { FileType, Language, ParsedCSV } from '@/lib/types';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,14 +27,20 @@ export async function POST(request: NextRequest) {
         if (body.restoreSessionId) {
           const existingSession = getSession(body.restoreSessionId);
           if (existingSession) {
-            console.log('[Upload API] Restored existing session:', body.restoreSessionId);
+            logger.info('Restored existing session', { 
+              path: '/api/upload',
+              sessionId: body.restoreSessionId 
+            });
             return NextResponse.json({
               success: true,
               sessionId: body.restoreSessionId,
             });
           }
           // Session doesn't exist, create new one
-          console.log('[Upload API] Session not found, creating new one');
+          logger.info('Session not found, creating new one', { 
+            path: '/api/upload',
+            requestedSessionId: body.restoreSessionId 
+          });
         }
         
         // Initialize new session
@@ -162,7 +169,11 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Upload error', { 
+      path: '/api/upload',
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
       {
         success: false,

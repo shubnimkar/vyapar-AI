@@ -1,6 +1,7 @@
 // Test API route for AWS Bedrock model invocation
 import { NextRequest, NextResponse } from 'next/server';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -89,7 +90,14 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error: any) {
-    console.error('Bedrock test error:', error);
+    logger.error('Bedrock test error', { 
+      path: '/api/bedrock-test',
+      error: error.message || 'Unknown error',
+      errorName: error.name,
+      errorCode: error.code,
+      stack: error.stack,
+      metadata: error.$metadata
+    });
     
     return NextResponse.json({
       success: false,

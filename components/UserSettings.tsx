@@ -5,6 +5,7 @@ import { Language, UserProfile } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { SessionManager } from '@/lib/session-manager';
 import AccountDeletion from './AccountDeletion';
+import { logger } from '@/lib/logger';
 
 interface UserSettingsProps {
   language: Language;
@@ -67,7 +68,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
         setError(result.error || t('error.profileUpdateFailed', language));
       }
     } catch (err) {
-      console.error('[UserSettings] Error fetching profile:', err);
+      logger.error('[UserSettings] Error fetching profile', { error: err });
       setError(t('networkError', language));
     } finally {
       setIsLoading(false);
@@ -127,7 +128,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
         setError(result.error || t('error.profileUpdateFailed', language));
       }
     } catch (err) {
-      console.error('[UserSettings] Error saving profile:', err);
+      logger.error('[UserSettings] Error saving profile', { error: err });
       setError(t('networkError', language));
     } finally {
       setIsSaving(false);

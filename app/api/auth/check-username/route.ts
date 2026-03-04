@@ -6,6 +6,7 @@ import { UserService } from '@/lib/dynamodb-client';
 import { UsernameValidator } from '@/lib/username-validator';
 import { InputSanitizer } from '@/lib/input-sanitizer';
 import { RateLimiter, RATE_LIMITS } from '@/lib/rate-limiter';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -73,7 +74,11 @@ export async function GET(request: NextRequest) {
 
     // Log if query takes too long
     if (duration > 500) {
-      console.warn('[Check Username] Slow query:', { username: sanitizedUsername, duration });
+      logger.warn('Slow username availability query', { 
+        path: '/api/auth/check-username',
+        username: sanitizedUsername, 
+        duration 
+      });
     }
 
     return NextResponse.json(
@@ -85,7 +90,11 @@ export async function GET(request: NextRequest) {
     );
 
   } catch (error) {
-    console.error('[Check Username] Unexpected error:', error);
+    logger.error('Username check unexpected error', { 
+      path: '/api/auth/check-username',
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     return NextResponse.json(
       { 
         available: false,
