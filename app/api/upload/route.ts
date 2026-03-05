@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       if (body.init === true) {
         // Check if they're trying to restore a session
         if (body.restoreSessionId) {
-          const existingSession = getSession(body.restoreSessionId);
+          const existingSession = await getSession(body.restoreSessionId);
           if (existingSession) {
             logger.info('Restored existing session', { 
               path: '/api/upload',
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
         }
         
         // Initialize new session
-        const session = createSession();
+        const session = await createSession();
         return NextResponse.json({
           success: true,
           sessionId: session.sessionId,
@@ -138,9 +138,9 @@ export async function POST(request: NextRequest) {
     };
     
     // Get or create session
-    let session = sessionId ? getSession(sessionId) : null;
+    let session = sessionId ? await getSession(sessionId) : null;
     if (!session) {
-      session = createSession();
+      session = await createSession();
     }
     
     // Store data in session based on file type
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       updates.inventoryData = parsedCSV;
     }
     
-    updateSession(session.sessionId, updates);
+    await updateSession(session.sessionId, updates);
     
     // Create preview (first 5 rows)
     const previewRows = rows.slice(0, 5);

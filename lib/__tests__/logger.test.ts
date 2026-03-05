@@ -2,7 +2,7 @@
  * Unit tests for centralized logger service
  */
 
-import { logger, LogLevel, LogEntry } from '../logger';
+import { logger } from '../logger';
 
 describe('Logger Service', () => {
   let consoleSpy: jest.SpyInstance;
@@ -15,12 +15,22 @@ describe('Logger Service', () => {
 
   afterEach(() => {
     consoleSpy.mockRestore();
-    process.env.NODE_ENV = originalEnv;
+    if (originalEnv !== undefined) {
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: originalEnv,
+        writable: true,
+        configurable: true
+      });
+    }
   });
 
   describe('Log level filtering', () => {
     test('should output debug logs in development mode', () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'development',
+        writable: true,
+        configurable: true
+      });
       // Need to re-import to get new instance with updated env
       jest.resetModules();
       const { logger: devLogger } = require('../logger');
@@ -34,7 +44,11 @@ describe('Logger Service', () => {
     });
 
     test('should NOT output debug logs in production mode', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -44,7 +58,11 @@ describe('Logger Service', () => {
     });
 
     test('should output info logs in production mode', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -54,7 +72,11 @@ describe('Logger Service', () => {
     });
 
     test('should output warn logs in production mode', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -64,7 +86,11 @@ describe('Logger Service', () => {
     });
 
     test('should output error logs in production mode', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -76,7 +102,11 @@ describe('Logger Service', () => {
 
   describe('Structured log format', () => {
     test('should output structured JSON in production mode', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -95,7 +125,11 @@ describe('Logger Service', () => {
     });
 
     test('should include ISO 8601 timestamp', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -109,7 +143,11 @@ describe('Logger Service', () => {
     });
 
     test('should output readable format in development mode', () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'development',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: devLogger } = require('../logger');
       
@@ -127,7 +165,11 @@ describe('Logger Service', () => {
 
   describe('Context enrichment', () => {
     test('should include context object in logs', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -146,7 +188,11 @@ describe('Logger Service', () => {
     });
 
     test('should handle logs without context', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -159,7 +205,11 @@ describe('Logger Service', () => {
     });
 
     test('should serialize complex context objects', () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -180,7 +230,11 @@ describe('Logger Service', () => {
 
   describe('Log level hierarchy', () => {
     test('should respect log level hierarchy (debug < info < warn < error)', () => {
-      process.env.NODE_ENV = 'production'; // min level = INFO
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'production',
+        writable: true,
+        configurable: true
+      }); // min level = INFO
       jest.resetModules();
       const { logger: prodLogger } = require('../logger');
       
@@ -200,7 +254,11 @@ describe('Logger Service', () => {
 
   describe('All log methods', () => {
     test('debug method should work correctly', () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', {
+        value: 'development',
+        writable: true,
+        configurable: true
+      });
       jest.resetModules();
       const { logger: devLogger } = require('../logger');
       

@@ -19,17 +19,24 @@ export interface DailyEntry {
   estimatedProfit: number;
   expenseRatio: number;
   profitMargin: number;
+  // NEW: Daily suggestions
+  suggestions?: DailySuggestion[];
 }
 
-// NEW: Credit entry interface
+// NEW: Credit entry interface (extended for Udhaar Follow-up Helper)
 export interface CreditEntry {
   id: string;
+  userId: string;
   customerName: string;
+  phoneNumber?: string;       // Optional, for WhatsApp reminders
   amount: number;
+  dateGiven: string;          // ISO date string
   dueDate: string;            // ISO date string
   isPaid: boolean;
+  paidDate?: string;          // ISO date string (optional)
+  lastReminderAt?: string;    // ISO date string (optional) - when last reminder was sent
   createdAt: string;          // ISO date string
-  paidAt?: string;            // ISO date string (optional)
+  updatedAt: string;          // ISO date string
 }
 
 // NEW: Credit summary interface
@@ -37,6 +44,35 @@ export interface CreditSummary {
   totalOutstanding: number;
   totalOverdue: number;
   overdueCount: number;
+}
+
+// NEW: Overdue credit with calculated fields (Udhaar Follow-up Helper)
+export interface OverdueCredit extends CreditEntry {
+  daysOverdue: number;
+  daysSinceReminder: number | null;
+}
+
+// NEW: Overdue status calculation result (Udhaar Follow-up Helper)
+export interface OverdueStatus {
+  isOverdue: boolean;
+  daysOverdue: number;
+  meetsThreshold: boolean; // >= threshold days
+}
+
+// NEW: WhatsApp reminder configuration (Udhaar Follow-up Helper)
+export interface ReminderConfig {
+  phoneNumber: string;
+  customerName: string;
+  amount: number;
+  dueDate: string;
+  language: Language;
+}
+
+// NEW: Follow-up panel summary (Udhaar Follow-up Helper)
+export interface FollowUpSummary {
+  totalOverdue: number; // Count
+  totalAmount: number;  // Sum of amounts
+  oldestOverdue: number; // Max days overdue
 }
 
 // NEW: Health score breakdown interface
@@ -346,3 +382,41 @@ export interface ReportData {
   insights: string;
   summary: string;
 }
+
+// ============================================
+// Daily Health Coach Types
+// ============================================
+
+export type SeverityType = 'critical' | 'warning' | 'info';
+export type RuleType = 'high_credit' | 'margin_drop' | 'low_cash' | 'healthy_state';
+
+export interface DailySuggestion {
+  id: string;                        // Unique ID (format: "suggestion_{rule}_{date}")
+  created_at: string;                // ISO timestamp
+  severity: SeverityType;
+  title: string;                     // Localized title
+  description: string;               // Localized description
+  dismissed_at?: string;             // ISO timestamp when dismissed (optional)
+
+  // Metadata for tracking
+  rule_type: RuleType;
+  context_data?: Record<string, any>;  // Additional context (e.g., credit_ratio, margin_values)
+}
+
+export interface SuggestionContext {
+  // Core metrics
+  health_score: number;              // 0-100
+  total_sales: number;               // Total sales for the day
+  total_expenses: number;            // Total expenses for the day
+  total_credit_outstanding: number;  // Total unpaid credit
+
+  // Calculated metrics
+  current_margin: number;            // Current profit margin (0-1)
+  avg_margin_last_30_days: number | null;  // Average margin over 30 days
+  cash_buffer_days: number | null;   // Days of operation with current cash
+
+  // User context
+  language: Language;                // 'en' | 'hi' | 'mr'
+  date: string;                      // ISO date string for the entry
+}
+

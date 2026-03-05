@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Get session data
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       logger.warn('Session not found', { sessionId });
       return NextResponse.json(

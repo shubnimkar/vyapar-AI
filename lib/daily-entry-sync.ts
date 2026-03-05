@@ -349,6 +349,15 @@ export function createDailyEntry(
     lastSyncAttempt: markAsSynced ? new Date().toISOString() : undefined,
   };
   
+  // Generate suggestions for the entry
+  try {
+    const { generateSuggestionsForEntry } = require('./finance/daily-health-coach-service');
+    entry.suggestions = generateSuggestionsForEntry(entry);
+  } catch (error) {
+    logger.error('Failed to generate suggestions during entry creation', { error, date });
+    entry.suggestions = [];
+  }
+  
   saveLocalEntry(entry);
   
   return entry;
@@ -390,6 +399,15 @@ export function updateDailyEntry(
     syncStatus: markAsSynced ? 'synced' : 'pending',
     lastSyncAttempt: markAsSynced ? new Date().toISOString() : existing.lastSyncAttempt,
   };
+  
+  // Regenerate suggestions for the updated entry
+  try {
+    const { generateSuggestionsForEntry } = require('./finance/daily-health-coach-service');
+    updated.suggestions = generateSuggestionsForEntry(updated);
+  } catch (error) {
+    logger.error('Failed to generate suggestions during entry update', { error, date });
+    updated.suggestions = existing.suggestions || [];
+  }
   
   saveLocalEntry(updated);
   

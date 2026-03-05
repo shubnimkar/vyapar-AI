@@ -378,6 +378,17 @@ export interface DailyEntry {
   estimatedProfit: number;
   expenseRatio: number;
   profitMargin: number;
+  // Daily Health Coach suggestions
+  suggestions?: Array<{
+    id: string;
+    created_at: string;
+    severity: 'critical' | 'warning' | 'info';
+    title: string;
+    description: string;
+    dismissed_at?: string;
+    rule_type: 'high_credit' | 'margin_drop' | 'low_cash' | 'healthy_state';
+    context_data?: Record<string, any>;
+  }>;
   createdAt: string;
   updatedAt: string;
   ttl?: number; // For automatic expiration (90 days)
@@ -503,10 +514,13 @@ export interface CreditEntry {
   id: string; // credit_timestamp_random
   customerName: string;
   amount: number;
+  dateGiven: string; // ISO date string
   dueDate: string; // ISO date string
   isPaid: boolean;
   createdAt: string;
+  updatedAt: string;
   paidAt?: string;
+  lastReminderAt?: string; // ISO date string - when last WhatsApp reminder was sent
   ttl?: number; // For automatic expiration (30 days after paid)
 }
 
@@ -517,8 +531,8 @@ export class CreditEntryService {
   static async saveEntry(entry: CreditEntry): Promise<void> {
     // Calculate TTL (30 days after paid, or no TTL if pending)
     let ttl: number | undefined;
-    if (entry.isPaid && entry.paidAt) {
-      const paidDate = new Date(entry.paidAt);
+    if (entry.isPaid && entry.paidDate) {
+      const paidDate = new Date(entry.paidDate);
       const ttlDate = new Date(paidDate);
       ttlDate.setDate(ttlDate.getDate() + 30);
       ttl = Math.floor(ttlDate.getTime() / 1000);
@@ -531,6 +545,7 @@ export class CreditEntryService {
       ...entry,
       ttl,
       createdAt: entry.createdAt || new Date().toISOString(),
+      updatedAt: entry.updatedAt || new Date().toISOString(),
     };
     await DynamoDBService.putItem(item);
   }
@@ -550,11 +565,15 @@ export class CreditEntryService {
       userId: item.userId,
       id: item.id,
       customerName: item.customerName,
+      phoneNumber: item.phoneNumber,
       amount: item.amount,
+      dateGiven: item.dateGiven,
       dueDate: item.dueDate,
       isPaid: item.isPaid,
+      paidDate: item.paidDate,
+      lastReminderAt: item.lastReminderAt,
       createdAt: item.createdAt,
-      paidAt: item.paidAt,
+      updatedAt: item.updatedAt,
     };
   }
 
@@ -571,11 +590,15 @@ export class CreditEntryService {
       userId: item.userId,
       id: item.id,
       customerName: item.customerName,
+      phoneNumber: item.phoneNumber,
       amount: item.amount,
+      dateGiven: item.dateGiven,
       dueDate: item.dueDate,
       isPaid: item.isPaid,
+      paidDate: item.paidDate,
+      lastReminderAt: item.lastReminderAt,
       createdAt: item.createdAt,
-      paidAt: item.paidAt,
+      updatedAt: item.updatedAt,
     }));
 
     // Sort by createdAt descending (newest first)

@@ -81,9 +81,13 @@ export async function POST(request: NextRequest) {
       customerName, 
       amount, 
       dueDate,
+      dateGiven,
+      phoneNumber,
       isPaid,
       createdAt,
-      paidAt,
+      paidDate,
+      lastReminderAt,
+      updatedAt,
     } = body;
 
     // Validate required fields
@@ -116,11 +120,15 @@ export async function POST(request: NextRequest) {
       userId,
       id: id || `credit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       customerName,
+      phoneNumber: phoneNumber || undefined,
       amount: parseFloat(amount.toString()),
+      dateGiven: dateGiven || new Date().toISOString().split('T')[0],
       dueDate,
       isPaid: Boolean(isPaid),
+      paidDate: paidDate || undefined,
+      lastReminderAt: lastReminderAt || undefined,
       createdAt: createdAt || new Date().toISOString(),
-      paidAt: paidAt || undefined,
+      updatedAt: updatedAt || new Date().toISOString(),
     };
 
     try {
@@ -171,10 +179,13 @@ export async function PUT(request: NextRequest) {
       userId,
       id,
       customerName,
+      phoneNumber,
       amount,
       dueDate,
+      dateGiven,
       isPaid,
-      paidAt,
+      paidDate,
+      lastReminderAt,
     } = body;
 
     // Validate required fields
@@ -201,10 +212,14 @@ export async function PUT(request: NextRequest) {
       const updated = {
         ...existing,
         customerName: customerName ?? existing.customerName,
+        phoneNumber: phoneNumber ?? existing.phoneNumber,
         amount: amount ?? existing.amount,
+        dateGiven: dateGiven ?? existing.dateGiven,
         dueDate: dueDate ?? existing.dueDate,
         isPaid: isPaid ?? existing.isPaid,
-        paidAt: paidAt ?? existing.paidAt,
+        paidDate: paidDate ?? existing.paidDate,
+        lastReminderAt: lastReminderAt ?? existing.lastReminderAt,
+        updatedAt: new Date().toISOString(),
       };
 
       // Instant sync to DynamoDB (user is connected)

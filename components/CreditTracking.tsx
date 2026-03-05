@@ -32,6 +32,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
   const [customerName, setCustomerName] = useState('');
   const [amount, setAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
 
   useEffect(() => {
     loadEntries();
@@ -65,6 +66,12 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       return;
     }
 
+    // Validate phone number format if provided (10 digits, numeric only)
+    if (phoneNumber && (phoneNumber.length !== 10 || !/^\d{10}$/.test(phoneNumber))) {
+      alert(t('error.invalidPhoneNumber', language));
+      return;
+    }
+
     try {
       // Try to sync to cloud first
       const response = await fetch('/api/credit', {
@@ -75,6 +82,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           customerName,
           amount: parseFloat(amount),
           dueDate,
+          phoneNumber: phoneNumber || undefined, // Only include if provided
         }),
       });
 
@@ -82,7 +90,8 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       
       if (data.success) {
         // API call succeeded - save to localStorage as synced
-        createCreditEntry(customerName, parseFloat(amount), dueDate, true);
+        const today = new Date().toISOString().split('T')[0];
+        createCreditEntry(customerName, parseFloat(amount), dueDate, today, phoneNumber || undefined, true);
         logger.info('[CreditTracking] Entry synced to cloud');
       } else {
         throw new Error(data.error || 'Failed to sync');
@@ -90,7 +99,8 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     } catch (error) {
       logger.error('[CreditTracking] Failed to sync, saving offline', { error });
       // API call failed - save to localStorage as pending
-      createCreditEntry(customerName, parseFloat(amount), dueDate, false);
+      const today = new Date().toISOString().split('T')[0];
+      createCreditEntry(customerName, parseFloat(amount), dueDate, today, phoneNumber || undefined, false);
     }
 
     // Reload entries and reset form
@@ -98,6 +108,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     setCustomerName('');
     setAmount('');
     setDueDate('');
+    setPhoneNumber('');
     setShowForm(false);
     if (onCreditChange) onCreditChange();
   };
@@ -219,7 +230,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       {/* Add Form */}
       {showForm && (
         <form onSubmit={handleAddEntry} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t('customerName', language)}
@@ -261,6 +272,28 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 onChange={(e) => setDueDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('phoneNumber', language)} ({t('optional', language)})
+              </label>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                placeholder="9876543210"
+                maxLength={10}
+                pattern="[0-9]{10}"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {language === 'hi' 
+                  ? '10 अंकों का मोबाइल नंबर (WhatsApp रिमाइंडर के लिए)'
+                  : language === 'mr'
+                  ? '10 अंकांचा मोबाइल नंबर (WhatsApp रिमाइंडरसाठी)'
+                  : '10-digit mobile number (for WhatsApp reminders)'}
+              </p>
             </div>
           </div>
 

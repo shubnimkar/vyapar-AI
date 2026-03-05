@@ -11,6 +11,7 @@ import { HybridSyncManager } from '@/lib/hybrid-sync-dynamodb';
 import DailyEntryForm from '@/components/DailyEntryForm';
 import HealthScoreDisplay from '@/components/HealthScoreDisplay';
 import CreditTracking from '@/components/CreditTracking';
+import FollowUpPanel from '@/components/FollowUpPanel';
 import FileUpload from '@/components/FileUpload';
 import InsightsDisplay from '@/components/InsightsDisplay';
 import QAChat from '@/components/QAChat';
@@ -585,7 +586,10 @@ export default function Home() {
               )}
 
               {activeSection === 'credit' && user && (
-                <CreditTracking userId={user.userId} language={language} onCreditChange={handleCreditChange} />
+                <>
+                  <CreditTracking userId={user.userId} language={language} onCreditChange={handleCreditChange} />
+                  <FollowUpPanel userId={user.userId} language={language} overdueThreshold={3} />
+                </>
               )}
 
               {activeSection === 'analysis' && renderAnalysisPanel()}

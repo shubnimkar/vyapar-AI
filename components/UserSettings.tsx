@@ -75,7 +75,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
     }
   };
 
-  const handleFieldChange = (field: string, value: string) => {
+  const handleFieldChange = (field: string, value: string | number | boolean) => {
     setEditableData(prev => ({ ...prev, [field]: value }));
     setHasChanges(true);
     setSuccessMessage('');

@@ -999,6 +999,184 @@ export const translations: Translations = {
     hi: 'कनेक्शन त्रुटि, कृपया पुनः प्रयास करें',
     mr: 'कनेक्शन त्रुटी, कृपया पुन्हा प्रयत्न करा',
   },
+  
+  // Daily Health Coach - Suggestion translations
+  'suggestions.high_credit.title': {
+    en: 'Too Much Money in Credit',
+    hi: 'बहुत अधिक उधार बकाया है',
+    mr: 'खूप उधार थकबाकी आहे'
+  },
+  'suggestions.high_credit.description': {
+    en: '{ratio}% of your sales is tied up in credit. Try to collect from at least 2-3 customers.',
+    hi: 'आपकी बिक्री का {ratio}% उधार में फंसा है। कम से कम 2-3 ग्राहकों से भुगतान लेने की कोशिश करें।',
+    mr: 'तुमच्या विक्रीचे {ratio}% उधारीत अडकले आहे. किमान 2-3 ग्राहकांकडून पैसे गोळा करण्याचा प्रयत्न करा.'
+  },
+  'suggestions.margin_drop.title': {
+    en: 'Profit Margin is Dropping',
+    hi: 'लाभ मार्जिन गिर रहा है',
+    mr: 'नफा मार्जिन कमी होत आहे'
+  },
+  'suggestions.margin_drop.description': {
+    en: 'Your margin is {current}% vs usual {avg}%. Check if expenses increased or prices need adjustment.',
+    hi: 'आपका मार्जिन {current}% है जबकि सामान्य {avg}% है। जांचें कि क्या खर्च बढ़ा है या कीमतों में समायोजन की आवश्यकता है।',
+    mr: 'तुमचा मार्जिन {current}% आहे तर नेहमीचा {avg}% आहे. तपासा की खर्च वाढला आहे की किंमती समायोजित करण्याची गरज आहे.'
+  },
+  'suggestions.low_cash.title': {
+    en: 'Cash Running Low',
+    hi: 'नकदी कम हो रही है',
+    mr: 'रोकड कमी होत आहे'
+  },
+  'suggestions.low_cash.description': {
+    en: 'You have only {days} days of cash buffer. Consider collecting credit or reducing expenses.',
+    hi: 'आपके पास केवल {days} दिनों का नकद बफर है। उधार वसूलने या खर्च कम करने पर विचार करें।',
+    mr: 'तुमच्याकडे फक्त {days} दिवसांचा रोकड बफर आहे. उधार गोळा करणे किंवा खर्च कमी करणे विचारात घ्या.'
+  },
+  'suggestions.healthy_state.title': {
+    en: 'Business is Healthy!',
+    hi: 'व्यापार स्वस्थ है!',
+    mr: 'व्यवसाय निरोगी आहे!'
+  },
+  'suggestions.healthy_state.tip_inventory': {
+    en: 'Keep it up! Consider reviewing slow-moving inventory to free up cash.',
+    hi: 'बढ़िया! धीमी गति से बिकने वाली इन्वेंटरी की समीक्षा करके नकदी मुक्त करने पर विचार करें।',
+    mr: 'चांगले चालू ठेवा! रोकड मुक्त करण्यासाठी हळू विकल्या जाणाऱ्या इन्व्हेंटरीचे पुनरावलोकन करा.'
+  },
+  'suggestions.healthy_state.tip_credit_terms': {
+    en: 'Great work! You could improve cash flow by reducing credit terms from 30 to 15 days.',
+    hi: 'बढ़िया काम! आप उधार की अवधि 30 से 15 दिन कम करके नकदी प्रवाह में सुधार कर सकते हैं।',
+    mr: 'उत्तम काम! तुम्ही उधार कालावधी 30 वरून 15 दिवसांपर्यंत कमी करून रोकड प्रवाह सुधारू शकता.'
+  },
+  'suggestions.healthy_state.tip_bulk_buying': {
+    en: 'Doing well! Consider bulk buying for frequently sold items to improve margins.',
+    hi: 'अच्छा चल रहा है! मार्जिन सुधारने के लिए अक्सर बिकने वाली वस्तुओं की थोक खरीद पर विचार करें।',
+    mr: 'चांगले चाललेय! मार्जिन सुधारण्यासाठी वारंवार विकल्या जाणाऱ्या वस्तूंची मोठ्या प्रमाणात खरेदी करा.'
+  },
+  'suggestions.healthy_state.tip_expense_review': {
+    en: 'Excellent! Review your top 3 expenses monthly to find savings opportunities.',
+    hi: 'उत्कृष्ट! बचत के अवसर खोजने के लिए अपने शीर्ष 3 खर्चों की मासिक समीक्षा करें।',
+    mr: 'उत्कृष्ट! बचतीच्या संधी शोधण्यासाठी तुमच्या शीर्ष 3 खर्चांचे मासिक पुनरावलोकन करा.'
+  },
+  'daily.todaysSuggestion': {
+    en: "Today's One Suggestion",
+    hi: 'आज का एक सुझाव',
+    mr: 'आजची एक सूचना'
+  },
+  dismiss: {
+    en: 'Dismiss',
+    hi: 'खारिज करें',
+    mr: 'डिसमिस करा'
+  },
+  
+  // Follow-Up Panel (Udhaar Follow-up Helper)
+  'followUp.title': {
+    en: 'Follow-up & Collections',
+    hi: 'फॉलो-अप और वसूली',
+    mr: 'फॉलो-अप आणि वसुली'
+  },
+  'followUp.noOverdue': {
+    en: 'No overdue credits. Great job!',
+    hi: 'कोई अतिदेय उधार नहीं। बढ़िया काम!',
+    mr: 'कोणतेही थकीत उधार नाही. उत्तम काम!'
+  },
+  'followUp.daysOverdue': {
+    en: 'days overdue',
+    hi: 'दिन अतिदेय',
+    mr: 'दिवस थकीत'
+  },
+  'followUp.sendReminder': {
+    en: 'Send WhatsApp Reminder',
+    hi: 'WhatsApp रिमाइंडर भेजें',
+    mr: 'WhatsApp रिमाइंडर पाठवा'
+  },
+  'followUp.lastReminder': {
+    en: 'Last reminder',
+    hi: 'अंतिम रिमाइंडर',
+    mr: 'शेवटचा रिमाइंडर'
+  },
+  'followUp.neverReminded': {
+    en: 'Never reminded',
+    hi: 'कभी रिमाइंडर नहीं भेजा',
+    mr: 'कधीही रिमाइंडर पाठवले नाही'
+  },
+  'followUp.markPaid': {
+    en: 'Mark as Paid',
+    hi: 'भुगतान किया गया चिह्नित करें',
+    mr: 'पेड म्हणून चिन्हांकित करा'
+  },
+  'followUp.threshold': {
+    en: 'Showing credits overdue by {days}+ days',
+    hi: '{days}+ दिन अतिदेय उधार दिखा रहे हैं',
+    mr: '{days}+ दिवस थकीत उधार दाखवत आहे'
+  },
+  'followUp.totalOverdue': {
+    en: 'Total Overdue',
+    hi: 'कुल अतिदेय',
+    mr: 'एकूण थकीत'
+  },
+  'followUp.oldestCredit': {
+    en: 'Oldest Credit',
+    hi: 'सबसे पुराना उधार',
+    mr: 'सर्वात जुने उधार'
+  },
+  
+  // WhatsApp message templates (Udhaar Follow-up Helper)
+  'whatsapp.reminder.en': {
+    en: 'Hello {name}, this is a friendly reminder that ₹{amount} is due since {date}. Please pay at your earliest convenience. Thank you!',
+    hi: 'Hello {name}, this is a friendly reminder that ₹{amount} is due since {date}. Please pay at your earliest convenience. Thank you!',
+    mr: 'Hello {name}, this is a friendly reminder that ₹{amount} is due since {date}. Please pay at your earliest convenience. Thank you!'
+  },
+  'whatsapp.reminder.hi': {
+    en: 'नमस्ते {name}, यह एक अनुस्मारक है कि ₹{amount} {date} से बकाया है। कृपया जल्द से जल्द भुगतान करें। धन्यवाद!',
+    hi: 'नमस्ते {name}, यह एक अनुस्मारक है कि ₹{amount} {date} से बकाया है। कृपया जल्द से जल्द भुगतान करें। धन्यवाद!',
+    mr: 'नमस्ते {name}, यह एक अनुस्मारक है कि ₹{amount} {date} से बकाया है। कृपया जल्द से जल्द भुगतान करें। धन्यवाद!'
+  },
+  'whatsapp.reminder.mr': {
+    en: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!',
+    hi: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!',
+    mr: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!'
+  },
+  
+  // Error messages for Follow-Up Panel
+  'error.networkUnavailable': {
+    en: 'Network unavailable. Changes will sync when online.',
+    hi: 'नेटवर्क उपलब्ध नहीं है। ऑनलाइन होने पर परिवर्तन सिंक होंगे।',
+    mr: 'नेटवर्क उपलब्ध नाही. ऑनलाइन असताना बदल सिंक होतील.',
+  },
+  'error.invalidPhoneNumber': {
+    en: 'Invalid phone number. Please enter 10 digits.',
+    hi: 'अमान्य फ़ोन नंबर। कृपया 10 अंक दर्ज करें।',
+    mr: 'अवैध फोन नंबर. कृपया 10 अंक प्रविष्ट करा.',
+  },
+  'error.requiredField': {
+    en: 'This field is required.',
+    hi: 'यह फ़ील्ड आवश्यक है।',
+    mr: 'हे फील्ड आवश्यक आहे.',
+  },
+  'error.storageQuotaExceeded': {
+    en: 'Storage full. Please sync and clear old records.',
+    hi: 'स्टोरेज भरा हुआ है। कृपया सिंक करें और पुराने रिकॉर्ड साफ़ करें।',
+    mr: 'स्टोरेज भरले आहे. कृपया सिंक करा आणि जुने रेकॉर्ड साफ करा.',
+  },
+  'error.reminderFailed': {
+    en: 'Failed to send reminder. Please try again.',
+    hi: 'रिमाइंडर भेजने में विफल। कृपया पुनः प्रयास करें।',
+    mr: 'रिमाइंडर पाठवण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
+  },
+  'error.markPaidFailed': {
+    en: 'Failed to mark as paid. Please try again.',
+    hi: 'भुगतान किया गया चिह्नित करने में विफल। कृपया पुनः प्रयास करें।',
+    mr: 'पेड म्हणून चिन्हांकित करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
+  },
+  'error.syncConflict': {
+    en: 'Sync conflict detected. Using latest version.',
+    hi: 'सिंक विरोध का पता चला। नवीनतम संस्करण का उपयोग कर रहे हैं।',
+    mr: 'सिंक संघर्ष आढळला. नवीनतम आवृत्ती वापरत आहे.',
+  },
+  'error.loadCreditsFailed': {
+    en: 'Failed to load credits. Please refresh.',
+    hi: 'उधार लोड करने में विफल। कृपया रीफ्रेश करें।',
+    mr: 'उधार लोड करण्यात अयशस्वी. कृपया रीफ्रेश करा.',
+  },
 };
 
 /**

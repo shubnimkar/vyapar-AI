@@ -1,7 +1,7 @@
 // Credit Entry Hybrid Sync Manager
 // Manages offline-first credit entries with DynamoDB cloud backup
 
-import type { CreditEntry } from './dynamodb-client';
+import type { CreditEntry } from './types';
 import { logger } from './logger';
 
 const STORAGE_KEY = 'vyapar-credit-entries';
@@ -10,6 +10,7 @@ const SYNC_STATUS_KEY = 'vyapar-credit-sync-status';
 export interface LocalCreditEntry extends Omit<CreditEntry, 'userId'> {
   syncStatus: 'synced' | 'pending' | 'error';
   lastSyncAttempt?: string;
+  paidAt?: string; // Alias for paidDate for backward compatibility
 }
 
 export interface SyncStatus {
@@ -146,10 +147,14 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
           id: localEntry.id,
           customerName: localEntry.customerName,
           amount: localEntry.amount,
+          dateGiven: localEntry.dateGiven,
           dueDate: localEntry.dueDate,
+          phoneNumber: localEntry.phoneNumber,
           isPaid: localEntry.isPaid,
+          paidDate: localEntry.paidAt,
+          lastReminderAt: localEntry.lastReminderAt,
           createdAt: localEntry.createdAt,
-          paidAt: localEntry.paidAt,
+          updatedAt: localEntry.updatedAt,
         }),
       });
 
@@ -287,11 +292,14 @@ export async function instantSyncCreditEntry(userId: string, entry: LocalCreditE
         id: entry.id,
         customerName: entry.customerName,
         amount: entry.amount,
-        type: entry.type,
+        dateGiven: entry.dateGiven,
         dueDate: entry.dueDate,
-        notes: entry.notes,
+        phoneNumber: entry.phoneNumber,
         isPaid: entry.isPaid,
-        paidDate: entry.paidDate,
+        paidDate: entry.paidAt,
+        lastReminderAt: entry.lastReminderAt,
+        createdAt: entry.createdAt,
+        updatedAt: entry.updatedAt,
       }),
     });
 
@@ -327,17 +335,23 @@ export function createCreditEntry(
   customerName: string,
   amount: number,
   dueDate: string,
+  dateGiven: string,
+  phoneNumber?: string,
   markAsSynced: boolean = false
 ): LocalCreditEntry {
+  const now = new Date().toISOString();
   const entry: LocalCreditEntry = {
-    id: `credit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    id: `credit_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
     customerName,
     amount,
+    dateGiven,
     dueDate,
+    phoneNumber,
     isPaid: false,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
     syncStatus: markAsSynced ? 'synced' : 'pending',
-    lastSyncAttempt: markAsSynced ? new Date().toISOString() : undefined,
+    lastSyncAttempt: markAsSynced ? now : undefined,
   };
   
   saveLocalEntry(entry);
@@ -357,17 +371,21 @@ export function updateCreditEntry(
     dueDate?: string;
     isPaid?: boolean;
     paidAt?: string;
+    phoneNumber?: string;
+    lastReminderAt?: string;
   },
   markAsSynced: boolean = false
 ): LocalCreditEntry | null {
   const existing = getLocalEntry(id);
   if (!existing) return null;
   
+  const now = new Date().toISOString();
   const updated: LocalCreditEntry = {
     ...existing,
     ...updates,
+    updatedAt: now,
     syncStatus: markAsSynced ? 'synced' : 'pending',
-    lastSyncAttempt: markAsSynced ? new Date().toISOString() : existing.lastSyncAttempt,
+    lastSyncAttempt: markAsSynced ? now : existing.lastSyncAttempt,
   };
   
   saveLocalEntry(updated);
@@ -391,6 +409,70 @@ export function markCreditAsPaid(
     },
     markAsSynced
   );
+}
+
+/**
+ * Update credit entry with reminder timestamp (offline-first)
+ * Implements last-write-wins conflict resolution using updatedAt timestamp
+ * @param creditId - The credit entry ID
+ * @param userId - The user ID (for sync)
+ * @param reminderAt - ISO timestamp when reminder was sent
+ */
+export async function updateCreditReminder(
+  creditId: string,
+  userId: string,
+  reminderAt: string
+): Promise<void> {
+  // Update localStorage immediately (optimistic update)
+  const updated = updateCreditEntry(
+    creditId,
+    { lastReminderAt: reminderAt },
+    false // Mark as pending for sync
+  );
+  
+  if (!updated) {
+    throw new Error(`Credit entry ${creditId} not found`);
+  }
+  
+  logger.info('Updated credit reminder locally', { creditId, reminderAt });
+  
+  // Attempt instant sync to DynamoDB
+  try {
+    const response = await fetch('/api/credit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        id: updated.id,
+        customerName: updated.customerName,
+        amount: updated.amount,
+        dateGiven: updated.dateGiven,
+        dueDate: updated.dueDate,
+        phoneNumber: updated.phoneNumber,
+        isPaid: updated.isPaid,
+        paidDate: updated.paidAt,
+        lastReminderAt: updated.lastReminderAt,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'Reminder sync failed');
+    }
+    
+    // Mark as synced
+    updated.syncStatus = 'synced';
+    updated.lastSyncAttempt = new Date().toISOString();
+    saveLocalEntry(updated);
+    
+    logger.info('Credit reminder synced to DynamoDB', { creditId });
+  } catch (error) {
+    // Offline or network error - keep as pending
+    logger.warn('Failed to sync reminder, will retry later', { creditId, error });
+    // Entry is already marked as pending, will sync later
+  }
 }
 
 /**
