@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     logger.info('Profile setup request received', { path: '/api/profile/setup' });
     
     const body = await request.json();
-    const { shopName, userName, language, businessType, city, userId, phoneNumber } = body;
+    const { shopName, userName, language, businessType, city, userId, phoneNumber, business_type, city_tier, explanation_mode } = body;
 
     // Validate required fields
     const errors: ValidationError[] = [];
@@ -47,6 +47,44 @@ export async function POST(request: NextRequest) {
         field: 'auth',
         message: 'User authentication required',
         code: 'unauthorized',
+      });
+    }
+
+    // Validate persona fields
+    if (!business_type) {
+      errors.push({
+        field: 'business_type',
+        message: 'Business type is required',
+        code: 'required',
+      });
+    } else if (!ProfileService.validateBusinessType(business_type)) {
+      errors.push({
+        field: 'business_type',
+        message: 'Must be one of: kirana, salon, pharmacy, restaurant, other',
+        code: 'invalid_enum',
+      });
+    }
+
+    if (!explanation_mode) {
+      errors.push({
+        field: 'explanation_mode',
+        message: 'Explanation mode is required',
+        code: 'required',
+      });
+    } else if (!ProfileService.validateExplanationMode(explanation_mode)) {
+      errors.push({
+        field: 'explanation_mode',
+        message: 'Must be one of: simple, detailed',
+        code: 'invalid_enum',
+      });
+    }
+
+    // city_tier is optional, but validate if provided
+    if (city_tier !== undefined && city_tier !== null && !ProfileService.validateCityTier(city_tier)) {
+      errors.push({
+        field: 'city_tier',
+        message: 'Must be one of: tier-1, tier-2, tier-3, rural, or null',
+        code: 'invalid_enum',
       });
     }
 
@@ -96,6 +134,9 @@ export async function POST(request: NextRequest) {
         businessType: businessType?.trim(),
         city: city?.trim(),
         phoneNumber: phoneNumber?.trim(),
+        business_type,
+        city_tier: city_tier || null,
+        explanation_mode,
         createdAt: now,
         updatedAt: now,
       };
@@ -113,6 +154,9 @@ export async function POST(request: NextRequest) {
         language: dynamoProfile.language as 'en' | 'hi' | 'mr',
         businessType: dynamoProfile.businessType,
         city: dynamoProfile.city,
+        business_type: dynamoProfile.business_type,
+        city_tier: dynamoProfile.city_tier,
+        explanation_mode: dynamoProfile.explanation_mode,
         createdAt: dynamoProfile.createdAt,
         lastActiveAt: dynamoProfile.updatedAt,
         isActive: true,

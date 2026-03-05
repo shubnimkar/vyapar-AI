@@ -324,6 +324,11 @@ export interface UserProfile {
   preferences: UserProfilePreferences;
   deletionRequestedAt?: string;
   deletionScheduledAt?: string;
+
+  // Persona fields for AI personalization
+  business_type: 'kirana' | 'salon' | 'pharmacy' | 'restaurant' | 'other';
+  city_tier?: 'tier-1' | 'tier-2' | 'tier-3' | 'rural' | null;
+  explanation_mode: 'simple' | 'detailed';
 }
 
 export interface UserProfilePreferences {

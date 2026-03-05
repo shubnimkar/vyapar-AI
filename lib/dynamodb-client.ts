@@ -332,6 +332,9 @@ export class ProfileService {
       city: item.city,
       phoneNumber: item.phoneNumber,
       language: item.language,
+      business_type: item.business_type,
+      city_tier: item.city_tier,
+      explanation_mode: item.explanation_mode,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     };
@@ -360,6 +363,33 @@ export class ProfileService {
       'METADATA'
     );
   }
+
+
+  /**
+   * Validate business_type field
+   */
+  static validateBusinessType(type: string): boolean {
+    const validTypes = ['kirana', 'salon', 'pharmacy', 'restaurant', 'other'];
+    return validTypes.includes(type);
+  }
+
+  /**
+   * Validate city_tier field (optional)
+   */
+  static validateCityTier(tier: string | null): boolean {
+    if (tier === null) return true;
+    const validTiers = ['tier-1', 'tier-2', 'tier-3', 'rural'];
+    return validTiers.includes(tier);
+  }
+
+  /**
+   * Validate explanation_mode field
+   */
+  static validateExplanationMode(mode: string): boolean {
+    const validModes = ['simple', 'detailed'];
+    return validModes.includes(mode);
+  }
+
 }
 
 // ============================================

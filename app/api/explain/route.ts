@@ -7,6 +7,9 @@ import { getSession } from '@/lib/session-store';
 import { invokeBedrockModel } from '@/lib/bedrock-client';
 import { Language } from '@/lib/types';
 import { logger } from '@/lib/logger';
+import { ProfileService } from '@/lib/dynamodb-client';
+import { buildPersonaPrompt } from '@/lib/ai/prompt-builder';
+import { PersonaContext } from '@/lib/ai/types';
 import {
   checkBodySize,
   logAndReturnError,
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = JSON.parse(bodyCheck.bodyText);
-    const { sessionId, metric, value, context, language: requestLanguage } = body;
+    const { sessionId, userId, metric, value, context, language: requestLanguage } = body;
     
     // Set language from request
     if (requestLanguage) {
@@ -50,6 +53,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Require userId for persona-aware prompts
+    if (!userId) {
+      logger.warn('Missing userId in explain request', { sessionId });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired', language),
+        { status: 401 }
+      );
+    }
+    
     // Get session
     const session = await getSession(sessionId);
     if (!session) {
@@ -60,76 +72,72 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Construct focused prompt for specific metric
-    let prompt = '';
-    
-    if (metric === 'healthScore') {
-      const langName = language === 'hi' ? 'Hindi' : language === 'mr' ? 'Marathi' : 'English';
-      prompt = `You are explaining a business health score to a small shop owner in ${langName}.
-
-**Health Score: ${value}/100**
-
-${context?.breakdown ? `
-**Score Breakdown:**
-- Margin Score: ${context.breakdown.marginScore}/30
-- Expense Score: ${context.breakdown.expenseScore}/30
-- Cash Score: ${context.breakdown.cashScore}/20
-- Credit Score: ${context.breakdown.creditScore}/20
-` : ''}
-
-**Your Task:**
-Explain in simple ${langName} what this score means:
-1. Is this score good, average, or concerning?
-2. Which area needs the most improvement?
-3. What are 2-3 specific actions the owner can take to improve the score?
-
-**Guidelines:**
-- Use simple language, no jargon
-- Be encouraging but honest
-- Provide specific, actionable advice
-- Keep explanation under 150 words
-- Use natural ${langName} expressions`;
-    } else if (metric === 'dailyProfit') {
-      const langName = language === 'hi' ? 'Hindi' : language === 'mr' ? 'Marathi' : 'English';
-      prompt = `You are explaining today's business results to a shop owner in ${langName}.
-
-**Today's Results:**
-- Sales: ₹${context?.sales || 0}
-- Expenses: ₹${context?.expenses || 0}
-- Profit: ₹${value}
-- Expense Ratio: ${context?.expenseRatio ? (context.expenseRatio * 100).toFixed(1) : 0}%
-
-**Your Task:**
-In 2-3 sentences, explain in ${langName}:
-1. Is today's profit good or concerning?
-2. Is the expense ratio healthy?
-3. One specific suggestion for tomorrow
-
-Use simple ${langName}. Be brief and actionable.`;
-    } else {
-      // Generic explanation
-      const langName = language === 'hi' ? 'Hindi' : language === 'mr' ? 'Marathi' : 'English';
-      prompt = `Explain the metric "${metric}" with value ${value} to a small shop owner in simple ${langName}. Be brief and actionable.`;
+    // Retrieve profile for persona context
+    const profile = await ProfileService.getProfile(userId);
+    if (!profile || !profile.business_type || !profile.explanation_mode) {
+      logger.warn('Profile incomplete or missing persona fields', { userId });
+      return NextResponse.json(
+        createErrorResponse('PROFILE_INCOMPLETE' as ErrorCode, 'errors.profileIncomplete', language),
+        { status: 400 }
+      );
     }
     
-    // Call AI for explanation only
+    // Build persona context
+    const personaContext: PersonaContext = {
+      business_type: profile.business_type,
+      city_tier: profile.city_tier,
+      explanation_mode: profile.explanation_mode,
+      language: profile.language as Language,
+    };
+    
+    // Build persona-aware prompt
+    const promptData = {
+      metric,
+      value,
+      calculatedMetrics: context?.breakdown || {},
+    };
+    
+    const promptStructure = buildPersonaPrompt(personaContext, 'explain', promptData);
+    
+    // Log persona context
+    logger.info('Building persona-aware explanation', {
+      userId,
+      sessionId,
+      metric,
+      persona_context: {
+        business_type: personaContext.business_type,
+        city_tier: personaContext.city_tier,
+        explanation_mode: personaContext.explanation_mode,
+      },
+    });
+    
+    // Call AI for explanation only (graceful degradation if AI unavailable)
     try {
-      const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
+      const bedrockResponse = await invokeBedrockModel(
+        `${promptStructure.system}\n\n${promptStructure.user}`,
+        2,
+        language
+      );
       
       if (!bedrockResponse.success) {
-        return NextResponse.json(
-          logAndReturnError(
-            new Error(bedrockResponse.error || 'Bedrock invocation failed'),
-            ErrorCode.BEDROCK_ERROR,
-            'errors.bedrockError',
-            language,
-            { path: '/api/explain', sessionId, metric }
-          ),
-          { status: 503 }
-        );
+        // Graceful degradation: return deterministic value without AI explanation
+        logger.warn('AI unavailable, returning deterministic value only', {
+          userId,
+          sessionId,
+          metric,
+        });
+        return NextResponse.json({
+          success: true,
+          explanation: {
+            success: false,
+            content: 'AI explanation temporarily unavailable. Your calculated metrics are accurate.',
+          },
+          metric,
+          value,
+        });
       }
       
-      logger.info('Explanation completed successfully', { sessionId, metric });
+      logger.info('Explanation completed successfully', { userId, sessionId, metric });
       
       return NextResponse.json({
         success: true,
@@ -138,16 +146,22 @@ Use simple ${langName}. Be brief and actionable.`;
         value,
       });
     } catch (bedrockError) {
-      return NextResponse.json(
-        logAndReturnError(
-          bedrockError as Error,
-          ErrorCode.BEDROCK_ERROR,
-          'errors.bedrockError',
-          language,
-          { path: '/api/explain', sessionId, metric }
-        ),
-        { status: 503 }
-      );
+      // Graceful degradation on error
+      logger.error('Bedrock error, returning deterministic value', {
+        error: (bedrockError as Error).message,
+        userId,
+        sessionId,
+        metric,
+      });
+      return NextResponse.json({
+        success: true,
+        explanation: {
+          success: false,
+          content: 'AI explanation temporarily unavailable. Your calculated metrics are accurate.',
+        },
+        metric,
+        value,
+      });
     }
     
   } catch (error) {

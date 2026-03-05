@@ -77,6 +77,9 @@ export async function GET(request: NextRequest) {
         language: profile.language as 'en' | 'hi' | 'mr',
         businessType: profile.businessType,
         city: profile.city,
+        business_type: profile.business_type,
+        city_tier: profile.city_tier,
+        explanation_mode: profile.explanation_mode,
         createdAt: profile.createdAt,
         lastActiveAt: profile.updatedAt,
         isActive: true,
@@ -128,7 +131,7 @@ export async function PUT(request: NextRequest) {
     logger.info('Profile PUT request received', { path: '/api/profile' });
     
     const body = await request.json();
-    const { userId, shopName, userName, language, businessType, city, phoneNumber, preferences } = body;
+    const { userId, shopName, userName, language, businessType, city, phoneNumber, preferences, business_type, city_tier, explanation_mode } = body;
 
     if (!userId) {
       logger.warn('Profile PUT request missing userId', { path: '/api/profile' });
@@ -146,6 +149,31 @@ export async function PUT(request: NextRequest) {
         field: 'language',
         message: 'Invalid language (must be en, hi, or mr)',
         code: 'invalid',
+      });
+    }
+
+    // Validate persona fields if provided
+    if (business_type !== undefined && !ProfileService.validateBusinessType(business_type)) {
+      errors.push({
+        field: 'business_type',
+        message: 'Must be one of: kirana, salon, pharmacy, restaurant, other',
+        code: 'invalid_enum',
+      });
+    }
+
+    if (city_tier !== undefined && !ProfileService.validateCityTier(city_tier)) {
+      errors.push({
+        field: 'city_tier',
+        message: 'Must be one of: tier-1, tier-2, tier-3, rural, or null',
+        code: 'invalid_enum',
+      });
+    }
+
+    if (explanation_mode !== undefined && !ProfileService.validateExplanationMode(explanation_mode)) {
+      errors.push({
+        field: 'explanation_mode',
+        message: 'Must be one of: simple, detailed',
+        code: 'invalid_enum',
       });
     }
 
@@ -197,6 +225,9 @@ export async function PUT(request: NextRequest) {
         businessType: businessType?.trim() || existingProfile?.businessType,
         city: city?.trim() || existingProfile?.city,
         phoneNumber: phoneNumber?.trim() || existingProfile?.phoneNumber, // Allow phone number updates
+        business_type: business_type !== undefined ? business_type : existingProfile?.business_type,
+        city_tier: city_tier !== undefined ? city_tier : existingProfile?.city_tier,
+        explanation_mode: explanation_mode !== undefined ? explanation_mode : existingProfile?.explanation_mode,
         createdAt: existingProfile?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -213,6 +244,9 @@ export async function PUT(request: NextRequest) {
         language: dynamoProfile.language as 'en' | 'hi' | 'mr',
         businessType: dynamoProfile.businessType,
         city: dynamoProfile.city,
+        business_type: dynamoProfile.business_type,
+        city_tier: dynamoProfile.city_tier,
+        explanation_mode: dynamoProfile.explanation_mode,
         createdAt: dynamoProfile.createdAt,
         lastActiveAt: dynamoProfile.updatedAt,
         isActive: true,
