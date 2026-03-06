@@ -425,3 +425,23 @@ export interface SuggestionContext {
   date: string;                      // ISO date string for the entry
 }
 
+// ============================================
+// Click-to-Add Transactions Types
+// ============================================
+
+export type TransactionSource = 'receipt' | 'csv';
+export type TransactionType = 'expense' | 'sale';
+
+export interface InferredTransaction {
+  id: string;                        // Deterministic hash
+  date: string;                      // ISO date string (YYYY-MM-DD)
+  type: TransactionType;
+  vendor_name?: string;
+  category?: string;
+  amount: number;
+  source: TransactionSource;
+  created_at: string;                // ISO timestamp
+  deferred_at?: string;              // ISO timestamp (if user clicked Later)
+  raw_data?: any;                    // Original OCR/CSV data for debugging
+}
+

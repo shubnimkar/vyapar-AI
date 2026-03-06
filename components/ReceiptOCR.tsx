@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { Camera, Upload, Loader2, CheckCircle, XCircle, X } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { Camera, Upload, Loader2, CheckCircle, XCircle, X, ArrowRight } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { parseOCRResult } from "@/lib/parsers/ocr-result-parser";
+import { isDuplicate } from "@/lib/duplicate-detector";
+import { savePendingTransaction } from "@/lib/pending-transaction-store";
 
 interface ExtractedData {
   date: string;
@@ -12,15 +15,17 @@ interface ExtractedData {
 }
 
 interface ReceiptOCRProps {
-  onDataExtracted: (data: ExtractedData) => void;
+  onDataExtracted?: (data: ExtractedData) => void; // Optional for backward compatibility
   language: "en" | "hi" | "mr";
+  usePendingFlow?: boolean; // New prop to enable pending transaction flow
 }
 
-export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProps) {
-  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "success" | "error">("idle");
+export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow = true }: ReceiptOCRProps) {
+  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "success" | "error" | "pending_saved">("idle");
   const [error, setError] = useState<string>("");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [preview, setPreview] = useState<string>("");
+  const [isDuplicateTransaction, setIsDuplicateTransaction] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const translations = {
@@ -40,6 +45,10 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
       items: "Items",
       clickToUpload: "Click to upload or take photo",
       maxSize: "Max size: 5MB",
+      pendingSaved: "Transaction added to pending review",
+      viewPending: "View Pending Transactions",
+      duplicate: "This transaction has already been added",
+      uploadAnother: "Upload Another Receipt",
     },
     hi: {
       title: "रसीद अपलोड करें",
@@ -57,6 +66,10 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
       items: "वस्तुएं",
       clickToUpload: "फोटो लेने या अपलोड करने के लिए क्लिक करें",
       maxSize: "अधिकतम आकार: 5MB",
+      pendingSaved: "लेनदेन समीक्षा के लिए जोड़ा गया",
+      viewPending: "लंबित लेनदेन देखें",
+      duplicate: "यह लेनदेन पहले से जोड़ा जा चुका है",
+      uploadAnother: "एक और रसीद अपलोड करें",
     },
     mr: {
       title: "पावती अपलोड करा",
@@ -74,6 +87,10 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
       items: "वस्तू",
       clickToUpload: "फोटो घेण्यासाठी किंवा अपलोड करण्यासाठी क्लिक करा",
       maxSize: "कमाल आकार: 5MB",
+      pendingSaved: "व्यवहार पुनरावलोकनासाठी जोडला",
+      viewPending: "प्रलंबित व्यवहार पहा",
+      duplicate: "हा व्यवहार आधीच जोडला गेला आहे",
+      uploadAnother: "दुसरी पावती अपलोड करा",
     },
   };
 
@@ -100,6 +117,15 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
     throw new Error("Processing timeout - please try again");
   };
 
+  // Generate file hash for deterministic ID
+  const generateFileHash = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex.substring(0, 16);
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -113,6 +139,7 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
 
     setStatus("uploading");
     setError("");
+    setIsDuplicateTransaction(false);
 
     try {
       const formData = new FormData();
@@ -134,7 +161,62 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
       // Poll for Lambda results
       const extractedData = await pollForResults(result.filename);
       setExtractedData(extractedData);
-      setStatus("success");
+
+      // If usePendingFlow is enabled, save to pending store
+      if (usePendingFlow) {
+        try {
+          // Generate file hash for deterministic ID
+          const fileHash = await generateFileHash(file);
+
+          // Parse OCR result to InferredTransaction
+          const inferredTransaction = parseOCRResult(
+            {
+              success: true,
+              filename: result.filename,
+              extractedData,
+              processedAt: new Date().toISOString(),
+              processingTimeMs: 0,
+              method: 'bedrock-vision'
+            },
+            fileHash
+          );
+
+          // Check for duplicates
+          const duplicate = isDuplicate({
+            date: inferredTransaction.date,
+            amount: inferredTransaction.amount,
+            type: inferredTransaction.type,
+            vendor_name: inferredTransaction.vendor_name,
+            category: inferredTransaction.category,
+            source: inferredTransaction.source
+          });
+
+          if (duplicate) {
+            setIsDuplicateTransaction(true);
+            setStatus("error");
+            setError(t.duplicate);
+            logger.info("Duplicate receipt detected", { transactionId: inferredTransaction.id });
+            return;
+          }
+
+          // Save to pending store
+          const saved = savePendingTransaction(inferredTransaction);
+
+          if (saved) {
+            setStatus("pending_saved");
+            logger.info("Receipt saved to pending transactions", { transactionId: inferredTransaction.id });
+          } else {
+            throw new Error("Failed to save to pending store");
+          }
+        } catch (err) {
+          logger.error("Error saving to pending store", { error: err });
+          // Fall back to success state for backward compatibility
+          setStatus("success");
+        }
+      } else {
+        // Backward compatibility: use old flow
+        setStatus("success");
+      }
     } catch (error) {
       logger.error("Receipt OCR error", { error });
       const errorMessage = error instanceof Error ? error.message : "Failed to process receipt";
@@ -144,7 +226,7 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
   };
 
   const handleUseData = () => {
-    if (extractedData) {
+    if (extractedData && onDataExtracted) {
       onDataExtracted(extractedData);
       handleReset();
     }
@@ -155,6 +237,7 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
     setError("");
     setExtractedData(null);
     setPreview("");
+    setIsDuplicateTransaction(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -269,6 +352,54 @@ export default function ReceiptOCR({ onDataExtracted, language }: ReceiptOCRProp
               className="px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
             >
               {t.tryAgain}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {status === "pending_saved" && extractedData && (
+        <div className="space-y-4 animate-in fade-in duration-300">
+          <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+            <CheckCircle className="w-5 h-5 flex-shrink-0" />
+            <span className="font-medium">{t.pendingSaved}</span>
+          </div>
+
+          {preview && (
+            <img 
+              src={preview} 
+              alt="Receipt" 
+              className="w-full max-h-40 object-contain rounded-lg border border-gray-200"
+            />
+          )}
+
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+              <span className="text-sm font-medium text-gray-600">{t.date}:</span>
+              <span className="font-semibold text-gray-800">{extractedData.date}</span>
+            </div>
+            <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+              <span className="text-sm font-medium text-gray-600">{t.amount}:</span>
+              <span className="font-semibold text-lg text-blue-600">₹{extractedData.amount.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+              <span className="text-sm font-medium text-gray-600">{t.vendor}:</span>
+              <span className="font-medium text-gray-800">{extractedData.vendor}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <a
+              href="/pending-transactions"
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md"
+            >
+              {t.viewPending}
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <button
+              onClick={handleReset}
+              className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            >
+              {t.uploadAnother}
             </button>
           </div>
         </div>

@@ -280,7 +280,7 @@ Key implementation areas:
     - Test logging AI errors
     - Test production mode excludes full prompts
 
-- [x] 10. Integration and wiring
+- [ ] 10. Integration and wiring
   - [x] 10.1 Update existing components to handle PROFILE_INCOMPLETE errors
     - Update InsightsDisplay to show profile setup prompt
     - Update QAChat to show profile setup prompt

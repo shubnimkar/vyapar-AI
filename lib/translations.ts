@@ -1177,6 +1177,418 @@ export const translations: Translations = {
     hi: 'उधार लोड करने में विफल। कृपया रीफ्रेश करें।',
     mr: 'उधार लोड करण्यात अयशस्वी. कृपया रीफ्रेश करा.',
   },
+
+  // Click-to-Add Transactions - Pending Transaction Confirmation UI
+  'pending.title': {
+    en: 'Pending Transactions',
+    hi: 'लंबित लेनदेन',
+    mr: 'प्रलंबित व्यवहार',
+  },
+  'pending.subtitle': {
+    en: 'Review and confirm transactions from receipts and CSV uploads',
+    hi: 'रसीद और CSV अपलोड से लेनदेन की समीक्षा और पुष्टि करें',
+    mr: 'पावती आणि CSV अपलोडमधून व्यवहारांचे पुनरावलोकन आणि पुष्टी करा',
+  },
+  'pending.reviewTransaction': {
+    en: 'Review Transaction',
+    hi: 'लेनदेन की समीक्षा करें',
+    mr: 'व्यवहाराचे पुनरावलोकन करा',
+  },
+  'pending.of': {
+    en: 'of',
+    hi: 'का',
+    mr: 'चा',
+  },
+  'pending.noTransactions': {
+    en: 'No Pending Transactions',
+    hi: 'कोई लंबित लेनदेन नहीं',
+    mr: 'कोणतेही प्रलंबित व्यवहार नाहीत',
+  },
+  'pending.noTransactionsDesc': {
+    en: 'Upload a receipt or CSV file to get started',
+    hi: 'रसीद या CSV फ़ाइल अपलोड करें',
+    mr: 'पावती किंवा CSV फाइल अपलोड करा',
+  },
+  'pending.source.receipt': {
+    en: 'Receipt',
+    hi: 'रसीद',
+    mr: 'पावती',
+  },
+  'pending.source.csv': {
+    en: 'CSV',
+    hi: 'CSV',
+    mr: 'CSV',
+  },
+  'pending.date': {
+    en: 'Date',
+    hi: 'तिथि',
+    mr: 'तारीख',
+  },
+  'pending.amount': {
+    en: 'Amount',
+    hi: 'राशि',
+    mr: 'रक्कम',
+  },
+  'pending.type': {
+    en: 'Type',
+    hi: 'प्रकार',
+    mr: 'प्रकार',
+  },
+  'pending.type.expense': {
+    en: 'Expense',
+    hi: 'खर्च',
+    mr: 'खर्च',
+  },
+  'pending.type.sale': {
+    en: 'Sale',
+    hi: 'बिक्री',
+    mr: 'विक्री',
+  },
+  'pending.vendor': {
+    en: 'Vendor',
+    hi: 'विक्रेता',
+    mr: 'विक्रेता',
+  },
+  'pending.vendorPlaceholder': {
+    en: 'Vendor name',
+    hi: 'विक्रेता का नाम',
+    mr: 'विक्रेत्याचे नाव',
+  },
+  'pending.category': {
+    en: 'Category',
+    hi: 'श्रेणी',
+    mr: 'श्रेणी',
+  },
+  'pending.categoryPlaceholder': {
+    en: 'Category',
+    hi: 'श्रेणी',
+    mr: 'श्रेणी',
+  },
+  'pending.edit': {
+    en: 'Edit',
+    hi: 'संपादित करें',
+    mr: 'संपादित करा',
+  },
+  'pending.discard': {
+    en: 'Discard',
+    hi: 'हटाएं',
+    mr: 'टाकून द्या',
+  },
+  'pending.later': {
+    en: 'Later',
+    hi: 'बाद में',
+    mr: 'नंतर',
+  },
+  'pending.add': {
+    en: 'Add',
+    hi: 'जोड़ें',
+    mr: 'जोडा',
+  },
+  'pending.adding': {
+    en: 'Adding...',
+    hi: 'जोड़ रहे हैं...',
+    mr: 'जोडत आहे...',
+  },
+  'pending.backToDashboard': {
+    en: 'Back to Dashboard',
+    hi: 'डैशबोर्ड पर वापस जाएं',
+    mr: 'डॅशबोर्डवर परत जा',
+  },
+  'pending.pendingCount': {
+    en: 'pending transaction',
+    hi: 'लंबित लेनदेन',
+    mr: 'प्रलंबित व्यवहार',
+  },
+  'pending.pendingCountPlural': {
+    en: 'pending transactions',
+    hi: 'लंबित लेनदेन',
+    mr: 'प्रलंबित व्यवहार',
+  },
+  'pending.reviewSection': {
+    en: 'Review Transactions',
+    hi: 'लेनदेन की समीक्षा करें',
+    mr: 'व्यवहारांचे पुनरावलोकन करा',
+  },
+  'pending.uploadSection': {
+    en: 'Upload New Data',
+    hi: 'नया डेटा अपलोड करें',
+    mr: 'नवीन डेटा अपलोड करा',
+  },
+
+  // Click-to-Add Transactions - CSV Upload UI
+  'csv.title': {
+    en: 'Upload CSV File',
+    hi: 'CSV फ़ाइल अपलोड करें',
+    mr: 'CSV फाइल अपलोड करा',
+  },
+  'csv.description': {
+    en: 'Import multiple transactions from a CSV file',
+    hi: 'CSV फ़ाइल से कई लेनदेन आयात करें',
+    mr: 'CSV फाइलमधून अनेक व्यवहार आयात करा',
+  },
+  'csv.dragDrop': {
+    en: 'Drag and drop your CSV file here, or',
+    hi: 'अपनी CSV फ़ाइल यहाँ खींचें और छोड़ें, या',
+    mr: 'तुमची CSV फाइल येथे ड्रॅग आणि ड्रॉप करा, किंवा',
+  },
+  'csv.browse': {
+    en: 'browse',
+    hi: 'ब्राउज़ करें',
+    mr: 'ब्राउझ करा',
+  },
+  'csv.maxSize': {
+    en: 'Maximum file size: 5MB',
+    hi: 'अधिकतम फ़ाइल आकार: 5MB',
+    mr: 'कमाल फाइल आकार: 5MB',
+  },
+  'csv.uploading': {
+    en: 'Uploading...',
+    hi: 'अपलोड हो रहा है...',
+    mr: 'अपलोड होत आहे...',
+  },
+  'csv.successTitle': {
+    en: 'Upload Successful!',
+    hi: 'अपलोड सफल!',
+    mr: 'अपलोड यशस्वी!',
+  },
+  'csv.successMessage': {
+    en: 'transactions imported',
+    hi: 'लेनदेन आयात किए गए',
+    mr: 'व्यवहार आयात केले',
+  },
+  'csv.validRows': {
+    en: 'Valid',
+    hi: 'मान्य',
+    mr: 'वैध',
+  },
+  'csv.invalidRows': {
+    en: 'Invalid',
+    hi: 'अमान्य',
+    mr: 'अवैध',
+  },
+  'csv.errorTitle': {
+    en: 'Upload Failed',
+    hi: 'अपलोड विफल',
+    mr: 'अपलोड अयशस्वी',
+  },
+  'csv.tryAgain': {
+    en: 'Try Again',
+    hi: 'पुनः प्रयास करें',
+    mr: 'पुन्हा प्रयत्न करा',
+  },
+
+  // Click-to-Add Transactions - Receipt OCR UI
+  'receipt.title': {
+    en: 'Upload Receipt',
+    hi: 'रसीद अपलोड करें',
+    mr: 'पावती अपलोड करा',
+  },
+  'receipt.subtitle': {
+    en: 'Take a photo or upload receipt image',
+    hi: 'फोटो लें या रसीद इमेज अपलोड करें',
+    mr: 'फोटो घ्या किंवा पावती इमेज अपलोड करा',
+  },
+  'receipt.uploading': {
+    en: 'Uploading...',
+    hi: 'अपलोड हो रहा है...',
+    mr: 'अपलोड होत आहे...',
+  },
+  'receipt.processing': {
+    en: 'Extracting data from receipt...',
+    hi: 'रसीद से डेटा निकाला जा रहा है...',
+    mr: 'पावतीमधून डेटा काढला जात आहे...',
+  },
+  'receipt.success': {
+    en: 'Data extracted successfully!',
+    hi: 'डेटा सफलतापूर्वक निकाला गया!',
+    mr: 'डेटा यशस्वीरित्या काढला गेला!',
+  },
+  'receipt.error': {
+    en: 'Failed to extract data',
+    hi: 'डेटा निकालने में विफल',
+    mr: 'डेटा काढण्यात अयशस्वी',
+  },
+  'receipt.useData': {
+    en: 'Use This Data',
+    hi: 'इस डेटा का उपयोग करें',
+    mr: 'हा डेटा वापरा',
+  },
+  'receipt.tryAgain': {
+    en: 'Try Again',
+    hi: 'पुनः प्रयास करें',
+    mr: 'पुन्हा प्रयत्न करा',
+  },
+  'receipt.cancel': {
+    en: 'Cancel',
+    hi: 'रद्द करें',
+    mr: 'रद्द करा',
+  },
+  'receipt.date': {
+    en: 'Date',
+    hi: 'तारीख',
+    mr: 'तारीख',
+  },
+  'receipt.amount': {
+    en: 'Amount',
+    hi: 'राशि',
+    mr: 'रक्कम',
+  },
+  'receipt.vendor': {
+    en: 'Vendor',
+    hi: 'दुकान',
+    mr: 'दुकान',
+  },
+  'receipt.items': {
+    en: 'Items',
+    hi: 'वस्तुएं',
+    mr: 'वस्तू',
+  },
+  'receipt.clickToUpload': {
+    en: 'Click to upload or take photo',
+    hi: 'फोटो लेने या अपलोड करने के लिए क्लिक करें',
+    mr: 'फोटो घेण्यासाठी किंवा अपलोड करण्यासाठी क्लिक करा',
+  },
+  'receipt.maxSize': {
+    en: 'Max size: 5MB',
+    hi: 'अधिकतम आकार: 5MB',
+    mr: 'कमाल आकार: 5MB',
+  },
+  'receipt.pendingSaved': {
+    en: 'Transaction added to pending review',
+    hi: 'लेनदेन समीक्षा के लिए जोड़ा गया',
+    mr: 'व्यवहार पुनरावलोकनासाठी जोडला',
+  },
+  'receipt.viewPending': {
+    en: 'View Pending Transactions',
+    hi: 'लंबित लेनदेन देखें',
+    mr: 'प्रलंबित व्यवहार पहा',
+  },
+  'receipt.duplicate': {
+    en: 'This transaction has already been added',
+    hi: 'यह लेनदेन पहले से जोड़ा जा चुका है',
+    mr: 'हा व्यवहार आधीच जोडला गेला आहे',
+  },
+  'receipt.uploadAnother': {
+    en: 'Upload Another Receipt',
+    hi: 'एक और रसीद अपलोड करें',
+    mr: 'दुसरी पावती अपलोड करा',
+  },
+
+  // Click-to-Add Transactions - Error Messages
+  'error.csv.invalidFileType': {
+    en: 'Invalid file type. Please upload a CSV file.',
+    hi: 'अमान्य फ़ाइल प्रकार। कृपया CSV फ़ाइल अपलोड करें।',
+    mr: 'अवैध फाइल प्रकार. कृपया CSV फाइल अपलोड करा.',
+  },
+  'error.csv.fileTooLarge': {
+    en: 'File too large. Maximum size is 5MB.',
+    hi: 'फ़ाइल बहुत बड़ी है। अधिकतम आकार 5MB है।',
+    mr: 'फाइल खूप मोठी आहे. कमाल आकार 5MB आहे.',
+  },
+  'error.csv.noData': {
+    en: 'No valid transactions found in CSV file.',
+    hi: 'CSV फ़ाइल में कोई मान्य लेनदेन नहीं मिला।',
+    mr: 'CSV फाइलमध्ये कोणतेही वैध व्यवहार आढळले नाहीत.',
+  },
+  'error.csv.invalidHeaders': {
+    en: 'CSV file must contain date, amount, and type columns.',
+    hi: 'CSV फ़ाइल में तिथि, राशि और प्रकार कॉलम होने चाहिए।',
+    mr: 'CSV फाइलमध्ये तारीख, रक्कम आणि प्रकार स्तंभ असणे आवश्यक आहे.',
+  },
+  'error.csv.tooManyRows': {
+    en: 'CSV file has too many rows. Maximum is 1000 rows.',
+    hi: 'CSV फ़ाइल में बहुत अधिक पंक्तियाँ हैं। अधिकतम 1000 पंक्तियाँ हैं।',
+    mr: 'CSV फाइलमध्ये खूप ओळी आहेत. कमाल 1000 ओळी आहेत.',
+  },
+  'error.ocr.timeout': {
+    en: 'Receipt processing took too long. Please try again.',
+    hi: 'रसीद प्रोसेसिंग में बहुत समय लगा। कृपया पुनः प्रयास करें।',
+    mr: 'पावती प्रक्रिया खूप वेळ घेत आहे. कृपया पुन्हा प्रयत्न करा.',
+  },
+  'error.ocr.unreadable': {
+    en: 'Could not read receipt. Please ensure the image is clear and well-lit.',
+    hi: 'रसीद पढ़ नहीं सकी। कृपया सुनिश्चित करें कि छवि स्पष्ट और अच्छी तरह से प्रकाशित है।',
+    mr: 'पावती वाचता आली नाही. कृपया प्रतिमा स्पष्ट आणि चांगल्या प्रकाशात असल्याची खात्री करा.',
+  },
+  'error.ocr.noData': {
+    en: 'No transaction data found in receipt.',
+    hi: 'रसीद में कोई लेनदेन डेटा नहीं मिला।',
+    mr: 'पावतीमध्ये व्यवहार डेटा आढळला नाही.',
+  },
+  'error.ocr.serviceError': {
+    en: 'Receipt processing service temporarily unavailable.',
+    hi: 'रसीद प्रोसेसिंग सेवा अस्थायी रूप से अनुपलब्ध है।',
+    mr: 'पावती प्रक्रिया सेवा तात्पुरती अनुपलब्ध आहे.',
+  },
+  'error.ocr.invalidFile': {
+    en: 'Invalid file format. Please upload JPEG, PNG, or HEIC image.',
+    hi: 'अमान्य फ़ाइल प्रारूप। कृपया JPEG, PNG, या HEIC छवि अपलोड करें।',
+    mr: 'अवैध फाइल स्वरूप. कृपया JPEG, PNG, किंवा HEIC प्रतिमा अपलोड करा.',
+  },
+  'error.ocr.fileTooLarge': {
+    en: 'Image file too large. Maximum size is 10MB.',
+    hi: 'छवि फ़ाइल बहुत बड़ी है। अधिकतम आकार 10MB है।',
+    mr: 'प्रतिमा फाइल खूप मोठी आहे. कमाल आकार 10MB आहे.',
+  },
+  'error.transaction.duplicate': {
+    en: 'This transaction has already been added.',
+    hi: 'यह लेनदेन पहले से जोड़ा जा चुका है।',
+    mr: 'हा व्यवहार आधीच जोडला गेला आहे.',
+  },
+  'error.transaction.storageFull': {
+    en: 'Cannot add more transactions. Please review pending transactions first.',
+    hi: 'अधिक लेनदेन नहीं जोड़ सकते। कृपया पहले लंबित लेनदेन की समीक्षा करें।',
+    mr: 'अधिक व्यवहार जोडू शकत नाही. कृपया प्रथम प्रलंबित व्यवहारांचे पुनरावलोकन करा.',
+  },
+  'error.transaction.notFound': {
+    en: 'Transaction not found.',
+    hi: 'लेनदेन नहीं मिला।',
+    mr: 'व्यवहार सापडला नाही.',
+  },
+  'error.transaction.syncFailed': {
+    en: 'Failed to sync transaction. Will retry when online.',
+    hi: 'लेनदेन सिंक करने में विफल। ऑनलाइन होने पर पुनः प्रयास करेंगे।',
+    mr: 'व्यवहार सिंक करण्यात अयशस्वी. ऑनलाइन असताना पुन्हा प्रयत्न करू.',
+  },
+
+  // Click-to-Add Transactions - Success Messages
+  'success.csv.uploaded': {
+    en: 'CSV file uploaded successfully',
+    hi: 'CSV फ़ाइल सफलतापूर्वक अपलोड की गई',
+    mr: 'CSV फाइल यशस्वीरित्या अपलोड केली',
+  },
+  'success.receipt.uploaded': {
+    en: 'Receipt uploaded successfully',
+    hi: 'रसीद सफलतापूर्वक अपलोड की गई',
+    mr: 'पावती यशस्वीरित्या अपलोड केली',
+  },
+  'success.transaction.added': {
+    en: 'Transaction added successfully',
+    hi: 'लेनदेन सफलतापूर्वक जोड़ा गया',
+    mr: 'व्यवहार यशस्वीरित्या जोडला',
+  },
+  'success.transaction.deferred': {
+    en: 'Transaction deferred for later review',
+    hi: 'लेनदेन बाद में समीक्षा के लिए स्थगित किया गया',
+    mr: 'व्यवहार नंतरच्या पुनरावलोकनासाठी स्थगित केला',
+  },
+  'success.transaction.discarded': {
+    en: 'Transaction discarded',
+    hi: 'लेनदेन हटाया गया',
+    mr: 'व्यवहार टाकून दिला',
+  },
+
+  // Click-to-Add Transactions - Info/Tips
+  'info.tip': {
+    en: 'Tip',
+    hi: 'सुझाव',
+    mr: 'टीप',
+  },
+  'info.uploadTip': {
+    en: 'You can upload receipt photos or CSV files. The system will automatically extract transaction details.',
+    hi: 'आप रसीद की तस्वीरें या CSV फ़ाइलें अपलोड कर सकते हैं। सिस्टम स्वचालित रूप से लेनदेन विवरण निकालेगा।',
+    mr: 'तुम्ही पावतीचे फोटो किंवा CSV फाइल्स अपलोड करू शकता. सिस्टम आपोआप व्यवहार तपशील काढेल.',
+  },
 };
 
 /**
@@ -1242,6 +1654,26 @@ export const errorTranslations: Translations = {
     en: 'Database error. Please try again.',
     hi: 'डेटाबेस त्रुटि। कृपया पुनः प्रयास करें।',
     mr: 'डेटाबेस त्रुटी. कृपया पुन्हा प्रयत्न करा.'
+  },
+  'errors.ocrTimeout': {
+    en: 'Receipt processing took too long. Please try again.',
+    hi: 'रसीद प्रोसेसिंग में बहुत समय लगा। कृपया पुनः प्रयास करें।',
+    mr: 'पावती प्रक्रिया खूप वेळ घेत आहे. कृपया पुन्हा प्रयत्न करा.'
+  },
+  'errors.ocrUnreadable': {
+    en: 'Could not read receipt. Please ensure the image is clear and well-lit.',
+    hi: 'रसीद पढ़ नहीं सकी। कृपया सुनिश्चित करें कि छवि स्पष्ट और अच्छी तरह से प्रकाशित है।',
+    mr: 'पावती वाचता आली नाही. कृपया प्रतिमा स्पष्ट आणि चांगल्या प्रकाशात असल्याची खात्री करा.'
+  },
+  'errors.ocrNoData': {
+    en: 'No transaction data found in receipt.',
+    hi: 'रसीद में कोई लेनदेन डेटा नहीं मिला।',
+    mr: 'पावतीमध्ये व्यवहार डेटा आढळला नाही.'
+  },
+  'errors.ocrServiceError': {
+    en: 'Receipt processing service temporarily unavailable.',
+    hi: 'रसीद प्रोसेसिंग सेवा अस्थायी रूप से अनुपलब्ध है।',
+    mr: 'पावती प्रक्रिया सेवा तात्पुरती अनुपलब्ध आहे.'
   }
 };
 

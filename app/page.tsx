@@ -19,6 +19,8 @@ import Charts from '@/components/Charts';
 import Recommendations from '@/components/Recommendations';
 import Alerts from '@/components/Alerts';
 import Benchmark from '@/components/Benchmark';
+import PendingTransactionConfirmation from '@/components/PendingTransactionConfirmation';
+import CSVUpload from '@/components/CSVUpload';
 import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
 import ExportPDF from '@/components/ExportPDF';
@@ -33,13 +35,15 @@ import {
   BarChart3,
   MessageSquare,
   UserCircle,
+  Bell,
 } from 'lucide-react';
 import { SessionManager } from '@/lib/session-manager';
 import { getLocalEntries as getLocalDailyEntries } from '@/lib/daily-entry-sync';
 import { getLocalEntries as getLocalCreditEntries } from '@/lib/credit-sync';
 import { calculateCreditSummary, calculateHealthScore } from '@/lib/calculations';
+import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
 
-type AppSection = 'dashboard' | 'entries' | 'credit' | 'analysis' | 'chat' | 'account';
+type AppSection = 'dashboard' | 'entries' | 'credit' | 'pending' | 'analysis' | 'chat' | 'account';
 
 type HealthBreakdown = {
   marginScore: number;
@@ -92,6 +96,9 @@ export default function Home() {
   const [healthBreakdown, setHealthBreakdown] = useState<HealthBreakdown | null>(null);
   const [user, setUser] = useState<{ userId: string; username: string } | null>(null);
   const [activeSection, setActiveSection] = useState<AppSection>('dashboard');
+  
+  // Get pending transaction count for badge
+  const pendingCount = usePendingTransactionCount();
 
   useEffect(() => {
     const initSession = async () => {
@@ -336,8 +343,8 @@ export default function Home() {
 
       if (!response.ok) throw new Error('Failed to save entry');
 
-      // Refresh daily entries
-      await loadDailyEntries();
+      // Refresh health score which will reload entries
+      refreshHealthScore();
 
       const message =
         language === 'hi'
@@ -364,6 +371,7 @@ export default function Home() {
       dashboard: 'Dashboard',
       entries: 'Daily Entry',
       credit: 'Credit',
+      pending: 'Pending',
       analysis: 'Analysis',
       chat: 'Q&A',
       account: 'Account',
@@ -373,6 +381,7 @@ export default function Home() {
       dashboard: 'डैशबोर्ड',
       entries: 'दैनिक एंट्री',
       credit: 'उधारी',
+      pending: 'लंबित',
       analysis: 'विश्लेषण',
       chat: 'प्रश्नोत्तर',
       account: 'खाता',
@@ -382,6 +391,7 @@ export default function Home() {
       dashboard: 'डॅशबोर्ड',
       entries: 'दैनिक नोंद',
       credit: 'उधार',
+      pending: 'प्रलंबित',
       analysis: 'विश्लेषण',
       chat: 'प्रश्नोत्तर',
       account: 'खाते',
@@ -396,6 +406,7 @@ export default function Home() {
     { id: 'dashboard', icon: LayoutDashboard },
     { id: 'entries', icon: ClipboardList },
     { id: 'credit', icon: CreditCard },
+    { id: 'pending', icon: Bell },
     { id: 'analysis', icon: BarChart3 },
     { id: 'chat', icon: MessageSquare },
     { id: 'account', icon: UserCircle },
@@ -515,11 +526,13 @@ export default function Home() {
                 {sectionItems.map((section) => {
                   const Icon = section.icon;
                   const active = activeSection === section.id;
+                  const showBadge = section.id === 'pending' && pendingCount.badge > 0;
+                  
                   return (
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
-                      className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors relative ${
                         active
                           ? 'bg-blue-50 text-blue-700 border border-blue-200'
                           : 'text-slate-700 hover:bg-slate-50 border border-transparent'
@@ -527,6 +540,11 @@ export default function Home() {
                     >
                       <Icon className="w-4 h-4" />
                       {getSectionLabel(section.id)}
+                      {showBadge && (
+                        <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-orange-500 text-white text-xs font-bold rounded-full">
+                          {pendingCount.badge}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -606,6 +624,13 @@ export default function Home() {
                       : 'Upload data first to start Q&A chat.'}
                   </div>
                 ))}
+
+              {activeSection === 'pending' && (
+                <div className="space-y-6">
+                  <PendingTransactionConfirmation language={language} />
+                  <CSVUpload language={language} />
+                </div>
+              )}
 
               {activeSection === 'account' && <UserProfile language={language} />}
             </section>

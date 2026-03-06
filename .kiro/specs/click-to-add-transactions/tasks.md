@@ -6,15 +6,15 @@ This feature enables users to quickly add financial transactions inferred from r
 
 ## Tasks
 
-- [ ] 1. Create core data types and interfaces
+- [x] 1. Create core data types and interfaces
   - Define `InferredTransaction` interface with id, date, type, vendor_name, category, amount, source, created_at, deferred_at fields
   - Define `TransactionSource` type as 'receipt' | 'csv'
   - Define `TransactionType` type as 'expense' | 'sale'
   - Add types to `lib/types.ts`
   - _Requirements: 1.1, 2.1, 3.2_
 
-- [ ] 2. Implement Transaction Store (localStorage)
-  - [ ] 2.1 Create transaction store module
+- [x] 2. Implement Transaction Store (localStorage)
+  - [x] 2.1 Create transaction store module
     - Implement `getLocalPendingTransactions()` to retrieve all pending transactions sorted by created_at descending
     - Implement `savePendingTransaction(transaction: InferredTransaction)` to persist to localStorage
     - Implement `updatePendingTransaction(id: string, updates: Partial<InferredTransaction>)` for deferred_at updates
@@ -24,15 +24,15 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `lib/pending-transaction-store.ts`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-  - [ ]* 2.2 Write unit tests for transaction store
+  - [x] 2.2 Write unit tests for transaction store
     - Test CRUD operations on pending transactions
     - Test sorting by created_at descending
     - Test 100 transaction limit enforcement
     - Test localStorage persistence across operations
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 3. Implement OCR Result Parser
-  - [ ] 3.1 Create OCR result parser
+- [x] 3. Implement OCR Result Parser
+  - [x] 3.1 Create OCR result parser
     - Parse Lambda output JSON from receipt-ocr-processor
     - Extract date, amount, vendor, items from extractedData field
     - Generate deterministic transaction id using hash of source filename and extracted data
@@ -43,7 +43,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `lib/parsers/ocr-result-parser.ts`
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
 
-  - [ ]* 3.2 Write unit tests for OCR parser
+  - [x] 3.2 Write unit tests for OCR parser
     - Test parsing valid OCR results
     - Test date format handling (DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD)
     - Test amount extraction with currency symbols
@@ -52,8 +52,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test deterministic id generation
     - _Requirements: 9.2, 9.3, 9.4, 9.5, 9.6_
 
-- [ ] 4. Implement CSV Parser
-  - [ ] 4.1 Create CSV parser module
+- [x] 4. Implement CSV Parser
+  - [x] 4.1 Create CSV parser module
     - Use papaparse library for CSV parsing
     - Detect headers automatically from first row
     - Map common header variations (Date/Transaction Date/date → date field)
@@ -68,7 +68,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `lib/parsers/csv-parser.ts`
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
 
-  - [ ]* 4.2 Write unit tests for CSV parser
+  - [x] 4.2 Write unit tests for CSV parser
     - Test header detection and mapping
     - Test date format parsing (multiple formats)
     - Test amount parsing with various currency formats
@@ -78,11 +78,11 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test deterministic id generation
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
 
-- [ ] 5. Checkpoint - Ensure all tests pass
+- [x] 5. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Implement Duplicate Detection
-  - [ ] 6.1 Create duplicate detector module
+- [x] 6. Implement Duplicate Detection
+  - [x] 6.1 Create duplicate detector module
     - Check if transaction id exists in pending transactions
     - Check if transaction id exists in recently added daily entries (last 30 days)
     - Query localStorage for daily entries within date range
@@ -90,15 +90,15 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `lib/duplicate-detector.ts`
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-  - [ ]* 6.2 Write unit tests for duplicate detector
+  - [x] 6.2 Write unit tests for duplicate detector
     - Test detection against pending transactions
     - Test detection against recent daily entries (30 days)
     - Test no false positives for unique transactions
     - Test date range filtering
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 7. Create CSV Upload API Endpoint
-  - [ ] 7.1 Implement CSV upload endpoint
+- [x] 7. Create CSV Upload API Endpoint
+  - [x] 7.1 Implement CSV upload endpoint
     - Create POST endpoint at `/api/csv-upload`
     - Accept multipart/form-data with CSV file
     - Validate file type (text/csv, application/csv)
@@ -112,7 +112,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `app/api/csv-upload/route.ts`
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 8.5, 12.1, 12.2, 12.3, 12.4, 12.5_
 
-  - [ ]* 7.2 Write integration tests for CSV upload endpoint
+  - [x] 7.2 Write integration tests for CSV upload endpoint
     - Test successful CSV upload with valid data
     - Test file size validation
     - Test row count validation
@@ -121,8 +121,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test error responses
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 12.1, 12.2, 12.3, 12.4, 12.5_
 
-- [ ] 8. Create Receipt Status API Endpoint
-  - [ ] 8.1 Implement receipt status polling endpoint
+- [x] 8. Create Receipt Status API Endpoint
+  - [x] 8.1 Implement receipt status polling endpoint
     - Create GET endpoint at `/api/receipt-status`
     - Accept filename query parameter
     - Check S3 output bucket for processed results JSON
@@ -135,7 +135,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `app/api/receipt-status/route.ts`
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 8.1, 8.2, 8.3, 11.1, 11.2, 11.3, 11.4, 11.5_
 
-  - [ ]* 8.2 Write integration tests for receipt status endpoint
+  - [x] 8.2 Write integration tests for receipt status endpoint
     - Test polling for completed OCR results
     - Test processing status handling
     - Test error status handling
@@ -143,11 +143,11 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test error code responses
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 11.1, 11.2, 11.3, 11.4, 11.5_
 
-- [ ] 9. Checkpoint - Ensure all tests pass
+- [x] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Create Confirmation UI Component
-  - [ ] 10.1 Implement PendingTransactionConfirmation component
+- [x] 10. Create Confirmation UI Component
+  - [x] 10.1 Implement PendingTransactionConfirmation component
     - Display current pending transaction with all fields (date, amount, type, vendor, category, source)
     - Show transaction counter "X of Y" where X is current position, Y is total pending
     - Provide three action buttons: Add, Later, Discard
@@ -159,7 +159,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `components/PendingTransactionConfirmation.tsx`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 14.1, 14.2_
 
-  - [ ]* 10.2 Write component tests for confirmation UI
+  - [x] 10.2 Write component tests for confirmation UI
     - Test rendering with pending transaction
     - Test empty state rendering
     - Test transaction counter display
@@ -168,8 +168,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test source indicator display
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 11. Implement Add Transaction Action
-  - [ ] 11.1 Create add transaction handler
+- [x] 11. Implement Add Transaction Action
+  - [x] 11.1 Create add transaction handler
     - Accept confirmed transaction data from UI
     - Create DailyEntry using existing daily-entry-sync module
     - Call `createDailyEntry()` with transaction data
@@ -181,7 +181,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Add to `components/PendingTransactionConfirmation.tsx`
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-  - [ ]* 11.2 Write integration tests for add action
+  - [x] 11.2 Write integration tests for add action
     - Test successful transaction addition
     - Test DailyEntry creation
     - Test pending transaction removal
@@ -190,8 +190,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test error handling and rollback
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 12. Implement Later (Defer) Action
-  - [ ] 12.1 Create defer transaction handler
+- [x] 12. Implement Later (Defer) Action
+  - [x] 12.1 Create defer transaction handler
     - Update transaction with deferred_at timestamp
     - Move transaction to end of pending queue
     - Return next non-deferred pending transaction
@@ -200,7 +200,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Add to `components/PendingTransactionConfirmation.tsx`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ]* 12.2 Write unit tests for defer action
+  - [x] 12.2 Write unit tests for defer action
     - Test deferred_at timestamp update
     - Test queue reordering
     - Test next transaction selection logic
@@ -208,8 +208,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test persistence across sessions
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 13. Implement Discard Action
-  - [ ] 13.1 Create discard transaction handler
+- [x] 13. Implement Discard Action
+  - [x] 13.1 Create discard transaction handler
     - Permanently remove transaction from pending store
     - Log discard action with transaction id and timestamp
     - Return next pending transaction immediately
@@ -217,7 +217,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Add to `components/PendingTransactionConfirmation.tsx`
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-  - [ ]* 13.2 Write unit tests for discard action
+  - [x] 13.2 Write unit tests for discard action
     - Test permanent removal from store
     - Test discard logging
     - Test next transaction selection
@@ -225,11 +225,11 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test no undo capability
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 14. Checkpoint - Ensure all tests pass
+- [x] 14. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 15. Create CSV Upload UI Component
-  - [ ] 15.1 Implement CSVUpload component
+- [x] 15. Create CSV Upload UI Component
+  - [x] 15.1 Implement CSVUpload component
     - File input accepting .csv files
     - Drag-and-drop support
     - File size validation (5MB max)
@@ -240,7 +240,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `components/CSVUpload.tsx`
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 12.1, 12.2, 12.3, 12.4, 12.5_
 
-  - [ ]* 15.2 Write component tests for CSV upload UI
+  - [x] 15.2 Write component tests for CSV upload UI
     - Test file selection
     - Test drag-and-drop
     - Test file size validation
@@ -249,8 +249,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test error message display
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 16. Add Pending Transaction Badge to Navigation
-  - [ ] 16.1 Create pending transaction counter hook
+- [x] 16. Add Pending Transaction Badge to Navigation
+  - [x] 16.1 Create pending transaction counter hook
     - Create custom hook `usePendingTransactionCount()`
     - Subscribe to localStorage changes for pending_transactions
     - Return current count of pending transactions
@@ -258,7 +258,7 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `lib/hooks/usePendingTransactionCount.ts`
     - _Requirements: 14.3, 14.4, 14.5_
 
-  - [ ] 16.2 Add badge to main navigation
+  - [x] 16.2 Add badge to main navigation
     - Display badge with pending count in navigation bar
     - Hide badge when count is 0
     - Update badge reactively when count changes
@@ -267,8 +267,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Update `app/page.tsx` or navigation component
     - _Requirements: 14.3, 14.4, 14.5_
 
-- [ ] 17. Integrate with Existing Receipt OCR Flow
-  - [ ] 17.1 Update ReceiptOCR component
+- [x] 17. Integrate with Existing Receipt OCR Flow
+  - [x] 17.1 Update ReceiptOCR component
     - After successful OCR, parse result using ocr-result-parser
     - Check for duplicates using duplicate-detector
     - Save to pending store instead of immediate use
@@ -278,15 +278,15 @@ This feature enables users to quickly add financial transactions inferred from r
     - Update `components/ReceiptOCR.tsx`
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
 
-  - [ ]* 17.2 Write integration tests for receipt OCR flow
+  - [x] 17.2 Write integration tests for receipt OCR flow
     - Test end-to-end receipt upload to pending store
     - Test duplicate detection during receipt processing
     - Test notification display
     - Test backward compatibility
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
 
-- [ ] 18. Create Pending Transactions Page
-  - [ ] 18.1 Create pending transactions page
+- [x] 18. Create Pending Transactions Page
+  - [x] 18.1 Create pending transactions page
     - Display PendingTransactionConfirmation component
     - Display CSVUpload component
     - Show pending transaction count and summary
@@ -295,15 +295,15 @@ This feature enables users to quickly add financial transactions inferred from r
     - Create file `app/pending-transactions/page.tsx`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 14.1, 14.2_
 
-  - [ ] 18.2 Add navigation link to pending transactions
+  - [x] 18.2 Add navigation link to pending transactions
     - Add "Pending Transactions" link to main navigation
     - Show badge with count next to link
     - Highlight link when pending transactions exist
     - Update navigation component
     - _Requirements: 14.3, 14.4_
 
-- [ ] 19. Add Translation Keys
-  - [ ] 19.1 Add translation keys for all UI text
+- [x] 19. Add Translation Keys
+  - [x] 19.1 Add translation keys for all UI text
     - Add keys for confirmation UI (add, later, discard, edit, etc.)
     - Add keys for CSV upload UI (upload, drag-drop, errors, etc.)
     - Add keys for pending transactions page
@@ -313,8 +313,8 @@ This feature enables users to quickly add financial transactions inferred from r
     - Update `lib/translations.ts`
     - _Requirements: 4.1, 4.2, 4.3, 11.1, 11.2, 11.3, 11.4, 12.1, 12.2, 12.3, 12.4_
 
-- [ ] 20. Final Integration and Testing
-  - [ ] 20.1 End-to-end integration testing
+- [x] 20. Final Integration and Testing
+  - [x] 20.1 End-to-end integration testing
     - Test complete receipt upload → pending → add flow
     - Test complete CSV upload → pending → add flow
     - Test defer and discard actions
@@ -324,14 +324,14 @@ This feature enables users to quickly add financial transactions inferred from r
     - Test badge updates
     - _Requirements: All_
 
-  - [ ]* 20.2 Write end-to-end tests
+  - [x] 20.2 Write end-to-end tests
     - Test receipt to daily entry flow
     - Test CSV to daily entry flow
     - Test mixed source handling
     - Test offline/online sync
     - _Requirements: All_
 
-- [ ] 21. Final checkpoint - Ensure all tests pass
+- [x] 21. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
