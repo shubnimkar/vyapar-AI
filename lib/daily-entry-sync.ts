@@ -73,6 +73,13 @@ export function saveLocalEntry(entry: LocalDailyEntry): void {
   }
   
   saveLocalEntries(entries);
+  
+  // Dispatch custom event to notify other components
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('vyapar-daily-entries-changed', { 
+      detail: { entry, action: existingIndex >= 0 ? 'updated' : 'created' } 
+    }));
+  }
 }
 
 /**

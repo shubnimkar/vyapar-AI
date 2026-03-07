@@ -36,6 +36,16 @@ Object.defineProperty(global, 'localStorage', {
   writable: true,
 });
 
+// Mock window for custom events
+Object.defineProperty(global, 'window', {
+  value: {
+    dispatchEvent: jest.fn(),
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  },
+  writable: true,
+});
+
 // Mock fetch for instant sync
 global.fetch = jest.fn();
 

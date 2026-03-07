@@ -21,11 +21,13 @@ import Alerts from '@/components/Alerts';
 import Benchmark from '@/components/Benchmark';
 import PendingTransactionConfirmation from '@/components/PendingTransactionConfirmation';
 import CSVUpload from '@/components/CSVUpload';
+import Toast, { ToastType } from '@/components/Toast';
 import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
 import ExportPDF from '@/components/ExportPDF';
-import { Language, BusinessInsights, FileType, BenchmarkData } from '@/lib/types';
+import { Language, BusinessInsights, FileType, BenchmarkData, InferredTransaction } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { addTransactionToDailyEntry } from '@/lib/add-transaction-to-entry';
 import {
   ChevronDown,
   ChevronUp,
@@ -42,6 +44,9 @@ import { getLocalEntries as getLocalDailyEntries } from '@/lib/daily-entry-sync'
 import { getLocalEntries as getLocalCreditEntries } from '@/lib/credit-sync';
 import { calculateCreditSummary, calculateHealthScore } from '@/lib/calculations';
 import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
+import IndicesDashboard from '@/components/IndicesDashboard';
+import BenchmarkDisplay from '@/components/BenchmarkDisplay';
+import { BenchmarkComparison } from '@/lib/types';
 
 type AppSection = 'dashboard' | 'entries' | 'credit' | 'pending' | 'analysis' | 'chat' | 'account';
 
@@ -95,7 +100,16 @@ export default function Home() {
   const [healthScore, setHealthScore] = useState<number | null>(null);
   const [healthBreakdown, setHealthBreakdown] = useState<HealthBreakdown | null>(null);
   const [user, setUser] = useState<{ userId: string; username: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [activeSection, setActiveSection] = useState<AppSection>('dashboard');
+  
+  // Segment Benchmark state
+  const [benchmarkComparison, setBenchmarkComparison] = useState<BenchmarkComparison | null>(null);
+  const [benchmarkLoading, setBenchmarkLoading] = useState(false);
+  const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
+  
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   
   // Get pending transaction count for badge
   const pendingCount = usePendingTransactionCount();
@@ -166,12 +180,181 @@ export default function Home() {
   useEffect(() => {
     if (user) {
       refreshHealthScore();
+      loadUserProfile();
+      fetchBenchmarkData();
     }
   }, [user]);
+
+  // Refresh data when page becomes visible (e.g., when navigating back from pending transactions)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && user) {
+        logger.debug('Page became visible, refreshing data');
+        refreshHealthScore();
+        recalculateIndices();
+        fetchBenchmarkData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user]);
+
+  // Refresh data when switching to dashboard section
+  useEffect(() => {
+    if (activeSection === 'dashboard' && user) {
+      logger.debug('Switched to dashboard, refreshing data');
+      refreshHealthScore();
+      recalculateIndices();
+      fetchBenchmarkData();
+    }
+  }, [activeSection, user]);
+
+  // Listen for localStorage changes (e.g., when transactions are added from pending page)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'vyapar-daily-entries' && user) {
+        logger.debug('Daily entries changed in localStorage, refreshing');
+        refreshHealthScore();
+        recalculateIndices();
+        fetchBenchmarkData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [user]);
+
+  // Listen for custom daily entries changed event (same-tab changes)
+  useEffect(() => {
+    const handleDailyEntriesChanged = (e: Event) => {
+      if (user) {
+        const customEvent = e as CustomEvent;
+        logger.debug('Daily entries changed (custom event)', { detail: customEvent.detail });
+        refreshHealthScore();
+        recalculateIndices();
+        fetchBenchmarkData();
+      }
+    };
+
+    window.addEventListener('vyapar-daily-entries-changed', handleDailyEntriesChanged);
+    
+    return () => {
+      window.removeEventListener('vyapar-daily-entries-changed', handleDailyEntriesChanged);
+    };
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(`/api/profile?userId=${user.userId}`);
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setUserProfile(result.data);
+      } else {
+        logger.debug('Profile not found or incomplete', { error: result.error });
+        setUserProfile(null);
+      }
+    } catch (error) {
+      logger.warn('Failed to load profile data', { error });
+      setUserProfile(null);
+    }
+  };
+
+  const fetchBenchmarkData = async () => {
+    if (!user) return;
+    
+    setBenchmarkLoading(true);
+    setBenchmarkError(null);
+    
+    try {
+      const response = await fetch(`/api/benchmark?userId=${user.userId}`);
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setBenchmarkComparison(result.data);
+      } else {
+        // Handle specific error cases
+        if (result.code === 'PROFILE_INCOMPLETE') {
+          setBenchmarkError(t('benchmark.profileIncomplete', language));
+        } else if (result.code === 'NO_DAILY_ENTRIES') {
+          setBenchmarkError(t('benchmark.noDailyEntries', language));
+        } else if (result.code === 'SEGMENT_NOT_FOUND') {
+          setBenchmarkError(t('benchmark.segmentUnavailable', language));
+        } else {
+          setBenchmarkError(result.message || 'Failed to load benchmark data');
+        }
+        setBenchmarkComparison(null);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch benchmark data', { error });
+      setBenchmarkError('Network error. Please try again later.');
+      setBenchmarkComparison(null);
+    } finally {
+      setBenchmarkLoading(false);
+    }
+  };
+
+  const recalculateIndices = async () => {
+    if (!user) return;
+    
+    try {
+      logger.debug('Triggering index recalculation', { userId: user.userId });
+      
+      const response = await fetch('/api/indices/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.userId, language }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        logger.info('Indices recalculated successfully', { userId: user.userId });
+      } else {
+        logger.debug('Index recalculation returned no data', { error: result.error });
+      }
+    } catch (error) {
+      logger.warn('Failed to recalculate indices', { error });
+    }
+  };
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('vyapar-lang', lang);
+    
+    // Re-generate AI content (recommendations and alerts) in the new language
+    if (insights) {
+      regenerateAIContent(lang);
+    }
+  };
+
+  const regenerateAIContent = async (lang: Language) => {
+    try {
+      const { generateMockRecommendations, generateMockAlerts } = await import('@/lib/bedrock-client-mock');
+      
+      setInsights(prev => {
+        if (!prev) return prev;
+        
+        return {
+          ...prev,
+          recommendations: generateMockRecommendations(lang),
+          alerts: generateMockAlerts(lang),
+        };
+      });
+      
+      logger.debug('AI content regenerated for language', { language: lang });
+    } catch (error) {
+      logger.warn('Failed to regenerate AI content', { error });
+    }
   };
 
   const handleUploadComplete = (newSessionId: string, fileType: FileType) => {
@@ -187,10 +370,79 @@ export default function Home() {
 
   const handleDailyEntrySubmitted = () => {
     refreshHealthScore();
+    recalculateIndices();
+    fetchBenchmarkData();
   };
 
   const handleCreditChange = () => {
     refreshHealthScore();
+    recalculateIndices();
+  };
+
+  const handleAddTransaction = async (transaction: InferredTransaction) => {
+    if (!user) {
+      logger.error('No user found when adding transaction');
+      setToast({
+        message: language === 'hi' 
+          ? 'कृपया पहले लॉगिन करें'
+          : language === 'mr'
+          ? 'कृपया प्रथम लॉगिन करा'
+          : 'Please login first',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      // Use the proper utility function to add transaction
+      const result = await addTransactionToDailyEntry(transaction, user.userId);
+      
+      if (result.success) {
+        logger.info('Transaction successfully added', { 
+          transactionId: transaction.id,
+          date: transaction.date,
+          totalSales: result.dailyEntry?.totalSales,
+          totalExpense: result.dailyEntry?.totalExpense
+        });
+        
+        // Show success toast with transaction details
+        const typeLabel = transaction.type === 'sale' 
+          ? (language === 'hi' ? 'बिक्री' : language === 'mr' ? 'विक्री' : 'Sale')
+          : (language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense');
+        
+        const successMessage = language === 'hi' 
+          ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोड़ा गया!`
+          : language === 'mr'
+          ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोडला!`
+          : `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} added!`;
+        
+        setToast({
+          message: successMessage,
+          type: 'success'
+        });
+
+        // Refresh dashboard data
+        refreshHealthScore();
+        recalculateIndices();
+        fetchBenchmarkData();
+      } else {
+        throw new Error(result.error || 'Failed to add transaction');
+      }
+    } catch (error) {
+      logger.error('Failed to add transaction', { error, transactionId: transaction.id });
+      
+      // Show error toast
+      const errorMessage = language === 'hi'
+        ? 'लेनदेन जोड़ने में विफल'
+        : language === 'mr'
+        ? 'व्यवहार जोडण्यात अयशस्वी'
+        : 'Failed to add transaction';
+      
+      setToast({
+        message: errorMessage,
+        type: 'error'
+      });
+    }
   };
 
   const refreshHealthScore = () => {
@@ -503,6 +755,15 @@ export default function Home() {
 
   return (
     <AuthGuard>
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      
       <div className="min-h-screen bg-slate-100">
         <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
           <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
@@ -591,6 +852,23 @@ export default function Home() {
                     )}
                   </div>
 
+                  {/* Segment Benchmark Display - positioned near health score */}
+                  <BenchmarkDisplay
+                    comparison={benchmarkComparison}
+                    language={language}
+                    isLoading={benchmarkLoading}
+                    error={benchmarkError || undefined}
+                  />
+
+                  {/* Stress & Affordability Index Dashboard */}
+                  {user && userProfile && (
+                    <IndicesDashboard
+                      userId={user.userId}
+                      userProfile={userProfile}
+                      language={language}
+                    />
+                  )}
+
                   {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
                   {user && <CreditTracking userId={user.userId} language={language} onCreditChange={handleCreditChange} />}
                 </>
@@ -606,7 +884,7 @@ export default function Home() {
               {activeSection === 'credit' && user && (
                 <>
                   <CreditTracking userId={user.userId} language={language} onCreditChange={handleCreditChange} />
-                  <FollowUpPanel userId={user.userId} language={language} overdueThreshold={3} />
+                  <FollowUpPanel userId={user.userId} language={language} overdueThreshold={3} onCreditChange={handleCreditChange} />
                 </>
               )}
 
@@ -627,7 +905,10 @@ export default function Home() {
 
               {activeSection === 'pending' && (
                 <div className="space-y-6">
-                  <PendingTransactionConfirmation language={language} />
+                  <PendingTransactionConfirmation 
+                    language={language} 
+                    onAdd={handleAddTransaction}
+                  />
                   <CSVUpload language={language} />
                 </div>
               )}

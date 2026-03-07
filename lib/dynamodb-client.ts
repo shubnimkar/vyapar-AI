@@ -325,18 +325,27 @@ export class ProfileService {
     if (!item) return null;
 
     return {
+      id: userId,
       userId: item.userId,
       shopName: item.shopName,
       userName: item.userName,
-      businessType: item.businessType,
-      city: item.city,
       phoneNumber: item.phoneNumber,
       language: item.language,
-      business_type: item.business_type,
+      businessType: item.businessType,
+      city: item.city,
+      createdAt: item.createdAt || new Date().toISOString(),
+      lastActiveAt: item.lastActiveAt || new Date().toISOString(),
+      isActive: item.isActive !== false,
+      subscriptionTier: item.subscriptionTier || 'free',
+      preferences: item.preferences || {
+        dataRetentionDays: 90,
+        autoArchive: false,
+        notificationsEnabled: true,
+        reminderTime: '09:00'
+      },
+      business_type: item.business_type || item.businessType,
       city_tier: item.city_tier,
-      explanation_mode: item.explanation_mode,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      explanation_mode: item.explanation_mode || 'simple',
     };
   }
 

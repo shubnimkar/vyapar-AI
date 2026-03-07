@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     if (!username || !password || !shopName || !ownerName || !businessType || !city || !language) {
       logger.warn('Missing required fields in signup request');
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        createErrorResponse(ErrorCode.MISSING_REQUIRED_FIELDS, 'errors.missingRequiredFields'),
         { status: 400 }
       );
     }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     if (!usernameValidation.valid) {
       logger.warn('Invalid username format in signup', { username: sanitizedUsername });
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        createErrorResponse(ErrorCode.INVALID_USERNAME, 'errors.invalidUsername'),
         { status: 400 }
       );
     }
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     if (usernameExists) {
       logger.warn('Username already taken', { username: sanitizedUsername });
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        createErrorResponse(ErrorCode.USERNAME_TAKEN, 'errors.usernameTaken'),
         { status: 409 }
       );
     }
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     if (!passwordValidation.valid) {
       logger.warn('Weak password in signup');
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        createErrorResponse(ErrorCode.WEAK_PASSWORD, 'errors.weakPassword'),
         { status: 400 }
       );
     }
@@ -111,21 +111,21 @@ export async function POST(request: NextRequest) {
     if (sanitizedShopName.length < 1 || sanitizedShopName.length > 100) {
       logger.warn('Invalid shop name length');
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        createErrorResponse(ErrorCode.INVALID_FIELD_LENGTH, 'errors.invalidFieldLength'),
         { status: 400 }
       );
     }
     if (sanitizedOwnerName.length < 1 || sanitizedOwnerName.length > 100) {
       logger.warn('Invalid owner name length');
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        createErrorResponse(ErrorCode.INVALID_FIELD_LENGTH, 'errors.invalidFieldLength'),
         { status: 400 }
       );
     }
     if (sanitizedCity.length < 1 || sanitizedCity.length > 100) {
       logger.warn('Invalid city length');
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        createErrorResponse(ErrorCode.INVALID_FIELD_LENGTH, 'errors.invalidFieldLength'),
         { status: 400 }
       );
     }

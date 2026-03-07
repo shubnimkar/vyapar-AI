@@ -16,7 +16,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient, {
 });
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'vyapar-ai';
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'apac.anthropic.claude-3-haiku-20240307-v1:0';
+const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 
 export const handler = async (event) => {
   console.log("MILESTONE: Starting cash flow prediction");
@@ -118,15 +118,21 @@ Consider patterns like:
 
 Return ONLY a JSON array of exactly 7 predictions. No other text.`;
 
+    // Amazon Nova format
     const bedrockPayload = {
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 1000,
       messages: [
         {
           role: "user",
-          content: prompt,
+          content: [
+            {
+              text: prompt,
+            },
+          ],
         },
       ],
+      inferenceConfig: {
+        max_new_tokens: 1000,
+      },
     };
 
     console.log(`🌍 Bedrock Region: ${AWS_REGION}`);
@@ -142,7 +148,8 @@ Return ONLY a JSON array of exactly 7 predictions. No other text.`;
     const bedrockResponse = await bedrockClient.send(bedrockCommand);
     const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
 
-    const extractedText = responseBody.content[0].text;
+    // Nova response format: output.message.content[0].text
+    const extractedText = responseBody.output.message.content[0].text;
 
     // Parse predictions
     let predictions;

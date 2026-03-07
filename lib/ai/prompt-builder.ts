@@ -192,3 +192,149 @@ export function formatMetricsForPrompt(metrics: Record<string, number>): string 
   }
   return formatted;
 }
+
+/**
+ * Build prompt for explaining stress and affordability indices
+ * CRITICAL: AI must ONLY explain pre-calculated values, NEVER recalculate
+ */
+export function buildIndexExplanationPrompt(
+  context: PersonaContext,
+  data: {
+    stressIndex?: {
+      score: number;
+      breakdown: {
+        creditRatioScore: number;
+        cashBufferScore: number;
+        expenseVolatilityScore: number;
+      };
+      inputParameters: {
+        creditRatio: number;
+        cashBuffer: number;
+        expenseVolatility: number;
+      };
+    };
+    affordabilityIndex?: {
+      score: number;
+      breakdown: {
+        costToProfitRatio: number;
+        affordabilityCategory: string;
+      };
+      inputParameters: {
+        plannedCost: number;
+        avgMonthlyProfit: number;
+      };
+    };
+  }
+): PromptStructure {
+  // Log index explanation request
+  logger.info('Building index explanation prompt', {
+    persona_context: {
+      business_type: context.business_type,
+      city_tier: context.city_tier,
+      explanation_mode: context.explanation_mode,
+    },
+    has_stress_index: !!data.stressIndex,
+    has_affordability_index: !!data.affordabilityIndex,
+  });
+
+  // Build system prompt with persona context
+  let systemPrompt = '';
+
+  // 1. Persona identity
+  systemPrompt += PERSONA_IDENTITIES[context.business_type][context.language] + '\n\n';
+
+  // 2. Business context
+  systemPrompt += BUSINESS_CONTEXTS[context.business_type][context.language] + '\n\n';
+
+  // 3. Location context (if provided)
+  if (context.city_tier) {
+    systemPrompt += CITY_TIER_CONTEXTS[context.city_tier][context.language] + '\n\n';
+  }
+
+  // 4. AI interpretation layer instructions (CRITICAL)
+  systemPrompt += AI_INTERPRETATION_INSTRUCTIONS[context.language] + '\n\n';
+
+  // 5. Explanation mode instructions
+  systemPrompt += EXPLANATION_MODE_INSTRUCTIONS[context.explanation_mode][context.language] + '\n\n';
+
+  // Build user prompt with index data
+  let userPrompt = '';
+
+  if (context.language === 'hi') {
+    userPrompt = 'कृपया निम्नलिखित वित्तीय स्वास्थ्य संकेतकों की व्याख्या करें:\n\n';
+  } else if (context.language === 'mr') {
+    userPrompt = 'कृपया खालील आर्थिक आरोग्य निर्देशकांचे स्पष्टीकरण द्या:\n\n';
+  } else {
+    userPrompt = 'Please explain the following financial health indicators:\n\n';
+  }
+
+  // Add stress index data
+  if (data.stressIndex) {
+    const { score, breakdown, inputParameters } = data.stressIndex;
+    
+    if (context.language === 'hi') {
+      userPrompt += `**तनाव सूचकांक (Stress Index)**: ${score}/100\n`;
+      userPrompt += `घटक विवरण:\n`;
+      userPrompt += `- क्रेडिट अनुपात स्कोर: ${breakdown.creditRatioScore}/40 (क्रेडिट अनुपात: ${inputParameters.creditRatio.toFixed(2)})\n`;
+      userPrompt += `- नकद बफर स्कोर: ${breakdown.cashBufferScore}/35 (नकद बफर: ${inputParameters.cashBuffer.toFixed(2)})\n`;
+      userPrompt += `- व्यय अस्थिरता स्कोर: ${breakdown.expenseVolatilityScore}/25 (अस्थिरता: ${inputParameters.expenseVolatility.toFixed(2)})\n\n`;
+    } else if (context.language === 'mr') {
+      userPrompt += `**तणाव निर्देशांक (Stress Index)**: ${score}/100\n`;
+      userPrompt += `घटक तपशील:\n`;
+      userPrompt += `- क्रेडिट गुणोत्तर स्कोअर: ${breakdown.creditRatioScore}/40 (क्रेडिट गुणोत्तर: ${inputParameters.creditRatio.toFixed(2)})\n`;
+      userPrompt += `- रोख बफर स्कोअर: ${breakdown.cashBufferScore}/35 (रोख बफर: ${inputParameters.cashBuffer.toFixed(2)})\n`;
+      userPrompt += `- खर्च अस्थिरता स्कोअर: ${breakdown.expenseVolatilityScore}/25 (अस्थिरता: ${inputParameters.expenseVolatility.toFixed(2)})\n\n`;
+    } else {
+      userPrompt += `**Stress Index**: ${score}/100\n`;
+      userPrompt += `Component Breakdown:\n`;
+      userPrompt += `- Credit Ratio Score: ${breakdown.creditRatioScore}/40 (Credit Ratio: ${inputParameters.creditRatio.toFixed(2)})\n`;
+      userPrompt += `- Cash Buffer Score: ${breakdown.cashBufferScore}/35 (Cash Buffer: ${inputParameters.cashBuffer.toFixed(2)})\n`;
+      userPrompt += `- Expense Volatility Score: ${breakdown.expenseVolatilityScore}/25 (Volatility: ${inputParameters.expenseVolatility.toFixed(2)})\n\n`;
+    }
+  }
+
+  // Add affordability index data
+  if (data.affordabilityIndex) {
+    const { score, breakdown, inputParameters } = data.affordabilityIndex;
+    
+    if (context.language === 'hi') {
+      userPrompt += `**सामर्थ्य सूचकांक (Affordability Index)**: ${score}/100\n`;
+      userPrompt += `श्रेणी: ${breakdown.affordabilityCategory}\n`;
+      userPrompt += `लागत-से-लाभ अनुपात: ${breakdown.costToProfitRatio.toFixed(2)}\n`;
+      userPrompt += `योजनाबद्ध लागत: ₹${inputParameters.plannedCost}\n`;
+      userPrompt += `औसत मासिक लाभ: ₹${inputParameters.avgMonthlyProfit}\n\n`;
+    } else if (context.language === 'mr') {
+      userPrompt += `**परवडणारा निर्देशांक (Affordability Index)**: ${score}/100\n`;
+      userPrompt += `श्रेणी: ${breakdown.affordabilityCategory}\n`;
+      userPrompt += `खर्च-ते-नफा गुणोत्तर: ${breakdown.costToProfitRatio.toFixed(2)}\n`;
+      userPrompt += `नियोजित खर्च: ₹${inputParameters.plannedCost}\n`;
+      userPrompt += `सरासरी मासिक नफा: ₹${inputParameters.avgMonthlyProfit}\n\n`;
+    } else {
+      userPrompt += `**Affordability Index**: ${score}/100\n`;
+      userPrompt += `Category: ${breakdown.affordabilityCategory}\n`;
+      userPrompt += `Cost-to-Profit Ratio: ${breakdown.costToProfitRatio.toFixed(2)}\n`;
+      userPrompt += `Planned Cost: ₹${inputParameters.plannedCost}\n`;
+      userPrompt += `Average Monthly Profit: ₹${inputParameters.avgMonthlyProfit}\n\n`;
+    }
+  }
+
+  // Add instruction to explain implications
+  if (context.language === 'hi') {
+    userPrompt += 'इन संकेतकों का मेरे व्यवसाय के लिए क्या मतलब है और मुझे क्या कार्रवाई करनी चाहिए?';
+  } else if (context.language === 'mr') {
+    userPrompt += 'या निर्देशकांचा माझ्या व्यवसायासाठी काय अर्थ आहे आणि मी कोणती कृती करावी?';
+  } else {
+    userPrompt += 'What do these indicators mean for my business and what actions should I take?';
+  }
+
+  return {
+    system: systemPrompt,
+    user: userPrompt,
+    metadata: {
+      business_type: context.business_type,
+      city_tier: context.city_tier,
+      explanation_mode: context.explanation_mode,
+      prompt_type: 'index_explanation',
+    },
+  };
+}

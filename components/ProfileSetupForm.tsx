@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Language, ProfileSetupData } from '@/lib/types';
+import { Language, ProfileSetupData, CityTier, BusinessType } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { logger } from '@/lib/logger';
 
@@ -345,7 +345,7 @@ export default function ProfileSetupForm({
                   )}
                 </div>
 
-                {/* Business Type */}
+                {/* Business Type - for segment benchmark */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t('profile.setup.businessType', language)}
@@ -358,35 +358,61 @@ export default function ProfileSetupForm({
                     <option value="">
                       {language === 'hi' ? 'चुनें' : language === 'mr' ? 'निवडा' : 'Select'}
                     </option>
-                    <option value="retail">{t('businessType.retail', language)}</option>
-                    <option value="wholesale">{t('businessType.wholesale', language)}</option>
-                    <option value="services">{t('businessType.services', language)}</option>
-                    <option value="manufacturing">{t('businessType.manufacturing', language)}</option>
-                    <option value="restaurant">{t('businessType.restaurant', language)}</option>
-                    <option value="other">{t('businessType.other', language)}</option>
+                    <option value="kirana">
+                      {language === 'hi' ? 'किराना' : language === 'mr' ? 'किराणा' : 'Kirana (Grocery)'}
+                    </option>
+                    <option value="salon">
+                      {language === 'hi' ? 'सैलून' : language === 'mr' ? 'सलून' : 'Salon'}
+                    </option>
+                    <option value="pharmacy">
+                      {language === 'hi' ? 'फार्मेसी' : language === 'mr' ? 'फार्मसी' : 'Pharmacy'}
+                    </option>
+                    <option value="restaurant">
+                      {language === 'hi' ? 'रेस्तरां' : language === 'mr' ? 'रेस्टॉरंट' : 'Restaurant'}
+                    </option>
+                    <option value="other">
+                      {language === 'hi' ? 'अन्य' : language === 'mr' ? 'इतर' : 'Other'}
+                    </option>
                   </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    {language === 'hi' 
+                      ? 'बेंचमार्क तुलना के लिए उपयोग किया जाता है'
+                      : language === 'mr'
+                      ? 'बेंचमार्क तुलनेसाठी वापरले जाते'
+                      : 'Used for benchmark comparison'}
+                  </p>
                 </div>
 
-                {/* City */}
+                {/* City Tier - for segment benchmark */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('profile.setup.city', language)}
+                    {language === 'hi' ? 'शहर का स्तर' : language === 'mr' ? 'शहर स्तर' : 'City Tier'}
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-all"
-                      placeholder={language === 'hi' ? 'शहर' : language === 'mr' ? 'शहर' : 'City'}
-                    />
-                  </div>
+                  <select
+                    value={formData.city || ''}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-all"
+                  >
+                    <option value="">
+                      {language === 'hi' ? 'चुनें' : language === 'mr' ? 'निवडा' : 'Select'}
+                    </option>
+                    <option value="tier1">
+                      {language === 'hi' ? 'टियर 1 (मुंबई, दिल्ली, बेंगलुरु)' : language === 'mr' ? 'टियर 1 (मुंबई, दिल्ली, बेंगलुरु)' : 'Tier 1 (Mumbai, Delhi, Bangalore)'}
+                    </option>
+                    <option value="tier2">
+                      {language === 'hi' ? 'टियर 2 (पुणे, जयपुर, लखनऊ)' : language === 'mr' ? 'टियर 2 (पुणे, जयपूर, लखनौ)' : 'Tier 2 (Pune, Jaipur, Lucknow)'}
+                    </option>
+                    <option value="tier3">
+                      {language === 'hi' ? 'टियर 3 (छोटे शहर)' : language === 'mr' ? 'टियर 3 (लहान शहरे)' : 'Tier 3 (Smaller cities)'}
+                    </option>
+                  </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    {language === 'hi' 
+                      ? 'बेंचमार्क तुलना के लिए उपयोग किया जाता है'
+                      : language === 'mr'
+                      ? 'बेंचमार्क तुलनेसाठी वापरले जाते'
+                      : 'Used for benchmark comparison'}
+                  </p>
                 </div>
               </div>
 

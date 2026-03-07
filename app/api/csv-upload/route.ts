@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { parseCSV } from '@/lib/parsers/csv-parser';
 import { isDuplicate } from '@/lib/duplicate-detector';
 import { savePendingTransaction } from '@/lib/pending-transaction-store';
-import { logError, logInfo } from '@/lib/logger';
+import { logger } from '@/lib/logger';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_ROWS = 1000;
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    logInfo('CSV upload processed', {
+    logger.info('CSV upload processed', {
       filename: file.name,
       totalRows: parseResult.summary.totalRows,
       validRows: parseResult.summary.validRows,
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
       errors: parseResult.summary.errors
     });
   } catch (error) {
-    logError('CSV upload error', error);
+    logger.error('CSV upload error', { error });
 
     return NextResponse.json(
       {

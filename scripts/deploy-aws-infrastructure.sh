@@ -434,6 +434,13 @@ for func in "${LAMBDA_FUNCTIONS[@]}"; do
             ;;
     esac
     
+    # Set RESULTS_BUCKET based on function type
+    if [ "$func" = "receipt-ocr-processor" ]; then
+        RESULTS_BUCKET_VAR=$RECEIPTS_BUCKET
+    else
+        RESULTS_BUCKET_VAR=$VOICE_BUCKET
+    fi
+    
     if resource_exists "lambda" "$func"; then
         # Update existing function
         aws lambda update-function-code \
@@ -456,7 +463,7 @@ for func in "${LAMBDA_FUNCTIONS[@]}"; do
                 DYNAMODB_TABLE_NAME=$PROJECT_NAME,
                 S3_BUCKET_RECEIPTS=$RECEIPTS_BUCKET,
                 S3_BUCKET_VOICE=$VOICE_BUCKET,
-                RESULTS_BUCKET=$VOICE_BUCKET,
+                RESULTS_BUCKET=$RESULTS_BUCKET_VAR,
                 BEDROCK_MODEL_ID=$BEDROCK_MODEL_ID
             }" \
             --region "$REGION" \
@@ -477,7 +484,7 @@ for func in "${LAMBDA_FUNCTIONS[@]}"; do
                 DYNAMODB_TABLE_NAME=$PROJECT_NAME,
                 S3_BUCKET_RECEIPTS=$RECEIPTS_BUCKET,
                 S3_BUCKET_VOICE=$VOICE_BUCKET,
-                RESULTS_BUCKET=$VOICE_BUCKET,
+                RESULTS_BUCKET=$RESULTS_BUCKET_VAR,
                 BEDROCK_MODEL_ID=$BEDROCK_MODEL_ID
             }" \
             --region "$REGION" \

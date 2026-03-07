@@ -47,6 +47,9 @@ export function evaluateHighCreditRule(context: SuggestionContext): DailySuggest
       severity: 'critical',
       title: t('suggestions.high_credit.title', context.language),
       description: t('suggestions.high_credit.description', context.language).replace('{ratio}', ratioPercent.toString()),
+      title_key: 'suggestions.high_credit.title',
+      description_key: 'suggestions.high_credit.description',
+      description_params: { ratio: ratioPercent.toString() },
       rule_type: 'high_credit',
       context_data: {
         credit_ratio: creditRatio,
@@ -86,6 +89,12 @@ export function evaluateMarginDropRule(context: SuggestionContext): DailySuggest
       description: t('suggestions.margin_drop.description', context.language)
         .replace('{current}', currentPercent.toString())
         .replace('{avg}', avgPercent.toString()),
+      title_key: 'suggestions.margin_drop.title',
+      description_key: 'suggestions.margin_drop.description',
+      description_params: { 
+        current: currentPercent.toString(),
+        avg: avgPercent.toString()
+      },
       rule_type: 'margin_drop',
       context_data: {
         current_margin: context.current_margin,
@@ -122,6 +131,9 @@ export function evaluateLowCashBufferRule(context: SuggestionContext): DailySugg
       severity: 'critical',
       title: t('suggestions.low_cash.title', context.language),
       description: t('suggestions.low_cash.description', context.language).replace('{days}', daysRounded.toString()),
+      title_key: 'suggestions.low_cash.title',
+      description_key: 'suggestions.low_cash.description',
+      description_params: { days: daysRounded.toString() },
       rule_type: 'low_cash',
       context_data: {
         cash_buffer_days: context.cash_buffer_days
@@ -158,6 +170,8 @@ export function evaluateHealthyStateRule(
       severity: 'info',
       title: t('suggestions.healthy_state.title', context.language),
       description: t(tipKey, context.language),
+      title_key: 'suggestions.healthy_state.title',
+      description_key: tipKey,
       rule_type: 'healthy_state',
       context_data: {
         health_score: context.health_score,

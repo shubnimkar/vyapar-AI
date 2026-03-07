@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Language, InferredTransaction } from '@/lib/types';
 import PendingTransactionConfirmation from '@/components/PendingTransactionConfirmation';
 import CSVUpload from '@/components/CSVUpload';
+import Toast, { ToastType } from '@/components/Toast';
 import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
-import { createDailyEntry } from '@/lib/daily-entry-sync';
+import { addTransactionToDailyEntry } from '@/lib/add-transaction-to-entry';
 import { SessionManager } from '@/lib/session-manager';
 import { logger } from '@/lib/logger';
 import { ArrowLeft, FileText, Receipt } from 'lucide-react';
@@ -32,6 +33,9 @@ export default function PendingTransactionsPage() {
   const [language, setLanguage] = useState<Language>('en');
   const [user, setUser] = useState<{ userId: string; username: string } | null>(null);
   const pendingCount = usePendingTransactionCount();
+  
+  // Toast notification state
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
   useEffect(() => {
     // Get current user
@@ -88,30 +92,61 @@ export default function PendingTransactionsPage() {
   const handleAddTransaction = async (transaction: InferredTransaction) => {
     if (!user) {
       logger.error('No user found when adding transaction');
+      setToast({
+        message: language === 'hi' 
+          ? 'कृपया पहले लॉगिन करें'
+          : language === 'mr'
+          ? 'कृपया प्रथम लॉगिन करा'
+          : 'Please login first',
+        type: 'error'
+      });
       return;
     }
 
     try {
-      // Create daily entry from transaction
-      await createDailyEntry(
-        user.userId,
-        transaction.date,
-        transaction.type === 'sale' ? transaction.amount : 0,
-        transaction.type === 'expense' ? transaction.amount : 0,
-        0, // cashInHand - not provided in transaction
-        {
-          id: transaction.id,
-          type: transaction.type,
-          amount: transaction.amount,
-          vendor_name: transaction.vendor_name,
-          category: transaction.category,
-          source: transaction.source,
-        }
-      );
-
-      logger.info('Transaction added successfully', { transactionId: transaction.id });
+      // Use the proper utility function to add transaction
+      const result = await addTransactionToDailyEntry(transaction, user.userId);
+      
+      if (result.success) {
+        logger.info('Transaction successfully added', { 
+          transactionId: transaction.id,
+          date: transaction.date,
+          totalSales: result.dailyEntry?.totalSales,
+          totalExpense: result.dailyEntry?.totalExpense
+        });
+        
+        // Show success toast with transaction details
+        const typeLabel = transaction.type === 'sale' 
+          ? (language === 'hi' ? 'बिक्री' : language === 'mr' ? 'विक्री' : 'Sale')
+          : (language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense');
+        
+        const successMessage = language === 'hi' 
+          ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोड़ा गया!`
+          : language === 'mr'
+          ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोडला!`
+          : `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} added!`;
+        
+        setToast({
+          message: successMessage,
+          type: 'success'
+        });
+      } else {
+        throw new Error(result.error || 'Failed to add transaction');
+      }
     } catch (error) {
       logger.error('Failed to add transaction', { error, transactionId: transaction.id });
+      
+      // Show error toast
+      const errorMessage = language === 'hi'
+        ? 'लेनदेन जोड़ने में विफल'
+        : language === 'mr'
+        ? 'व्यवहार जोडण्यात अयशस्वी'
+        : 'Failed to add transaction';
+      
+      setToast({
+        message: errorMessage,
+        type: 'error'
+      });
     }
   };
 
@@ -137,6 +172,15 @@ export default function PendingTransactionsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

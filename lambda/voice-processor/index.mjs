@@ -7,7 +7,7 @@ const s3Client = new S3Client({ region: AWS_REGION });
 const transcribeClient = new TranscribeClient({ region: AWS_REGION });
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
 
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'apac.anthropic.claude-3-haiku-20240307-v1:0';
+const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 const RESULTS_BUCKET = process.env.RESULTS_BUCKET || 'vyapar-voice';
 
 export const handler = async (event) => {
@@ -87,15 +87,21 @@ Return ONLY valid JSON format:
   "confidence": number (0-1)
 }`;
 
+    // Amazon Nova format
     const bedrockPayload = {
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 500,
       messages: [
         {
           role: "user",
-          content: prompt,
+          content: [
+            {
+              text: prompt,
+            },
+          ],
         },
       ],
+      inferenceConfig: {
+        max_new_tokens: 500,
+      },
     };
 
     console.log("Calling Bedrock for data extraction...");
@@ -114,8 +120,8 @@ Return ONLY valid JSON format:
 
     console.log("Bedrock response:", JSON.stringify(responseBody, null, 2));
 
-    // Extract the text content from Claude's response
-    const extractedText = responseBody.content[0].text;
+    // Nova response format: output.message.content[0].text
+    const extractedText = responseBody.output.message.content[0].text;
 
     // Parse the JSON from the response
     let extractedData;

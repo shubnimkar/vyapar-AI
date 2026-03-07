@@ -17,7 +17,7 @@ const s3Client = new S3Client({
   },
 });
 
-const OUTPUT_BUCKET = process.env.AWS_S3_BUCKET_RECEIPTS_OUTPUT || "vyapar-receipts-output";
+const OUTPUT_BUCKET = process.env.AWS_S3_BUCKET_RECEIPTS_OUTPUT || process.env.S3_BUCKET_RECEIPTS || "vyapar-ai-receipts-975678946412";
 
 /**
  * GET /api/receipt-status?filename={filename}

@@ -6,7 +6,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
 
 ## Tasks
 
-- [ ] 1. Implement statistical utility functions
+- [x] 1. Implement statistical utility functions
   - Create `/lib/finance/statisticsUtils.ts` with pure functions
   - Implement `mean()` function for calculating average of number arrays
   - Implement `standardDeviation()` function for calculating standard deviation
@@ -14,15 +14,15 @@ This implementation plan breaks down the Stress & Affordability Index feature in
   - Implement `filterEntriesByDateRange()` function for filtering entries by date
   - _Requirements: 1.7, 1.10, 2.7, 2.10_
 
-- [ ]* 1.1 Write unit tests for statistical utilities
+- [x] 1.1 Write unit tests for statistical utilities
   - Test `mean()` with various inputs including edge cases (empty array, single value)
   - Test `standardDeviation()` with known datasets
   - Test `sum()` with positive, negative, and zero values
   - Test `filterEntriesByDateRange()` with various date ranges
   - _Requirements: 9.4_
 
-- [ ] 2. Implement Stress Index calculator
-  - [ ] 2.1 Create core calculation function in `/lib/finance/calculateStressIndex.ts`
+- [x] 2. Implement Stress Index calculator
+  - [x] 2.1 Create core calculation function in `/lib/finance/calculateStressIndex.ts`
     - Implement `calculateStressIndex()` as pure function accepting creditRatio, cashBuffer, expenseVolatility
     - Implement credit ratio scoring algorithm (0-40 points based on thresholds)
     - Implement cash buffer scoring algorithm (0-35 points based on thresholds)
@@ -30,13 +30,13 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Return `StressIndexResult` with score, breakdown, timestamp, and input parameters
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7_
 
-  - [ ] 2.2 Add input validation for Stress Index
+  - [x] 2.2 Add input validation for Stress Index
     - Implement `validateStressInputs()` function
     - Check for NaN, undefined, and negative values
     - Return structured validation result with error messages
     - _Requirements: 1.1, 9.4_
 
-  - [ ]* 2.3 Write unit tests for Stress Index calculator
+  - [x] 2.3 Write unit tests for Stress Index calculator
     - Test ideal conditions (zero stress scenario)
     - Test worst conditions (maximum stress scenario)
     - Test boundary values at each threshold (0.5, 0.7 for credit ratio, etc.)
@@ -45,7 +45,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Test timestamp and input parameter storage
     - _Requirements: 9.1, 9.4, 9.5, 9.6_
 
-  - [ ]* 2.4 Write property-based tests for Stress Index
+  - [x] 2.4 Write property-based tests for Stress Index
     - **Property 1: Range Constraint** - Score always between 0-100
     - **Validates: Requirements 1.1, 1.2**
     - **Property 2: Monotonicity** - Increasing credit ratio increases stress, decreasing cash buffer increases stress, increasing volatility increases stress
@@ -57,8 +57,8 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Use fast-check library with minimum 100 iterations per property
     - _Requirements: 9.1, 9.2, 9.3_
 
-- [ ] 3. Implement Affordability Index calculator
-  - [ ] 3.1 Create core calculation function in `/lib/finance/calculateAffordabilityIndex.ts`
+- [x] 3. Implement Affordability Index calculator
+  - [x] 3.1 Create core calculation function in `/lib/finance/calculateAffordabilityIndex.ts`
     - Implement `calculateAffordabilityIndex()` as pure function accepting plannedCost, avgMonthlyProfit
     - Calculate cost-to-profit ratio
     - Implement scoring algorithm based on ratio thresholds
@@ -67,14 +67,14 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Return `AffordabilityIndexResult` with score, breakdown, timestamp, and input parameters
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
-  - [ ] 3.2 Add input validation for Affordability Index
+  - [x] 3.2 Add input validation for Affordability Index
     - Implement `validateAffordabilityInputs()` function
     - Check for NaN, undefined values
     - Validate plannedCost is positive
     - Return structured validation result with error messages
     - _Requirements: 2.1, 7.2, 9.4_
 
-  - [ ]* 3.3 Write unit tests for Affordability Index calculator
+  - [x] 3.3 Write unit tests for Affordability Index calculator
     - Test very small expense (score = 100)
     - Test expense exceeding profit (score < 50)
     - Test zero profit edge case (score = 0)
@@ -84,7 +84,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Test timestamp and input parameter storage
     - _Requirements: 9.1, 9.4, 9.5, 9.6_
 
-  - [ ]* 3.4 Write property-based tests for Affordability Index
+  - [x] 3.4 Write property-based tests for Affordability Index
     - **Property 5: Range Constraint** - Score always between 0-100
     - **Validates: Requirements 2.1, 2.2**
     - **Property 6: Inverse Relationship** - Increasing cost decreases affordability, increasing profit increases affordability
@@ -100,11 +100,11 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Use fast-check library with minimum 100 iterations per property
     - _Requirements: 9.1, 9.2, 9.3_
 
-- [ ] 4. Checkpoint - Ensure core calculation tests pass
+- [x] 4. Checkpoint - Ensure core calculation tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Implement data aggregation functions
-  - [ ] 5.1 Create Stress Index input aggregation in `/lib/finance/aggregateStressInputs.ts`
+- [x] 5. Implement data aggregation functions
+  - [x] 5.1 Create Stress Index input aggregation in `/lib/finance/aggregateStressInputs.ts`
     - Implement `aggregateStressInputs()` function accepting daily entries and credit entries
     - Calculate credit ratio from last 30 days (outstanding credits / total sales)
     - Calculate cash buffer from last 90 days (latest cash / avg monthly expenses)
@@ -113,14 +113,14 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Return `StressIndexInputs` with calculated values and metadata
     - _Requirements: 3.1, 3.2, 3.3, 3.5_
 
-  - [ ] 5.2 Create Affordability Index input aggregation in `/lib/finance/aggregateAffordabilityInputs.ts`
+  - [x] 5.2 Create Affordability Index input aggregation in `/lib/finance/aggregateAffordabilityInputs.ts`
     - Implement `aggregateAffordabilityInputs()` function accepting daily entries
     - Calculate average monthly profit from last 90 days
     - Return null if insufficient data (< 7 days)
     - Return `AffordabilityIndexInputs` with calculated values and metadata
     - _Requirements: 3.4, 3.5_
 
-  - [ ]* 5.3 Write unit tests for data aggregation
+  - [x] 5.3 Write unit tests for data aggregation
     - Test insufficient data returns null (< 7 days)
     - Test credit ratio calculation with mixed paid/unpaid credits
     - Test cash buffer calculation with 90 days of data
@@ -130,7 +130,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Test average monthly profit calculation
     - _Requirements: 9.4, 9.5_
 
-- [ ] 6. Add type definitions to `/lib/types.ts`
+- [x] 6. Add type definitions to `/lib/types.ts`
   - Add `StressComponentBreakdown` interface
   - Add `StressIndexResult` interface
   - Add `AffordabilityComponentBreakdown` interface
@@ -141,22 +141,22 @@ This implementation plan breaks down the Stress & Affordability Index feature in
   - Add `IndexVisualConfig` interface
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 4.1_
 
-- [ ] 7. Implement storage and sync manager
-  - [ ] 7.1 Create localStorage functions in `/lib/index-sync.ts`
+- [x] 7. Implement storage and sync manager
+  - [x] 7.1 Create localStorage functions in `/lib/index-sync.ts`
     - Implement `saveIndexToLocalStorage()` function
     - Implement `getLatestIndexFromLocalStorage()` function
     - Implement `getHistoricalIndicesFromLocalStorage()` function
     - Implement automatic pruning of entries older than 90 days
     - _Requirements: 4.6, 8.1, 8.2, 8.3, 8.4_
 
-  - [ ] 7.2 Create DynamoDB functions in `/lib/index-sync.ts`
+  - [x] 7.2 Create DynamoDB functions in `/lib/index-sync.ts`
     - Implement `saveIndexToDynamoDB()` function using single-table design
     - Use partition key `PK = USER#{user_id}` and sort key `SK = INDEX#{date}`
     - Implement `getLatestIndexFromDynamoDB()` function with descending sort
     - Implement `getHistoricalIndicesFromDynamoDB()` function with date range query
     - _Requirements: 4.1, 4.2, 4.3, 4.8, 4.9_
 
-  - [ ] 7.3 Implement sync manager with conflict resolution
+  - [x] 7.3 Implement sync manager with conflict resolution
     - Create `IndexSyncManager` class
     - Implement `saveIndex()` method (localStorage always, DynamoDB when online)
     - Implement `getLatestIndex()` method (try localStorage first, fallback to DynamoDB)
@@ -164,7 +164,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Implement `isOnline()` method for network detection
     - _Requirements: 4.5, 4.6, 4.7, 8.5, 8.6, 8.7, 8.8_
 
-  - [ ]* 7.4 Write integration tests for storage and sync
+  - [x] 7.4 Write integration tests for storage and sync
     - **Property 16: Round-Trip Persistence** - Saving and retrieving preserves all fields
     - **Validates: Requirements 4.1, 4.3, 4.4**
     - **Property 17: Latest Index Retrieval** - Returns entry with most recent date
@@ -176,11 +176,11 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Test conflict resolution (last-write-wins)
     - _Requirements: 9.4_
 
-- [ ] 8. Checkpoint - Ensure storage and sync tests pass
+- [x] 8. Checkpoint - Ensure storage and sync tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. Implement API routes
-  - [ ] 9.1 Create calculate indices endpoint at `/app/api/indices/calculate/route.ts`
+- [x] 9. Implement API routes
+  - [x] 9.1 Create calculate indices endpoint at `/app/api/indices/calculate/route.ts`
     - Implement POST handler accepting userId, plannedCost (optional), language
     - Load daily entries and credit entries via sync manager
     - Call `aggregateStressInputs()` and validate sufficient data
@@ -191,14 +191,14 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Return structured JSON response with success/error format
     - _Requirements: 3.6, 4.5, 8.3_
 
-  - [ ] 9.2 Create get latest indices endpoint at `/app/api/indices/latest/route.ts`
+  - [x] 9.2 Create get latest indices endpoint at `/app/api/indices/latest/route.ts`
     - Implement GET handler accepting userId query parameter
     - Validate userId is provided
     - Call sync manager `getLatestIndex()` method
     - Return structured JSON response with index data or 404 if not found
     - _Requirements: 4.8, 5.8_
 
-  - [ ] 9.3 Add error handling to API routes
+  - [x] 9.3 Add error handling to API routes
     - Return 400 for missing/invalid parameters
     - Return 404 for no data found
     - Return 500 for calculation errors
@@ -207,8 +207,8 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Never expose stack traces to client
     - _Requirements: 3.5, 5.6_
 
-- [ ] 10. Implement AI integration
-  - [ ] 10.1 Create prompt builder in `/lib/ai/prompts.ts`
+- [x] 10. Implement AI integration
+  - [x] 10.1 Create prompt builder in `/lib/ai/prompts.ts`
     - Implement `buildIndexExplanationPrompt()` function
     - Include stress index score and breakdown in prompt
     - Include affordability index if provided
@@ -218,7 +218,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Explicitly instruct AI to NOT recalculate any values
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 6.8, 6.9_
 
-  - [ ] 10.2 Create AI explanation endpoint at `/app/api/indices/explain/route.ts`
+  - [x] 10.2 Create AI explanation endpoint at `/app/api/indices/explain/route.ts`
     - Implement POST handler accepting stressIndex, affordabilityIndex (optional), userProfile, language
     - Validate stressIndex is provided
     - Call `buildIndexExplanationPrompt()` with all parameters
@@ -227,7 +227,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Handle AI service failures gracefully with fallback message
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 11. Add translation keys to `/lib/translations.ts`
+- [x] 11. Add translation keys to `/lib/translations.ts`
   - Add stress index labels (English, Hindi, Marathi)
   - Add affordability index labels (English, Hindi, Marathi)
   - Add component breakdown labels (English, Hindi, Marathi)
@@ -237,8 +237,8 @@ This implementation plan breaks down the Stress & Affordability Index feature in
   - Add sync status messages (English, Hindi, Marathi)
   - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
 
-- [ ] 12. Implement UI components
-  - [ ] 12.1 Create Stress Index display component at `/components/StressIndexDisplay.tsx`
+- [x] 12. Implement UI components
+  - [x] 12.1 Create Stress Index display component at `/components/StressIndexDisplay.tsx`
     - Accept `stressIndex` and `language` props
     - Display score with color coding (green: 0-33, yellow: 34-66, red: 67-100)
     - Implement toggle for component breakdown display
@@ -249,7 +249,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - **Validates: Requirements 5.1**
     - _Requirements: 5.1, 5.3, 5.4, 5.5, 10.1_
 
-  - [ ] 12.2 Create Affordability planner component at `/components/AffordabilityPlanner.tsx`
+  - [x] 12.2 Create Affordability planner component at `/components/AffordabilityPlanner.tsx`
     - Accept `userId`, `language`, and `onCalculate` callback props
     - Implement input field for planned expense amount
     - Validate input is positive number
@@ -268,7 +268,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - **Validates: Requirements 7.2**
     - _Requirements: 5.2, 5.3, 7.1, 7.2, 7.3, 7.4, 7.5, 7.8, 10.1_
 
-  - [ ] 12.3 Create combined indices dashboard component at `/components/IndicesDashboard.tsx`
+  - [x] 12.3 Create combined indices dashboard component at `/components/IndicesDashboard.tsx`
     - Display stress index and affordability planner side by side
     - Implement "Explain" button that calls AI explanation endpoint
     - Display AI explanation in modal or expandable section
@@ -277,14 +277,14 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Implement responsive layout for mobile and desktop
     - _Requirements: 5.6, 5.7, 5.8, 6.1, 8.5_
 
-- [ ] 13. Integrate indices into main dashboard
-  - [ ] 13.1 Add indices dashboard to main page at `/app/page.tsx`
+- [x] 13. Integrate indices into main dashboard
+  - [x] 13.1 Add indices dashboard to main page at `/app/page.tsx`
     - Import and render `IndicesDashboard` component
     - Position below health score display
     - Pass user profile and language preferences
     - _Requirements: 5.7_
 
-  - [ ] 13.2 Implement automatic recalculation on data changes
+  - [x] 13.2 Implement automatic recalculation on data changes
     - Add recalculation trigger when new daily entry is added
     - Add recalculation trigger when credit entry is added/updated
     - Add recalculation trigger when credit is marked as paid
@@ -294,7 +294,7 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - **Validates: Requirements 8.3**
     - _Requirements: 3.6, 5.8_
 
-  - [ ] 13.3 Add sync status indicators
+  - [x] 13.3 Add sync status indicators
     - Display "Offline" indicator when network unavailable
     - Display "Syncing" indicator during sync operations
     - Display "Synced" indicator when sync completes successfully
@@ -302,10 +302,10 @@ This implementation plan breaks down the Stress & Affordability Index feature in
     - Use translation keys for all status messages
     - _Requirements: 8.5, 8.6, 10.7_
 
-- [ ] 14. Final checkpoint - End-to-end testing
+- [x] 14. Final checkpoint - End-to-end testing
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ]* 15. Performance validation
+- [x] 15. Performance validation
   - Verify stress index calculation completes in < 10ms
   - Verify affordability index calculation completes in < 5ms
   - Verify dashboard renders with indices in < 100ms

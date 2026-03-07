@@ -325,9 +325,9 @@ export interface UserProfile {
   deletionRequestedAt?: string;
   deletionScheduledAt?: string;
 
-  // Persona fields for AI personalization
-  business_type: 'kirana' | 'salon' | 'pharmacy' | 'restaurant' | 'other';
-  city_tier?: 'tier-1' | 'tier-2' | 'tier-3' | 'rural' | null;
+  // Persona fields for AI personalization and segment benchmark
+  business_type: BusinessType;
+  city_tier?: CityTier;
   explanation_mode: 'simple' | 'detailed';
 }
 
@@ -399,9 +399,14 @@ export interface DailySuggestion {
   id: string;                        // Unique ID (format: "suggestion_{rule}_{date}")
   created_at: string;                // ISO timestamp
   severity: SeverityType;
-  title: string;                     // Localized title
-  description: string;               // Localized description
+  title: string;                     // Localized title (for backward compatibility)
+  description: string;               // Localized description (for backward compatibility)
   dismissed_at?: string;             // ISO timestamp when dismissed (optional)
+
+  // Translation keys for real-time language switching
+  title_key: string;                 // Translation key for title (e.g., 'suggestions.high_credit.title')
+  description_key: string;           // Translation key for description
+  description_params?: Record<string, string>;  // Parameters for description interpolation
 
   // Metadata for tracking
   rule_type: RuleType;
@@ -445,3 +450,177 @@ export interface InferredTransaction {
   raw_data?: any;                    // Original OCR/CSV data for debugging
 }
 
+
+// ============================================
+// Stress & Affordability Index Types
+// ============================================
+
+/**
+ * Stress index component breakdown
+ */
+export interface StressComponentBreakdown {
+  creditRatioScore: number;      // 0-40 points (40% weight)
+  cashBufferScore: number;        // 0-35 points (35% weight)
+  expenseVolatilityScore: number; // 0-25 points (25% weight)
+}
+
+/**
+ * Stress index calculation result
+ */
+export interface StressIndexResult {
+  score: number;                  // 0-100 (higher = more stress)
+  breakdown: StressComponentBreakdown;
+  calculatedAt: string;           // ISO timestamp
+  inputParameters: {
+    creditRatio: number;
+    cashBuffer: number;
+    expenseVolatility: number;
+  };
+}
+
+/**
+ * Affordability index component breakdown
+ */
+export interface AffordabilityComponentBreakdown {
+  costToProfitRatio: number;
+  affordabilityCategory: 'Easily Affordable' | 'Affordable' | 'Stretch' | 'Risky' | 'Not Recommended';
+}
+
+/**
+ * Affordability index calculation result
+ */
+export interface AffordabilityIndexResult {
+  score: number;                  // 0-100 (higher = more affordable)
+  breakdown: AffordabilityComponentBreakdown;
+  calculatedAt: string;           // ISO timestamp
+  inputParameters: {
+    plannedCost: number;
+    avgMonthlyProfit: number;
+  };
+}
+
+/**
+ * Combined index data for storage and display
+ */
+export interface IndexData {
+  userId: string;
+  date: string;                   // ISO date (YYYY-MM-DD)
+  stressIndex: StressIndexResult | null;
+  affordabilityIndex: AffordabilityIndexResult | null;
+  dataPoints: number;             // Number of historical days used
+  calculationPeriod: {
+    startDate: string;
+    endDate: string;
+  };
+  createdAt: string;              // ISO timestamp
+  syncedAt?: string;              // ISO timestamp (when synced to DynamoDB)
+}
+
+/**
+ * Planned expense with affordability assessment
+ */
+export interface PlannedExpense {
+  id: string;
+  userId: string;
+  description: string;
+  amount: number;
+  affordabilityIndex: AffordabilityIndexResult;
+  createdAt: string;
+  isPurchased: boolean;
+  purchasedAt?: string;
+}
+
+/**
+ * Color coding for visual indicators
+ */
+export type StressColor = 'green' | 'yellow' | 'red';
+export type AffordabilityColor = 'green' | 'yellow' | 'red';
+
+/**
+ * Visual indicator configuration
+ */
+export interface IndexVisualConfig {
+  score: number;
+  color: StressColor | AffordabilityColor;
+  label: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+// ============================================
+// Segment Benchmark Types
+// ============================================
+
+/**
+ * City tier classification
+ */
+export type CityTier = 'tier1' | 'tier2' | 'tier3';
+
+/**
+ * Business type classification
+ */
+export type BusinessType = 'kirana' | 'salon' | 'pharmacy' | 'restaurant' | 'other';
+
+/**
+ * Performance comparison category
+ */
+export type ComparisonCategory = 'above_average' | 'at_average' | 'below_average';
+
+/**
+ * Segment aggregate statistics
+ */
+export interface SegmentData {
+  segmentKey: string;           // Format: SEGMENT#{tier}#{type}
+  medianHealthScore: number;    // 0-100
+  medianMargin: number;         // 0-1 (e.g., 0.25 = 25%)
+  sampleSize: number;           // Number of businesses in segment
+  lastUpdated: string;          // ISO timestamp
+}
+
+/**
+ * Cached segment data with cache metadata
+ */
+export interface CachedSegmentData extends SegmentData {
+  cachedAt: string;             // ISO timestamp
+}
+
+/**
+ * User metrics for comparison
+ */
+export interface UserMetrics {
+  healthScore: number;          // 0-100
+  profitMargin: number;         // 0-1
+}
+
+/**
+ * Comparison result for a single metric
+ */
+export interface MetricComparison {
+  userValue: number;
+  segmentMedian: number;
+  percentile: number;           // 0-100
+  category: ComparisonCategory;
+}
+
+/**
+ * Complete benchmark comparison result
+ */
+export interface BenchmarkComparison {
+  healthScoreComparison: MetricComparison;
+  marginComparison: MetricComparison;
+  segmentInfo: {
+    segmentKey: string;
+    sampleSize: number;
+    lastUpdated: string;
+  };
+  calculatedAt: string;
+}
+
+/**
+ * Visual indicator configuration for segment benchmark
+ */
+export interface VisualIndicator {
+  color: 'green' | 'yellow' | 'red';
+  icon: string;
+  bgColor: string;
+  borderColor: string;
+}

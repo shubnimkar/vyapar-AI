@@ -35,9 +35,9 @@ function formatCSVData(data: ParsedCSV | undefined, label: string): string {
  */
 function getLanguageInstructions(language: Language): string {
   const instructions = {
-    en: 'Provide insights in simple English. Use conversational tone appropriate for small shop owners. Avoid financial jargon.',
-    hi: 'Provide insights in simple Hindi (हिंदी). Use natural Hindi expressions, not direct English translations. Use culturally appropriate examples familiar to Indian shop owners. Avoid financial jargon.',
-    mr: 'Provide insights in simple Marathi (मराठी). Use natural Marathi expressions, not direct English translations. Use culturally appropriate examples familiar to Indian shop owners. Avoid financial jargon.',
+    en: 'RESPOND IN ENGLISH ONLY. Provide insights in simple English. Use conversational tone appropriate for small shop owners. Avoid financial jargon.',
+    hi: 'केवल हिंदी में जवाब दें। सरल हिंदी में जानकारी प्रदान करें। अंग्रेजी शब्दों का उपयोग न करें। भारतीय दुकानदारों के लिए उपयुक्त सांस्कृतिक उदाहरण उपयोग करें। वित्तीय शब्दजाल से बचें।',
+    mr: 'फक्त मराठीत उत्तर द्या। सोप्या मराठीत माहिती द्या। इंग्रजी शब्द वापरू नका. भारतीय दुकानदारांसाठी योग्य सांस्कृतिक उदाहरणे वापरा. आर्थिक शब्दजाल टाळा।',
   };
   
   return instructions[language];

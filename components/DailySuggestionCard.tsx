@@ -41,6 +41,35 @@ export default function DailySuggestionCard({
   
   const topSuggestion = sortedSuggestions[0];
   
+  // Translate title and description on-the-fly based on current language
+  const getTranslatedTitle = (suggestion: DailySuggestion): string => {
+    if (suggestion.title_key) {
+      return t(suggestion.title_key, language);
+    }
+    // Fallback to stored title for backward compatibility
+    return suggestion.title;
+  };
+  
+  const getTranslatedDescription = (suggestion: DailySuggestion): string => {
+    if (suggestion.description_key) {
+      let description = t(suggestion.description_key, language);
+      
+      // Replace parameters if they exist
+      if (suggestion.description_params) {
+        Object.entries(suggestion.description_params).forEach(([key, value]) => {
+          description = description.replace(`{${key}}`, value);
+        });
+      }
+      
+      return description;
+    }
+    // Fallback to stored description for backward compatibility
+    return suggestion.description;
+  };
+  
+  const translatedTitle = getTranslatedTitle(topSuggestion);
+  const translatedDescription = getTranslatedDescription(topSuggestion);
+  
   // Severity configuration
   const severityConfig = {
     critical: {
@@ -103,10 +132,10 @@ export default function DailySuggestionCard({
           {/* Suggestion content */}
           <div className="ml-14">
             <h4 className={`font-medium mb-1 ${config.textColor}`}>
-              {topSuggestion.title}
+              {translatedTitle}
             </h4>
             <p className={`text-sm ${config.textColor} opacity-90`}>
-              {topSuggestion.description}
+              {translatedDescription}
             </p>
           </div>
         </div>

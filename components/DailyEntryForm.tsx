@@ -27,6 +27,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
   const [viewMode, setViewMode] = useState<ViewMode>('form');
   const [entries, setEntries] = useState<LocalDailyEntry[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<LocalDailyEntry | null>(null);
   
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);

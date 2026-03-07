@@ -12,7 +12,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "seed:segments": "ts-node scripts/seed-segment-data.ts"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.998.0",

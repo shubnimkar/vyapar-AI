@@ -9,11 +9,7 @@ const bedrockClient = new BedrockRuntimeClient({ region: BEDROCK_REGION });
 
 // Configuration from environment variables
 const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
-const RESULTS_BUCKET = process.env.RESULTS_BUCKET || 'vyapar-receipts-output';
-
-// Detect model type
-const isNovaModel = BEDROCK_MODEL_ID.includes('nova');
-const isClaudeModel = BEDROCK_MODEL_ID.includes('claude') || BEDROCK_MODEL_ID.includes('anthropic');
+const RESULTS_BUCKET = process.env.RESULTS_BUCKET || process.env.S3_BUCKET_RECEIPTS || 'vyapar-receipts-output';
 
 export const handler = async (event) => {
   const startTime = Date.now();
@@ -169,63 +165,31 @@ Return ONLY valid JSON in this exact format:
   "items": ["Item 1", "Item 2"]
 }`;
 
-    // Build payload based on model type
-    let bedrockPayload;
-    
-    if (isNovaModel) {
-      // Amazon Nova format
-      bedrockPayload = {
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                image: {
-                  format: contentType.split('/')[1], // "jpeg", "png", etc.
-                  source: {
-                    bytes: base64Image
-                  }
-                }
-              },
-              {
-                text: prompt
-              }
-            ]
-          }
-        ],
-        inferenceConfig: {
-          max_new_tokens: 1000,
-          temperature: 0.1
-        }
-      };
-    } else if (isClaudeModel) {
-      // Claude format
-      bedrockPayload = {
-        anthropic_version: "bedrock-2023-05-31",
-        max_tokens: 1000,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
+    // Amazon Nova format
+    const bedrockPayload = {
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              image: {
+                format: contentType.split('/')[1], // "jpeg", "png", etc.
                 source: {
-                  type: "base64",
-                  media_type: contentType,
-                  data: base64Image,
-                },
-              },
-              {
-                type: "text",
-                text: prompt,
-              },
-            ],
-          },
-        ],
-      };
-    } else {
-      throw new Error(`Unsupported model type: ${BEDROCK_MODEL_ID}`);
-    }
+                  bytes: base64Image
+                }
+              }
+            },
+            {
+              text: prompt
+            }
+          ]
+        }
+      ],
+      inferenceConfig: {
+        max_new_tokens: 1000,
+        temperature: 0.1
+      }
+    };
 
     console.log("📡 Calling Bedrock Vision API...");
     console.log(`🌍 S3 Region: ${AWS_REGION}`);
@@ -245,21 +209,13 @@ Return ONLY valid JSON in this exact format:
     console.log("✅ Bedrock response received");
     console.log("📄 Response:", JSON.stringify(responseBody, null, 2));
 
-    // Extract and parse JSON from response (handles both Claude and Nova formats)
-    let extractedText;
-    if (isClaudeModel && responseBody.content) {
-      extractedText = responseBody.content[0].text;
-    } else if (isNovaModel && responseBody.output) {
-      // Nova format: output.message.content is an array of content blocks
-      const contentBlocks = responseBody.output.message.content;
-      const textBlock = contentBlocks.find(block => block.text);
-      if (!textBlock) {
-        throw new Error("No text content found in Nova response");
-      }
-      extractedText = textBlock.text;
-    } else {
-      throw new Error("Unsupported model response format");
+    // Nova format: output.message.content is an array of content blocks
+    const contentBlocks = responseBody.output.message.content;
+    const textBlock = contentBlocks.find(block => block.text);
+    if (!textBlock) {
+      throw new Error("No text content found in Nova response");
     }
+    const extractedText = textBlock.text;
     const jsonMatch = extractedText.match(/\{[\s\S]*\}/);
     
     if (!jsonMatch) {

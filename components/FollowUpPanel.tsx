@@ -26,6 +26,7 @@ interface FollowUpPanelProps {
   userId: string;
   language: Language;
   overdueThreshold?: number; // Default: 3 days
+  onCreditChange?: () => void; // Callback when credit is marked as paid
 }
 
 interface SyncStatus {
@@ -44,6 +45,7 @@ export default function FollowUpPanel({
   userId,
   language,
   overdueThreshold = 3,
+  onCreditChange,
 }: FollowUpPanelProps) {
   const [overdueCredits, setOverdueCredits] = useState<OverdueCredit[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({ status: 'synced' });
@@ -355,6 +357,11 @@ export default function FollowUpPanel({
       // Reload credits to remove from overdue list
       loadCredits();
       loadSyncStatus();
+
+      // Trigger callback to notify parent component
+      if (onCreditChange) {
+        onCreditChange();
+      }
 
       logger.info('Credit marked as paid', { userId, creditId: credit.id, customerName: credit.customerName });
 

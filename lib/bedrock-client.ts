@@ -23,6 +23,17 @@ const client = new BedrockRuntimeClient({
 
 const MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0';
 
+// Detect model type from model ID
+function getModelType(modelId: string): 'claude' | 'nova' {
+  if (modelId.includes('anthropic') || modelId.includes('claude')) {
+    return 'claude';
+  }
+  if (modelId.includes('nova')) {
+    return 'nova';
+  }
+  return 'claude'; // default
+}
+
 export interface BedrockResponse {
   success: boolean;
   content?: string;
@@ -57,23 +68,54 @@ export async function invokeBedrockModel(
   }
   
   let lastError: any;
+  const modelType = getModelType(MODEL_ID);
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const input: InvokeModelCommandInput = {
-        modelId: MODEL_ID,
-        contentType: 'application/json',
-        accept: 'application/json',
-        body: JSON.stringify({
+      let requestBody: any;
+      
+      // Format request based on model type
+      if (modelType === 'nova') {
+        // Amazon Nova format
+        requestBody = {
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+          inferenceConfig: {
+            max_new_tokens: 2000,
+          },
+        };
+      } else {
+        // Claude format
+        requestBody = {
           anthropic_version: 'bedrock-2023-05-31',
           max_tokens: 2000,
           messages: [
             {
               role: 'user',
-              content: prompt,
+              content: [
+                {
+                  type: 'text',
+                  text: prompt,
+                },
+              ],
             },
           ],
-        }),
+        };
+      }
+      
+      const input: InvokeModelCommandInput = {
+        modelId: MODEL_ID,
+        contentType: 'application/json',
+        accept: 'application/json',
+        body: JSON.stringify(requestBody),
       };
       
       const command = new InvokeModelCommand(input);
@@ -82,8 +124,15 @@ export async function invokeBedrockModel(
       // Parse response body
       const responseBody = JSON.parse(new TextDecoder().decode(response.body));
       
-      // Extract content from Claude response
-      const content = responseBody.content?.[0]?.text || '';
+      // Extract content based on model type
+      let content = '';
+      if (modelType === 'nova') {
+        // Nova response format: output.message.content[0].text
+        content = responseBody.output?.message?.content?.[0]?.text || '';
+      } else {
+        // Claude response format: content[0].text
+        content = responseBody.content?.[0]?.text || '';
+      }
       
       return {
         success: true,

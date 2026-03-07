@@ -101,12 +101,12 @@ export default function PendingTransactionConfirmation({
         category: editedCategory || undefined,
       };
       
-      // Call parent callback if provided
+      // Call parent callback if provided and WAIT for it to complete
       if (onAdd) {
-        onAdd(updatedTransaction);
+        await onAdd(updatedTransaction);
       }
       
-      // Remove from pending store
+      // Only remove from pending store AFTER successfully adding to daily entry
       removePendingTransaction(currentTransaction.id);
       
       // Reload and move to next

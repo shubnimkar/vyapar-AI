@@ -1625,6 +1625,31 @@ export const errorTranslations: Translations = {
     hi: 'अमान्य इनपुट। कृपया अपना डेटा जांचें।',
     mr: 'अवैध इनपुट. कृपया तुमचा डेटा तपासा.'
   },
+  'errors.usernameTaken': {
+    en: 'Username already taken.',
+    hi: 'उपयोगकर्ता नाम पहले से लिया गया है।',
+    mr: 'वापरकर्तानाव आधीच घेतले आहे.'
+  },
+  'errors.weakPassword': {
+    en: 'Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 number.',
+    hi: 'पासवर्ड कम से कम 8 अक्षरों का होना चाहिए जिसमें 1 बड़ा अक्षर, 1 छोटा अक्षर और 1 संख्या हो।',
+    mr: 'पासवर्ड किमान 8 वर्णांचा असावा ज्यामध्ये 1 मोठे अक्षर, 1 लहान अक्षर आणि 1 संख्या असावी.'
+  },
+  'errors.invalidUsername': {
+    en: 'Username must be 3-20 characters and contain only letters, numbers, and underscores.',
+    hi: 'उपयोगकर्ता नाम 3-20 अक्षरों का होना चाहिए और केवल अक्षर, संख्या और अंडरस्कोर होने चाहिए।',
+    mr: 'वापरकर्तानाव 3-20 वर्णांचे असावे आणि फक्त अक्षरे, संख्या आणि अंडरस्कोर असावेत.'
+  },
+  'errors.missingRequiredFields': {
+    en: 'Required fields are missing.',
+    hi: 'आवश्यक फ़ील्ड गायब हैं।',
+    mr: 'आवश्यक फील्ड गहाळ आहेत.'
+  },
+  'errors.invalidFieldLength': {
+    en: 'Field length is invalid.',
+    hi: 'फ़ील्ड की लंबाई अमान्य है।',
+    mr: 'फील्ड लांबी अवैध आहे.'
+  },
   'errors.notFound': {
     en: 'Resource not found.',
     hi: 'संसाधन नहीं मिला।',
@@ -1674,6 +1699,260 @@ export const errorTranslations: Translations = {
     en: 'Receipt processing service temporarily unavailable.',
     hi: 'रसीद प्रोसेसिंग सेवा अस्थायी रूप से अनुपलब्ध है।',
     mr: 'पावती प्रक्रिया सेवा तात्पुरती अनुपलब्ध आहे.'
+  },
+  'errors.insufficientData': {
+    en: 'Insufficient data to calculate indices. Please add at least 7 days of daily entries.',
+    hi: 'सूचकांक की गणना के लिए अपर्याप्त डेटा। कृपया कम से कम 7 दिनों की दैनिक प्रविष्टियाँ जोड़ें।',
+    mr: 'निर्देशांक मोजण्यासाठी अपुरा डेटा. कृपया किमान 7 दिवसांच्या दैनिक नोंदी जोडा.'
+  },
+  'errors.profileNotFound': {
+    en: 'Profile not found. Please complete your profile.',
+    hi: 'प्रोफ़ाइल नहीं मिली। कृपया अपनी प्रोफ़ाइल पूरी करें।',
+    mr: 'प्रोफाइल सापडली नाही. कृपया तुमची प्रोफाइल पूर्ण करा.'
+  },
+
+  // Stress & Affordability Index translations
+  'indices.stressIndex': {
+    en: 'Stress Index',
+    hi: 'तनाव सूचकांक',
+    mr: 'तणाव निर्देशांक'
+  },
+  'indices.affordabilityIndex': {
+    en: 'Affordability Index',
+    hi: 'सामर्थ्य सूचकांक',
+    mr: 'परवडणारा निर्देशांक'
+  },
+  'indices.score': {
+    en: 'Score',
+    hi: 'स्कोर',
+    mr: 'स्कोअर'
+  },
+  'indices.breakdown': {
+    en: 'Breakdown',
+    hi: 'विवरण',
+    mr: 'तपशील'
+  },
+  'indices.showBreakdown': {
+    en: 'Show Breakdown',
+    hi: 'विवरण दिखाएं',
+    mr: 'तपशील दाखवा'
+  },
+  'indices.hideBreakdown': {
+    en: 'Hide Breakdown',
+    hi: 'विवरण छुपाएं',
+    mr: 'तपशील लपवा'
+  },
+  'indices.creditRatio': {
+    en: 'Credit Ratio',
+    hi: 'उधार अनुपात',
+    mr: 'उधार प्रमाण'
+  },
+  'indices.cashBuffer': {
+    en: 'Cash Buffer',
+    hi: 'नकद बफर',
+    mr: 'रोकड बफर'
+  },
+  'indices.expenseVolatility': {
+    en: 'Expense Volatility',
+    hi: 'खर्च अस्थिरता',
+    mr: 'खर्च अस्थिरता'
+  },
+  'indices.calculatedAt': {
+    en: 'Calculated at',
+    hi: 'गणना की गई',
+    mr: 'गणना केली'
+  },
+  'indices.plannedExpense': {
+    en: 'Planned Expense',
+    hi: 'नियोजित खर्च',
+    mr: 'नियोजित खर्च'
+  },
+  'indices.enterAmount': {
+    en: 'Enter amount',
+    hi: 'राशि दर्ज करें',
+    mr: 'रक्कम प्रविष्ट करा'
+  },
+  'indices.checkAffordability': {
+    en: 'Check Affordability',
+    hi: 'सामर्थ्य जांचें',
+    mr: 'परवडणारा तपासा'
+  },
+  'indices.checking': {
+    en: 'Checking...',
+    hi: 'जांच रहा है...',
+    mr: 'तपासत आहे...'
+  },
+  'indices.costToProfitRatio': {
+    en: 'Cost to Profit Ratio',
+    hi: 'लाभ के लिए लागत अनुपात',
+    mr: 'नफ्यासाठी खर्च प्रमाण'
+  },
+  'indices.avgMonthlyProfit': {
+    en: 'Avg Monthly Profit',
+    hi: 'औसत मासिक लाभ',
+    mr: 'सरासरी मासिक नफा'
+  },
+  'indices.category': {
+    en: 'Category',
+    hi: 'श्रेणी',
+    mr: 'श्रेणी'
+  },
+  'indices.category.easilyAffordable': {
+    en: 'Easily Affordable',
+    hi: 'आसानी से सामर्थ्य',
+    mr: 'सहज परवडणारे'
+  },
+  'indices.category.affordable': {
+    en: 'Affordable',
+    hi: 'सामर्थ्य',
+    mr: 'परवडणारे'
+  },
+  'indices.category.stretch': {
+    en: 'Stretch',
+    hi: 'खिंचाव',
+    mr: 'ताणलेले'
+  },
+  'indices.category.risky': {
+    en: 'Risky',
+    hi: 'जोखिम भरा',
+    mr: 'धोकादायक'
+  },
+  'indices.category.notRecommended': {
+    en: 'Not Recommended',
+    hi: 'अनुशंसित नहीं',
+    mr: 'शिफारस केलेले नाही'
+  },
+  'indices.explain': {
+    en: 'Explain',
+    hi: 'समझाएं',
+    mr: 'समजावून सांगा'
+  },
+  'indices.explaining': {
+    en: 'Explaining...',
+    hi: 'समझा रहा है...',
+    mr: 'समजावत आहे...'
+  },
+  'indices.aiExplanation': {
+    en: 'AI Explanation',
+    hi: 'AI स्पष्टीकरण',
+    mr: 'AI स्पष्टीकरण'
+  },
+  'indices.close': {
+    en: 'Close',
+    hi: 'बंद करें',
+    mr: 'बंद करा'
+  },
+  'indices.syncStatus.online': {
+    en: 'Online',
+    hi: 'ऑनलाइन',
+    mr: 'ऑनलाइन'
+  },
+  'indices.syncStatus.offline': {
+    en: 'Offline',
+    hi: 'ऑफ़लाइन',
+    mr: 'ऑफलाइन'
+  },
+  'indices.syncStatus.syncing': {
+    en: 'Syncing...',
+    hi: 'सिंक हो रहा है...',
+    mr: 'सिंक होत आहे...'
+  },
+  'indices.insufficientData': {
+    en: 'Need at least 7 days of data to calculate indices',
+    hi: 'सूचकांक की गणना के लिए कम से कम 7 दिनों के डेटा की आवश्यकता है',
+    mr: 'निर्देशांक मोजण्यासाठी किमान 7 दिवसांचा डेटा आवश्यक आहे'
+  },
+  'indices.addMoreData': {
+    en: 'Add more daily entries to see your financial health metrics',
+    hi: 'अपने वित्तीय स्वास्थ्य मेट्रिक्स देखने के लिए अधिक दैनिक प्रविष्टियाँ जोड़ें',
+    mr: 'तुमचे आर्थिक आरोग्य मेट्रिक्स पाहण्यासाठी अधिक दैनिक नोंदी जोडा'
+  },
+  'indices.error': {
+    en: 'Error calculating indices',
+    hi: 'सूचकांक की गणना में त्रुटि',
+    mr: 'निर्देशांक मोजण्यात त्रुटी'
+  },
+  'indices.invalidAmount': {
+    en: 'Please enter a valid positive amount',
+    hi: 'कृपया एक मान्य सकारात्मक राशि दर्ज करें',
+    mr: 'कृपया वैध सकारात्मक रक्कम प्रविष्ट करा'
+  },
+
+  // Segment Benchmark translations
+  'benchmark.title': {
+    en: 'How You Compare',
+    hi: 'आप कैसे तुलना करते हैं',
+    mr: 'तुमची तुलना कशी आहे'
+  },
+  'benchmark.healthScore': {
+    en: 'Health Score',
+    hi: 'स्वास्थ्य स्कोर',
+    mr: 'आरोग्य स्कोअर'
+  },
+  'benchmark.profitMargin': {
+    en: 'Profit Margin',
+    hi: 'लाभ मार्जिन',
+    mr: 'नफा मार्जिन'
+  },
+  'benchmark.yourBusiness': {
+    en: 'Your Business',
+    hi: 'आपका व्यापार',
+    mr: 'तुमचा व्यवसाय'
+  },
+  'benchmark.segmentAverage': {
+    en: 'Similar Businesses',
+    hi: 'समान व्यापार',
+    mr: 'समान व्यवसाय'
+  },
+  'benchmark.category.above_average': {
+    en: 'Above Average',
+    hi: 'औसत से ऊपर',
+    mr: 'सरासरीपेक्षा जास्त'
+  },
+  'benchmark.category.at_average': {
+    en: 'At Average',
+    hi: 'औसत पर',
+    mr: 'सरासरी'
+  },
+  'benchmark.category.below_average': {
+    en: 'Below Average',
+    hi: 'औसत से नीचे',
+    mr: 'सरासरीपेक्षा कमी'
+  },
+  'benchmark.sampleSize': {
+    en: 'Based on {count} businesses',
+    hi: '{count} व्यापारों के आधार पर',
+    mr: '{count} व्यवसायांवर आधारित'
+  },
+  'benchmark.limitedData': {
+    en: 'Limited data - comparison may not be representative',
+    hi: 'सीमित डेटा - तुलना प्रतिनिधि नहीं हो सकती',
+    mr: 'मर्यादित डेटा - तुलना प्रतिनिधी नसू शकते'
+  },
+  'benchmark.staleData': {
+    en: 'Data is {days} days old',
+    hi: 'डेटा {days} दिन पुराना है',
+    mr: 'डेटा {days} दिवस जुना आहे'
+  },
+  'benchmark.noData': {
+    en: 'No comparison data available. Complete your profile to see benchmarks.',
+    hi: 'कोई तुलना डेटा उपलब्ध नहीं है। बेंचमार्क देखने के लिए अपनी प्रोफ़ाइल पूरी करें।',
+    mr: 'तुलना डेटा उपलब्ध नाही. बेंचमार्क पाहण्यासाठी तुमची प्रोफाइल पूर्ण करा.'
+  },
+  'benchmark.profileIncomplete': {
+    en: 'Complete your profile (city tier and business type) to see benchmarks',
+    hi: 'बेंचमार्क देखने के लिए अपनी प्रोफ़ाइल (शहर स्तर और व्यवसाय प्रकार) पूरी करें',
+    mr: 'बेंचमार्क पाहण्यासाठी तुमची प्रोफाइल (शहर स्तर आणि व्यवसाय प्रकार) पूर्ण करा'
+  },
+  'benchmark.noDailyEntries': {
+    en: 'Add daily entries to see your benchmark comparison',
+    hi: 'अपनी बेंचमार्क तुलना देखने के लिए दैनिक प्रविष्टियाँ जोड़ें',
+    mr: 'तुमची बेंचमार्क तुलना पाहण्यासाठी दैनिक नोंदी जोडा'
+  },
+  'benchmark.segmentUnavailable': {
+    en: 'Benchmark data not available for your segment',
+    hi: 'आपके खंड के लिए बेंचमार्क डेटा उपलब्ध नहीं है',
+    mr: 'तुमच्या विभागासाठी बेंचमार्क डेटा उपलब्ध नाही'
   }
 };
 
