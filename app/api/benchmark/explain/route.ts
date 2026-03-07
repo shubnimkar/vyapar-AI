@@ -3,7 +3,7 @@
 // CRITICAL: AI explains pre-calculated values, does NOT recalculate
 
 import { NextRequest, NextResponse } from 'next/server';
-import { invokeBedrockModel } from '@/lib/bedrock-client';
+import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
 import { Language, BenchmarkComparison } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import { ProfileService } from '@/lib/dynamodb-client';
@@ -99,36 +99,18 @@ export async function POST(request: NextRequest) {
     });
     
     // Call AI for explanation only (graceful degradation if AI unavailable)
-    try {
-      const bedrockResponse = await invokeBedrockModel(
-        `${promptStructure.system}\n\n${promptStructure.user}`,
-        2,
-        language
-      );
-      
-      if (!bedrockResponse.success) {
-        // Graceful degradation: return success but indicate AI unavailable
-        logger.warn('AI unavailable for benchmark explanation', {
-          userId,
-        });
-        return NextResponse.json({
-          success: true,
-          explanation: null,
-          message: 'AI explanation temporarily unavailable. Your comparison results are accurate.',
-        });
-      }
-      
-      logger.info('Benchmark explanation completed successfully', { userId });
-      
-      return NextResponse.json({
-        success: true,
-        explanation: bedrockResponse.content,
-      });
-    } catch (bedrockError) {
-      // Graceful degradation on error
-      logger.error('Bedrock error in benchmark explanation', {
-        error: (bedrockError as Error).message,
+    const orchestrator = getFallbackOrchestrator();
+    const aiResponse = await orchestrator.generateResponse(
+      `${promptStructure.system}\n\n${promptStructure.user}`,
+      { language },
+      { endpoint: '/api/benchmark/explain', userId }
+    );
+    
+    if (!aiResponse.success) {
+      // Graceful degradation: return success but indicate AI unavailable
+      logger.warn('AI unavailable for benchmark explanation', {
         userId,
+        error: aiResponse.error,
       });
       return NextResponse.json({
         success: true,
@@ -136,6 +118,13 @@ export async function POST(request: NextRequest) {
         message: 'AI explanation temporarily unavailable. Your comparison results are accurate.',
       });
     }
+    
+    logger.info('Benchmark explanation completed successfully', { userId });
+    
+    return NextResponse.json({
+      success: true,
+      explanation: aiResponse.content,
+    });
     
   } catch (error) {
     return NextResponse.json(

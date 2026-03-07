@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, updateSession } from '@/lib/session-store';
-import { invokeBedrockModel } from '@/lib/bedrock-client';
+import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
 import { buildQAPrompt } from '@/lib/prompts';
 import { Language, ChatMessage } from '@/lib/types';
 import { logger } from '@/lib/logger';
@@ -61,69 +61,28 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Call AWS Bedrock
-    try {
-      // Build Q&A prompt with context
-      const prompt = buildQAPrompt(
-        question,
-        session.salesData,
-        session.expensesData,
-        session.inventoryData,
-        session.conversationHistory,
-        language
-      );
-      
-      const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
-      
-      if (!bedrockResponse.success) {
-        return NextResponse.json(
-          logAndReturnError(
-            new Error(bedrockResponse.error || 'Bedrock invocation failed'),
-            ErrorCode.BEDROCK_ERROR,
-            'errors.bedrockError',
-            language,
-            { path: '/api/ask', sessionId }
-          ),
-          { status: 503 }
-        );
-      }
-      
-      const answer = bedrockResponse.content || '';
-      
-      // Store question and answer in conversation history
-      const userMessage: ChatMessage = {
-        role: 'user',
-        content: question,
-        timestamp: new Date(),
-      };
-      
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: answer,
-        timestamp: new Date(),
-      };
-      
-      const updatedHistory = [
-        ...session.conversationHistory,
-        userMessage,
-        assistantMessage,
-      ];
-      
-      // Update session with new conversation history
-      await updateSession(sessionId, {
-        conversationHistory: updatedHistory,
-      });
-      
-      logger.info('Q&A completed successfully', { sessionId });
-      
-      return NextResponse.json({
-        success: true,
-        answer,
-      });
-    } catch (bedrockError) {
+    // Call AI for Q&A
+    // Build Q&A prompt with context
+    const prompt = buildQAPrompt(
+      question,
+      session.salesData,
+      session.expensesData,
+      session.inventoryData,
+      session.conversationHistory,
+      language
+    );
+    
+    const orchestrator = getFallbackOrchestrator();
+    const aiResponse = await orchestrator.generateResponse(
+      prompt,
+      { language },
+      { endpoint: '/api/ask', userId: session.userId }
+    );
+    
+    if (!aiResponse.success) {
       return NextResponse.json(
         logAndReturnError(
-          bedrockError as Error,
+          new Error(aiResponse.error || 'AI invocation failed'),
           ErrorCode.BEDROCK_ERROR,
           'errors.bedrockError',
           language,
@@ -132,6 +91,39 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
+    
+    const answer = aiResponse.content || '';
+    
+    // Store question and answer in conversation history
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: question,
+      timestamp: new Date(),
+    };
+    
+    const assistantMessage: ChatMessage = {
+      role: 'assistant',
+      content: answer,
+      timestamp: new Date(),
+    };
+    
+    const updatedHistory = [
+      ...session.conversationHistory,
+      userMessage,
+      assistantMessage,
+    ];
+    
+    // Update session with new conversation history
+    await updateSession(sessionId, {
+      conversationHistory: updatedHistory,
+    });
+    
+    logger.info('Q&A completed successfully', { sessionId });
+    
+    return NextResponse.json({
+      success: true,
+      answer,
+    });
   } catch (error) {
     return NextResponse.json(
       logAndReturnError(

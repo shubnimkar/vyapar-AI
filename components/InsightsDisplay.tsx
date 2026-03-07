@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BusinessInsights, Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 
@@ -21,6 +21,35 @@ export default function InsightsDisplay({
   language,
 }: InsightsDisplayProps) {
   const [speaking, setSpeaking] = useState<string | null>(null);
+  const [voiceUnavailable, setVoiceUnavailable] = useState<boolean>(false);
+
+  /**
+   * Selects an appropriate voice for the given language code.
+   * Tries exact match first, then prefix match.
+   * Returns null if no matching voice is found.
+   */
+  const selectVoiceForLanguage = (langCode: string): SpeechSynthesisVoice | null => {
+    const voices = window.speechSynthesis.getVoices();
+    
+    if (voices.length === 0) {
+      return null;
+    }
+    
+    // Try exact match first (e.g., 'hi-IN')
+    const exactMatch = voices.find(voice => voice.lang === langCode);
+    if (exactMatch) {
+      return exactMatch;
+    }
+    
+    // Try prefix match (e.g., 'hi' matches 'hi-IN', 'hi-GB')
+    const langPrefix = langCode.split('-')[0];
+    const prefixMatch = voices.find(voice => voice.lang.startsWith(langPrefix));
+    if (prefixMatch) {
+      return prefixMatch;
+    }
+    
+    return null;
+  };
 
   const sections: InsightSection[] = [
     {
@@ -71,25 +100,67 @@ export default function InsightsDisplay({
 
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Set language for speech
+    // Map language prop to BCP 47 language code
+    let langCode: string;
     if (language === 'hi') {
+      langCode = 'hi-IN';
       utterance.lang = 'hi-IN';
     } else if (language === 'mr') {
+      langCode = 'mr-IN';
       utterance.lang = 'mr-IN';
     } else {
+      langCode = 'en-IN';
       utterance.lang = 'en-IN';
     }
 
-    utterance.onend = () => {
-      setSpeaking(null);
+    // Handle asynchronous voice loading
+    const setVoiceAndSpeak = () => {
+      const selectedVoice = selectVoiceForLanguage(langCode);
+      
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        setVoiceUnavailable(false);
+      } else {
+        // No voice available for the target language
+        setVoiceUnavailable(true);
+        // Still attempt to speak with lang hint as fallback
+      }
+
+      utterance.onend = () => {
+        setSpeaking(null);
+      };
+
+      utterance.onerror = () => {
+        setSpeaking(null);
+      };
+
+      setSpeaking(key);
+      window.speechSynthesis.speak(utterance);
     };
 
-    utterance.onerror = () => {
-      setSpeaking(null);
-    };
+    // Check if voices are already loaded
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      setVoiceAndSpeak();
+    } else {
+      // Wait for voices to load (with timeout)
+      let voicesLoaded = false;
+      const timeout = setTimeout(() => {
+        if (!voicesLoaded) {
+          // Timeout reached, proceed anyway
+          setVoiceAndSpeak();
+        }
+      }, 1000);
 
-    setSpeaking(key);
-    window.speechSynthesis.speak(utterance);
+      const handleVoicesChanged = () => {
+        voicesLoaded = true;
+        clearTimeout(timeout);
+        window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+        setVoiceAndSpeak();
+      };
+
+      window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+    }
   };
 
   const handleStopSpeaking = () => {
@@ -131,6 +202,16 @@ export default function InsightsDisplay({
       <h2 className="text-2xl font-bold text-gray-800 mb-4">
         {t('insights', language)}
       </h2>
+
+      {voiceUnavailable && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+          <p className="text-sm text-yellow-800">
+            {language === 'hi' && 'हिंदी के लिए टेक्स्ट-टू-स्पीच उपलब्ध नहीं है। कृपया अंग्रेजी का उपयोग करें।'}
+            {language === 'mr' && 'मराठीसाठी टेक्स्ट-टू-स्पीच उपलब्ध नाही. कृपया इंग्रजी वापरा.'}
+            {language === 'en' && 'Text-to-speech is not available for the selected language. Please use English.'}
+          </p>
+        </div>
+      )}
 
       {sections.map((section) => {
         const hasContent = section.content && 

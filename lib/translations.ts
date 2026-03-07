@@ -1710,6 +1710,28 @@ export const errorTranslations: Translations = {
     hi: 'प्रोफ़ाइल नहीं मिली। कृपया अपनी प्रोफ़ाइल पूरी करें।',
     mr: 'प्रोफाइल सापडली नाही. कृपया तुमची प्रोफाइल पूर्ण करा.'
   },
+  
+  // AI Provider Fallback Error Messages
+  'errors.aiUnavailable': {
+    en: 'AI service temporarily unavailable. Please try again later.',
+    hi: 'AI सेवा अस्थायी रूप से अनुपलब्ध है। कृपया बाद में पुनः प्रयास करें।',
+    mr: 'AI सेवा तात्पुरती अनुपलब्ध आहे. कृपया नंतर पुन्हा प्रयत्न करा.'
+  },
+  'errors.aiRateLimited': {
+    en: 'Too many AI requests. Please wait a moment and try again.',
+    hi: 'बहुत सारे AI अनुरोध। कृपया एक क्षण प्रतीक्षा करें और पुनः प्रयास करें।',
+    mr: 'खूप AI विनंत्या. कृपया थोडा वेळ थांबा आणि पुन्हा प्रयत्न करा.'
+  },
+  'errors.aiTimeout': {
+    en: 'AI request timed out. Please try again.',
+    hi: 'AI अनुरोध समय समाप्त हो गया। कृपया पुनः प्रयास करें।',
+    mr: 'AI विनंती कालबाह्य झाली. कृपया पुन्हा प्रयत्न करा.'
+  },
+  'errors.aiAuthFailed': {
+    en: 'AI service authentication failed. Please contact support.',
+    hi: 'AI सेवा प्रमाणीकरण विफल रहा। कृपया सहायता से संपर्क करें।',
+    mr: 'AI सेवा प्रमाणीकरण अयशस्वी झाले. कृपया समर्थनाशी संपर्क साधा.'
+  },
 
   // Stress & Affordability Index translations
   'indices.stressIndex': {

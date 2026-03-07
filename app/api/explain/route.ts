@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session-store';
-import { invokeBedrockModel } from '@/lib/bedrock-client';
+import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
 import { Language } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import { ProfileService } from '@/lib/dynamodb-client';
@@ -112,46 +112,20 @@ export async function POST(request: NextRequest) {
     });
     
     // Call AI for explanation only (graceful degradation if AI unavailable)
-    try {
-      const bedrockResponse = await invokeBedrockModel(
-        `${promptStructure.system}\n\n${promptStructure.user}`,
-        2,
-        language
-      );
-      
-      if (!bedrockResponse.success) {
-        // Graceful degradation: return deterministic value without AI explanation
-        logger.warn('AI unavailable, returning deterministic value only', {
-          userId,
-          sessionId,
-          metric,
-        });
-        return NextResponse.json({
-          success: true,
-          explanation: {
-            success: false,
-            content: 'AI explanation temporarily unavailable. Your calculated metrics are accurate.',
-          },
-          metric,
-          value,
-        });
-      }
-      
-      logger.info('Explanation completed successfully', { userId, sessionId, metric });
-      
-      return NextResponse.json({
-        success: true,
-        explanation: bedrockResponse,
-        metric,
-        value,
-      });
-    } catch (bedrockError) {
-      // Graceful degradation on error
-      logger.error('Bedrock error, returning deterministic value', {
-        error: (bedrockError as Error).message,
+    const orchestrator = getFallbackOrchestrator();
+    const aiResponse = await orchestrator.generateResponse(
+      `${promptStructure.system}\n\n${promptStructure.user}`,
+      { language },
+      { endpoint: '/api/explain', userId }
+    );
+    
+    if (!aiResponse.success) {
+      // Graceful degradation: return deterministic value without AI explanation
+      logger.warn('AI unavailable, returning deterministic value only', {
         userId,
         sessionId,
         metric,
+        error: aiResponse.error,
       });
       return NextResponse.json({
         success: true,
@@ -163,6 +137,18 @@ export async function POST(request: NextRequest) {
         value,
       });
     }
+    
+    logger.info('Explanation completed successfully', { userId, sessionId, metric });
+    
+    return NextResponse.json({
+      success: true,
+      explanation: {
+        success: true,
+        content: aiResponse.content,
+      },
+      metric,
+      value,
+    });
     
   } catch (error) {
     return NextResponse.json(

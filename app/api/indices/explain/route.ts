@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { buildIndexExplanationPrompt } from '@/lib/ai/prompt-builder';
-import { invokeBedrockModel } from '@/lib/bedrock-client';
+import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
 import { PersonaContext } from '@/lib/ai/types';
 import { logger } from '@/lib/logger';
 import { getErrorMessage } from '@/lib/translations';
@@ -82,8 +82,13 @@ export async function POST(request: NextRequest) {
       language,
     });
 
-    // Invoke Bedrock model
-    const aiResponse = await invokeBedrockModel(fullPrompt, 2, language);
+    // Invoke AI via FallbackOrchestrator
+    const orchestrator = getFallbackOrchestrator();
+    const aiResponse = await orchestrator.generateResponse(
+      fullPrompt,
+      { language },
+      { endpoint: '/api/indices/explain', userId: userProfile.userId }
+    );
 
     if (!aiResponse.success) {
       logger.error('AI invocation failed for index explanation', {

@@ -57,7 +57,7 @@ export function buildBenchmarkExplanationPrompt(
   systemPrompt += BUSINESS_CONTEXTS[context.business_type][context.language] + '\n\n';
 
   // 3. Location context (if provided)
-  if (context.city_tier) {
+  if (context.city_tier && CITY_TIER_CONTEXTS[context.city_tier]) {
     systemPrompt += CITY_TIER_CONTEXTS[context.city_tier][context.language] + '\n\n';
   }
 

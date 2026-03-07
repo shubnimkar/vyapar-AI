@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session-store';
-import { invokeBedrockModel } from '@/lib/bedrock-client';
+import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
 import { buildAnalysisPrompt } from '@/lib/prompts';
 import { Language, BusinessInsights } from '@/lib/types';
 import { 
@@ -97,71 +97,27 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // STEP 3: Call AWS Bedrock for EXPLANATION only (not calculation)
-    try {
-      // STEP 2: Build analysis prompt with PRE-CALCULATED metrics
-      const prompt = buildAnalysisPrompt(
-        session.salesData,
-        session.expensesData,
-        session.inventoryData,
-        language,
-        calculatedMetrics // Pass pre-calculated metrics to prompt
-      );
-      
-      const bedrockResponse = await invokeBedrockModel(prompt, 2, language);
-      
-      if (!bedrockResponse.success) {
-        return NextResponse.json(
-          logAndReturnError(
-            new Error(bedrockResponse.error || 'Bedrock invocation failed'),
-            ErrorCode.BEDROCK_ERROR,
-            'errors.bedrockError',
-            language,
-            { path: '/api/analyze', sessionId }
-          ),
-          { status: 503 }
-        );
-      }
-      
-      // Parse AI response into structured insights
-      const aiContent = bedrockResponse.content || '';
-      const insights = parseInsights(aiContent);
-      
-      // Add calculated metrics to insights
-      if (calculatedMetrics.profit !== undefined) {
-        insights.calculatedProfit = calculatedMetrics.profit;
-      }
-      if (calculatedMetrics.blockedInventory !== undefined) {
-        insights.calculatedBlockedInventory = calculatedMetrics.blockedInventory;
-      }
-      
-      // Add enhanced features (recommendations, alerts, charts, benchmark)
-      const { 
-        generateMockRecommendations, 
-        generateMockAlerts, 
-        generateMockChartData,
-        generateMockBenchmark 
-      } = await import('@/lib/bedrock-client-mock');
-      
-      insights.recommendations = generateMockRecommendations(language);
-      insights.alerts = generateMockAlerts(language);
-      insights.chartData = generateMockChartData();
-      
-      // Add benchmark data
-      const benchmark = generateMockBenchmark(language);
-      
-      logger.info('Analysis completed successfully', { sessionId });
-      
-      return NextResponse.json({
-        success: true,
-        insights,
-        benchmark,
-        calculatedMetrics, // Return deterministic calculations
-      });
-    } catch (bedrockError) {
+    // STEP 3: Call AI for EXPLANATION only (not calculation)
+    // STEP 2: Build analysis prompt with PRE-CALCULATED metrics
+    const prompt = buildAnalysisPrompt(
+      session.salesData,
+      session.expensesData,
+      session.inventoryData,
+      language,
+      calculatedMetrics // Pass pre-calculated metrics to prompt
+    );
+    
+    const orchestrator = getFallbackOrchestrator();
+    const aiResponse = await orchestrator.generateResponse(
+      prompt,
+      { language },
+      { endpoint: '/api/analyze', userId: session.userId }
+    );
+    
+    if (!aiResponse.success) {
       return NextResponse.json(
         logAndReturnError(
-          bedrockError as Error,
+          new Error(aiResponse.error || 'AI invocation failed'),
           ErrorCode.BEDROCK_ERROR,
           'errors.bedrockError',
           language,
@@ -170,6 +126,42 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
+    
+    // Parse AI response into structured insights
+    const aiContent = aiResponse.content || '';
+    const insights = parseInsights(aiContent);
+    
+    // Add calculated metrics to insights
+    if (calculatedMetrics.profit !== undefined) {
+      insights.calculatedProfit = calculatedMetrics.profit;
+    }
+    if (calculatedMetrics.blockedInventory !== undefined) {
+      insights.calculatedBlockedInventory = calculatedMetrics.blockedInventory;
+    }
+    
+    // Add enhanced features (recommendations, alerts, charts, benchmark)
+    const { 
+      generateMockRecommendations, 
+      generateMockAlerts, 
+      generateMockChartData,
+      generateMockBenchmark 
+    } = await import('@/lib/bedrock-client-mock');
+    
+    insights.recommendations = generateMockRecommendations(language);
+    insights.alerts = generateMockAlerts(language);
+    insights.chartData = generateMockChartData();
+    
+    // Add benchmark data
+    const benchmark = generateMockBenchmark(language);
+    
+    logger.info('Analysis completed successfully', { sessionId });
+    
+    return NextResponse.json({
+      success: true,
+      insights,
+      benchmark,
+      calculatedMetrics, // Return deterministic calculations
+    });
     
   } catch (error) {
     return NextResponse.json(
