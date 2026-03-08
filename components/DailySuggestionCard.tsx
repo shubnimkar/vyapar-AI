@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import { DailySuggestion, Language } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { Card, CardHeader, CardBody } from '@/components/ui/Card';
+import { Badge, BadgeVariant } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { AlertTriangle, Zap, Lightbulb, X } from 'lucide-react';
 
 interface DailySuggestionCardProps {
   suggestions: DailySuggestion[];
@@ -13,11 +17,19 @@ interface DailySuggestionCardProps {
 /**
  * Daily Suggestion Card Component
  * 
- * Displays the highest priority undismissed suggestion with:
+ * Pure presentation component (per Vyapar rules) that displays the highest priority 
+ * undismissed suggestion using the new design system components.
+ * 
+ * Features:
+ * - Uses Card component with elevation
+ * - Uses Badge component for severity indicators
+ * - Uses Button component for dismiss action
+ * - Icons from lucide-react for visual clarity
  * - Severity-based styling (critical=red, warning=orange, info=blue)
  * - Localized title and description
- * - Dismiss functionality
  * - Accessibility features
+ * 
+ * @see .kiro/specs/ui-ux-redesign/requirements.md - Requirements 7.x, 5.x
  */
 export default function DailySuggestionCard({
   suggestions,
@@ -70,32 +82,36 @@ export default function DailySuggestionCard({
   const translatedTitle = getTranslatedTitle(topSuggestion);
   const translatedDescription = getTranslatedDescription(topSuggestion);
   
-  // Severity configuration
+  // Severity configuration using design system
   const severityConfig = {
     critical: {
-      icon: '⚠️',
-      bgColor: 'bg-red-50',
-      borderColor: 'border-red-500',
-      textColor: 'text-red-900',
-      iconBg: 'bg-red-100'
+      icon: AlertTriangle,
+      badgeVariant: 'error' as BadgeVariant,
+      iconColor: 'text-error-600',
+      iconBg: 'bg-error-100',
+      textColor: 'text-error-900',
+      descColor: 'text-error-700'
     },
     warning: {
-      icon: '⚡',
-      bgColor: 'bg-orange-50',
-      borderColor: 'border-orange-500',
-      textColor: 'text-orange-900',
-      iconBg: 'bg-orange-100'
+      icon: Zap,
+      badgeVariant: 'warning' as BadgeVariant,
+      iconColor: 'text-warning-600',
+      iconBg: 'bg-warning-100',
+      textColor: 'text-warning-900',
+      descColor: 'text-warning-700'
     },
     info: {
-      icon: '💡',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-500',
-      textColor: 'text-blue-900',
-      iconBg: 'bg-blue-100'
+      icon: Lightbulb,
+      badgeVariant: 'info' as BadgeVariant,
+      iconColor: 'text-info-600',
+      iconBg: 'bg-info-100',
+      textColor: 'text-info-900',
+      descColor: 'text-info-700'
     }
   };
   
   const config = severityConfig[topSuggestion.severity];
+  const IconComponent = config.icon;
   
   const handleDismiss = async () => {
     setDismissing(true);
@@ -109,72 +125,65 @@ export default function DailySuggestionCard({
   };
   
   return (
-    <div
-      className={`${config.bgColor} ${config.borderColor} border-l-4 p-4 rounded-lg shadow-sm mb-4`}
+    <Card
+      elevation="raised"
+      density="comfortable"
+      className="mb-4"
       role="alert"
       aria-live="polite"
       aria-atomic="true"
     >
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1">
-          {/* Header with icon and title */}
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`${config.iconBg} rounded-full p-2 flex items-center justify-center`}>
-              <span className="text-2xl" role="img" aria-label={topSuggestion.severity}>
-                {config.icon}
-              </span>
+          {/* Header with icon, badge, and title */}
+          <CardHeader>
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`${config.iconBg} rounded-full p-2 flex items-center justify-center`}>
+                <IconComponent className={`w-6 h-6 ${config.iconColor}`} aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className={`font-semibold text-base ${config.textColor}`}>
+                    {t('daily.todaysSuggestion', language)}
+                  </h3>
+                  <Badge variant={config.badgeVariant}>
+                    {topSuggestion.severity}
+                  </Badge>
+                </div>
+              </div>
             </div>
-            <h3 className={`font-semibold text-lg ${config.textColor}`}>
-              {t('daily.todaysSuggestion', language)}
-            </h3>
-          </div>
+          </CardHeader>
           
           {/* Suggestion content */}
-          <div className="ml-14">
-            <h4 className={`font-medium mb-1 ${config.textColor}`}>
+          <CardBody>
+            <h4 className={`font-medium mb-2 ${config.textColor}`}>
               {translatedTitle}
             </h4>
-            <p className={`text-sm ${config.textColor} opacity-90`}>
+            <p className={`text-sm ${config.descColor}`}>
               {translatedDescription}
             </p>
-          </div>
+            
+            {/* Additional suggestions indicator */}
+            {undismissed.length > 1 && (
+              <div className="mt-3 text-xs text-neutral-600">
+                +{undismissed.length - 1} {undismissed.length === 2 ? 'more suggestion' : 'more suggestions'}
+              </div>
+            )}
+          </CardBody>
         </div>
         
-        {/* Dismiss button */}
-        <button
+        {/* Dismiss button using new Button component */}
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleDismiss}
-          disabled={dismissing}
-          className="ml-2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          loading={dismissing}
+          icon={<X className="w-4 h-4" />}
+          className="shrink-0"
           aria-label={t('dismiss', language)}
           title={t('dismiss', language)}
-        >
-          {dismissing ? (
-            <span className="inline-block animate-spin">⏳</span>
-          ) : (
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          )}
-        </button>
+        />
       </div>
-      
-      {/* Additional suggestions indicator */}
-      {undismissed.length > 1 && (
-        <div className="mt-3 ml-14 text-xs text-gray-600">
-          +{undismissed.length - 1} {undismissed.length === 2 ? 'more suggestion' : 'more suggestions'}
-        </div>
-      )}
-    </div>
+    </Card>
   );
 }

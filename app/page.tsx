@@ -21,11 +21,14 @@ import Alerts from '@/components/Alerts';
 import Benchmark from '@/components/Benchmark';
 import PendingTransactionConfirmation from '@/components/PendingTransactionConfirmation';
 import CSVUpload from '@/components/CSVUpload';
+import ExpenseAlertBanner from '@/components/ExpenseAlertBanner';
+import VoiceRecorder from '@/components/VoiceRecorder';
+import ReportViewer from '@/components/ReportViewer';
 import Toast, { ToastType } from '@/components/Toast';
 import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
 import ExportPDF from '@/components/ExportPDF';
-import { Language, BusinessInsights, FileType, BenchmarkData, InferredTransaction } from '@/lib/types';
+import { Language, BusinessInsights, FileType, BenchmarkData, InferredTransaction, ExpenseAlert, ExtractedVoiceData } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { addTransactionToDailyEntry } from '@/lib/add-transaction-to-entry';
 import {
@@ -38,6 +41,7 @@ import {
   MessageSquare,
   UserCircle,
   Bell,
+  FileText,
 } from 'lucide-react';
 import { SessionManager } from '@/lib/session-manager';
 import { getLocalEntries as getLocalDailyEntries } from '@/lib/daily-entry-sync';
@@ -46,9 +50,10 @@ import { calculateCreditSummary, calculateHealthScore } from '@/lib/calculations
 import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
 import IndicesDashboard from '@/components/IndicesDashboard';
 import BenchmarkDisplay from '@/components/BenchmarkDisplay';
+import CashFlowPredictor from '@/components/CashFlowPredictor';
 import { BenchmarkComparison } from '@/lib/types';
 
-type AppSection = 'dashboard' | 'entries' | 'credit' | 'pending' | 'analysis' | 'chat' | 'account';
+type AppSection = 'dashboard' | 'entries' | 'credit' | 'pending' | 'analysis' | 'chat' | 'account' | 'reports';
 
 type HealthBreakdown = {
   marginScore: number;
@@ -107,6 +112,17 @@ export default function Home() {
   const [benchmarkComparison, setBenchmarkComparison] = useState<BenchmarkComparison | null>(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
+  
+  // Expense Alert state
+  const [expenseAlert, setExpenseAlert] = useState<ExpenseAlert | null>(null);
+  
+  // Voice data state for populating form
+  const [voiceFormData, setVoiceFormData] = useState<{
+    date?: string;
+    totalSales?: number;
+    totalExpense?: number;
+    notes?: string;
+  } | undefined>(undefined);
   
   // Toast notification state
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
@@ -368,10 +384,62 @@ export default function Home() {
     setError(null);
   };
 
-  const handleDailyEntrySubmitted = () => {
+  const handleDailyEntrySubmitted = async () => {
+    // Clear voice form data after submission
+    setVoiceFormData(undefined);
+    
+    // Refresh health score and indices
     refreshHealthScore();
     recalculateIndices();
     fetchBenchmarkData();
+
+    // Check for expense alerts
+    if (!user) return;
+
+    try {
+      // Get the latest daily entry from localStorage
+      const dailyEntries = getLocalDailyEntries();
+      if (!dailyEntries || dailyEntries.length === 0) return;
+
+      // daily-entry-sync returns newest-first
+      const latestEntry = dailyEntries[0];
+
+      // Only check for alerts if there's an expense
+      if (latestEntry.totalExpense > 0) {
+        try {
+          const response = await fetch('/api/expense-alert', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: user.userId,
+              expense: {
+                amount: latestEntry.totalExpense,
+                category: latestEntry.notes || 'general',
+                date: latestEntry.date,
+              },
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.success && result.alert) {
+            setExpenseAlert(result.alert);
+          }
+        } catch (alertError) {
+          // Log error but don't block entry submission
+          logger.error('Expense alert check failed', { 
+            error: alertError,
+            userId: user.userId,
+            date: latestEntry.date,
+            expense: latestEntry.totalExpense
+          });
+          // Do not show error to user - alerts are optional enhancement
+        }
+      }
+    } catch (error) {
+      // Log error but don't block entry submission
+      logger.error('Failed to process expense alert check', { error });
+    }
   };
 
   const handleCreditChange = () => {
@@ -437,6 +505,69 @@ export default function Home() {
         : language === 'mr'
         ? 'व्यवहार जोडण्यात अयशस्वी'
         : 'Failed to add transaction';
+      
+      setToast({
+        message: errorMessage,
+        type: 'error'
+      });
+    }
+  };
+
+  const handleVoiceDataExtracted = async (data: ExtractedVoiceData) => {
+    if (!user) {
+      logger.error('No user found when processing voice data');
+      setToast({
+        message: language === 'hi' 
+          ? 'कृपया पहले लॉगिन करें'
+          : language === 'mr'
+          ? 'कृपया प्रथम लॉगिन करा'
+          : 'Please login first',
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      // Populate the DailyEntryForm with extracted voice data
+      // User will review and confirm before submission
+      const formData = {
+        date: data.date,
+        totalSales: data.sales || undefined,
+        totalExpense: data.expenses || undefined,
+        notes: data.expenseCategory ? `Category: ${data.expenseCategory}` : undefined,
+      };
+
+      setVoiceFormData(formData);
+
+      logger.info('Voice data extracted and form populated', { 
+        sales: data.sales,
+        expenses: data.expenses,
+        confidence: data.confidence
+      });
+
+      // Show success toast with confidence level
+      const successMessage = language === 'hi' 
+        ? `वॉइस डेटा निकाला गया! (विश्वास: ${Math.round(data.confidence * 100)}%) कृपया समीक्षा करें और सबमिट करें।`
+        : language === 'mr'
+        ? `व्हॉइस डेटा काढला! (विश्वास: ${Math.round(data.confidence * 100)}%) कृपया पुनरावलोकन करा आणि सबमिट करा.`
+        : `Voice data extracted! (Confidence: ${Math.round(data.confidence * 100)}%) Please review and submit.`;
+      
+      setToast({
+        message: successMessage,
+        type: 'success'
+      });
+
+      // Switch to entries section to show the populated form
+      setActiveSection('entries');
+    } catch (error) {
+      logger.error('Failed to process voice data', { error });
+      
+      // Show error toast
+      const errorMessage = language === 'hi'
+        ? 'वॉइस डेटा प्रोसेस करने में विफल'
+        : language === 'mr'
+        ? 'व्हॉइस डेटा प्रक्रिया करण्यात अयशस्वी'
+        : 'Failed to process voice data';
       
       setToast({
         message: errorMessage,
@@ -627,6 +758,7 @@ export default function Home() {
       analysis: 'Analysis',
       chat: 'Q&A',
       account: 'Account',
+      reports: 'Reports',
     };
 
     const labelsHi: Record<AppSection, string> = {
@@ -637,6 +769,7 @@ export default function Home() {
       analysis: 'विश्लेषण',
       chat: 'प्रश्नोत्तर',
       account: 'खाता',
+      reports: 'रिपोर्ट',
     };
 
     const labelsMr: Record<AppSection, string> = {
@@ -647,6 +780,7 @@ export default function Home() {
       analysis: 'विश्लेषण',
       chat: 'प्रश्नोत्तर',
       account: 'खाते',
+      reports: 'अहवाल',
     };
 
     if (language === 'hi') return labelsHi[section];
@@ -659,6 +793,7 @@ export default function Home() {
     { id: 'entries', icon: ClipboardList },
     { id: 'credit', icon: CreditCard },
     { id: 'pending', icon: Bell },
+    { id: 'reports', icon: FileText },
     { id: 'analysis', icon: BarChart3 },
     { id: 'chat', icon: MessageSquare },
     { id: 'account', icon: UserCircle },
@@ -821,6 +956,15 @@ export default function Home() {
                 <>
                   <TrustBanner language={language} />
 
+                  {/* Expense Alert Banner - positioned at top of dashboard */}
+                  {expenseAlert && (
+                    <ExpenseAlertBanner
+                      alert={expenseAlert}
+                      onDismiss={() => setExpenseAlert(null)}
+                      language={language}
+                    />
+                  )}
+
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
 
@@ -860,6 +1004,14 @@ export default function Home() {
                     error={benchmarkError || undefined}
                   />
 
+                  {/* Cash Flow Predictor - positioned below benchmark */}
+                  {user && (
+                    <CashFlowPredictor
+                      userId={user.userId}
+                      language={language === 'mr' ? 'hi' : language}
+                    />
+                  )}
+
                   {/* Stress & Affordability Index Dashboard */}
                   {user && userProfile && (
                     <IndicesDashboard
@@ -876,8 +1028,9 @@ export default function Home() {
 
               {activeSection === 'entries' && (
                 <>
+                  {user && <VoiceRecorder onDataExtracted={handleVoiceDataExtracted} language={language === 'mr' ? 'hi' : language} />}
                   <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
-                  {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
+                  {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} initialData={voiceFormData} />}
                 </>
               )}
 
@@ -911,6 +1064,13 @@ export default function Home() {
                   />
                   <CSVUpload language={language} />
                 </div>
+              )}
+
+              {activeSection === 'reports' && user && (
+                <ReportViewer 
+                  userId={user.userId}
+                  language={language === 'mr' ? 'hi' : language}
+                />
               )}
 
               {activeSection === 'account' && <UserProfile language={language} />}

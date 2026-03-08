@@ -253,6 +253,48 @@ export const translations: Translations = {
     mr: 'भाषा निवडा',
   },
   
+  // Navigation
+  'nav.dashboard': {
+    en: 'Dashboard',
+    hi: 'डैशबोर्ड',
+    mr: 'डॅशबोर्ड',
+  },
+  'nav.entries': {
+    en: 'Daily Entry',
+    hi: 'दैनिक एंट्री',
+    mr: 'दैनिक नोंद',
+  },
+  'nav.credit': {
+    en: 'Credit',
+    hi: 'उधारी',
+    mr: 'उधार',
+  },
+  'nav.pending': {
+    en: 'Pending',
+    hi: 'लंबित',
+    mr: 'प्रलंबित',
+  },
+  'nav.reports': {
+    en: 'Reports',
+    hi: 'रिपोर्ट',
+    mr: 'अहवाल',
+  },
+  'nav.analysis': {
+    en: 'Analysis',
+    hi: 'विश्लेषण',
+    mr: 'विश्लेषण',
+  },
+  'nav.chat': {
+    en: 'Q&A',
+    hi: 'प्रश्नोत्तर',
+    mr: 'प्रश्नोत्तर',
+  },
+  'nav.account': {
+    en: 'Account',
+    hi: 'खाता',
+    mr: 'खाते',
+  },
+  
   // File upload section
   uploadCSV: {
     en: 'Upload CSV File',
@@ -1588,6 +1630,282 @@ export const translations: Translations = {
     en: 'You can upload receipt photos or CSV files. The system will automatically extract transaction details.',
     hi: 'आप रसीद की तस्वीरें या CSV फ़ाइलें अपलोड कर सकते हैं। सिस्टम स्वचालित रूप से लेनदेन विवरण निकालेगा।',
     mr: 'तुम्ही पावतीचे फोटो किंवा CSV फाइल्स अपलोड करू शकता. सिस्टम आपोआप व्यवहार तपशील काढेल.',
+  },
+
+  // UI Component Translations
+  // Button component
+  'ui.button.loading': {
+    en: 'Loading...',
+    hi: 'लोड हो रहा है...',
+    mr: 'लोड होत आहे...',
+  },
+  'ui.button.submit': {
+    en: 'Submit',
+    hi: 'जमा करें',
+    mr: 'सबमिट करा',
+  },
+  'ui.button.cancel': {
+    en: 'Cancel',
+    hi: 'रद्द करें',
+    mr: 'रद्द करा',
+  },
+  'ui.button.save': {
+    en: 'Save',
+    hi: 'सहेजें',
+    mr: 'जतन करा',
+  },
+  'ui.button.delete': {
+    en: 'Delete',
+    hi: 'हटाएं',
+    mr: 'हटवा',
+  },
+  'ui.button.edit': {
+    en: 'Edit',
+    hi: 'संपादित करें',
+    mr: 'संपादित करा',
+  },
+  'ui.button.close': {
+    en: 'Close',
+    hi: 'बंद करें',
+    mr: 'बंद करा',
+  },
+  'ui.button.back': {
+    en: 'Back',
+    hi: 'वापस',
+    mr: 'मागे',
+  },
+  'ui.button.next': {
+    en: 'Next',
+    hi: 'अगला',
+    mr: 'पुढे',
+  },
+  'ui.button.tryAgain': {
+    en: 'Try Again',
+    hi: 'पुनः प्रयास करें',
+    mr: 'पुन्हा प्रयत्न करा',
+  },
+  'ui.button.goBack': {
+    en: 'Go Back',
+    hi: 'वापस जाएं',
+    mr: 'मागे जा',
+  },
+
+  // Input component
+  'ui.input.required': {
+    en: 'Required',
+    hi: 'आवश्यक',
+    mr: 'आवश्यक',
+  },
+  'ui.input.optional': {
+    en: 'Optional',
+    hi: 'वैकल्पिक',
+    mr: 'पर्यायी',
+  },
+  'ui.input.placeholder': {
+    en: 'Enter value',
+    hi: 'मान दर्ज करें',
+    mr: 'मूल्य प्रविष्ट करा',
+  },
+
+  // Toast notifications
+  'ui.toast.success': {
+    en: 'Success',
+    hi: 'सफलता',
+    mr: 'यश',
+  },
+  'ui.toast.error': {
+    en: 'Error',
+    hi: 'त्रुटि',
+    mr: 'त्रुटी',
+  },
+  'ui.toast.warning': {
+    en: 'Warning',
+    hi: 'चेतावनी',
+    mr: 'चेतावणी',
+  },
+  'ui.toast.info': {
+    en: 'Info',
+    hi: 'जानकारी',
+    mr: 'माहिती',
+  },
+
+  // Empty state
+  'ui.emptyState.noData': {
+    en: 'No data available',
+    hi: 'कोई डेटा उपलब्ध नहीं',
+    mr: 'डेटा उपलब्ध नाही',
+  },
+  'ui.emptyState.noResults': {
+    en: 'No results found',
+    hi: 'कोई परिणाम नहीं मिला',
+    mr: 'परिणाम सापडले नाहीत',
+  },
+  'ui.emptyState.getStarted': {
+    en: 'Get Started',
+    hi: 'शुरू करें',
+    mr: 'सुरू करा',
+  },
+
+  // Error state
+  'ui.errorState.title': {
+    en: 'Something went wrong',
+    hi: 'कुछ गलत हो गया',
+    mr: 'काहीतरी चूक झाली',
+  },
+  'ui.errorState.message': {
+    en: 'An error occurred. Please try again.',
+    hi: 'एक त्रुटि हुई। कृपया पुनः प्रयास करें।',
+    mr: 'त्रुटी आली. कृपया पुन्हा प्रयत्न करा.',
+  },
+
+  // Loading state
+  'ui.loading.title': {
+    en: 'Loading',
+    hi: 'लोड हो रहा है',
+    mr: 'लोड होत आहे',
+  },
+  'ui.loading.pleaseWait': {
+    en: 'Please wait...',
+    hi: 'कृपया प्रतीक्षा करें...',
+    mr: 'कृपया प्रतीक्षा करा...',
+  },
+
+  // Navigation
+  'ui.nav.dashboard': {
+    en: 'Dashboard',
+    hi: 'डैशबोर्ड',
+    mr: 'डॅशबोर्ड',
+  },
+  'ui.nav.entries': {
+    en: 'Daily Entry',
+    hi: 'दैनिक एंट्री',
+    mr: 'दैनिक नोंद',
+  },
+  'ui.nav.credit': {
+    en: 'Credit',
+    hi: 'उधारी',
+    mr: 'उधार',
+  },
+  'ui.nav.pending': {
+    en: 'Pending',
+    hi: 'लंबित',
+    mr: 'प्रलंबित',
+  },
+  'ui.nav.analysis': {
+    en: 'Analysis',
+    hi: 'विश्लेषण',
+    mr: 'विश्लेषण',
+  },
+  'ui.nav.chat': {
+    en: 'Q&A',
+    hi: 'प्रश्नोत्तर',
+    mr: 'प्रश्नोत्तर',
+  },
+  'ui.nav.account': {
+    en: 'Account',
+    hi: 'खाता',
+    mr: 'खाते',
+  },
+  'ui.nav.reports': {
+    en: 'Reports',
+    hi: 'रिपोर्ट',
+    mr: 'अहवाल',
+  },
+
+  // PWA UI
+  'ui.pwa.install': {
+    en: 'Install',
+    hi: 'इंस्टॉल करें',
+    mr: 'इंस्टॉल करा',
+  },
+  'ui.pwa.installTitle': {
+    en: 'Install Vyapar AI',
+    hi: 'व्यापार AI इंस्टॉल करें',
+    mr: 'व्यापार AI इंस्टॉल करा',
+  },
+  'ui.pwa.installMessage': {
+    en: 'Get quick access and work offline. Install our app for the best experience!',
+    hi: 'त्वरित पहुंच प्राप्त करें और ऑफ़लाइन काम करें। सर्वोत्तम अनुभव के लिए हमारा ऐप इंस्टॉल करें!',
+    mr: 'जलद प्रवेश मिळवा आणि ऑफलाइन काम करा. सर्वोत्तम अनुभवासाठी आमचे अॅप इंस्टॉल करा!',
+  },
+  'ui.pwa.updateAvailable': {
+    en: 'Update Available',
+    hi: 'अपडेट उपलब्ध',
+    mr: 'अपडेट उपलब्ध',
+  },
+  'ui.pwa.updateMessage': {
+    en: 'A new version of Vyapar AI is ready. Update now to get the latest features and improvements.',
+    hi: 'व्यापार AI का एक नया संस्करण तैयार है। नवीनतम सुविधाओं और सुधारों को प्राप्त करने के लिए अभी अपडेट करें।',
+    mr: 'व्यापार AI ची नवीन आवृत्ती तयार आहे. नवीनतम वैशिष्ट्ये आणि सुधारणा मिळवण्यासाठी आता अपडेट करा.',
+  },
+  'ui.pwa.updateNow': {
+    en: 'Update Now',
+    hi: 'अभी अपडेट करें',
+    mr: 'आता अपडेट करा',
+  },
+  'ui.pwa.later': {
+    en: 'Later',
+    hi: 'बाद में',
+    mr: 'नंतर',
+  },
+  'ui.pwa.offline': {
+    en: 'Offline',
+    hi: 'ऑफ़लाइन',
+    mr: 'ऑफलाइन',
+  },
+  'ui.pwa.online': {
+    en: 'Online',
+    hi: 'ऑनलाइन',
+    mr: 'ऑनलाइन',
+  },
+  'ui.pwa.syncing': {
+    en: 'Syncing',
+    hi: 'सिंक हो रहा है',
+    mr: 'सिंक होत आहे',
+  },
+  'ui.pwa.offlineTitle': {
+    en: "You're Offline",
+    hi: 'आप ऑफ़लाइन हैं',
+    mr: 'तुम्ही ऑफलाइन आहात',
+  },
+  'ui.pwa.offlineMessage': {
+    en: "It looks like you've lost your internet connection. Don't worry, Vyapar AI works offline!",
+    hi: 'ऐसा लगता है कि आपने अपना इंटरनेट कनेक्शन खो दिया है। चिंता न करें, व्यापार AI ऑफ़लाइन काम करता है!',
+    mr: 'असे दिसते की तुम्ही तुमचे इंटरनेट कनेक्शन गमावले आहे. काळजी करू नका, व्यापार AI ऑफलाइन काम करते!',
+  },
+  'ui.pwa.offlineFeatures': {
+    en: 'Available Offline',
+    hi: 'ऑफ़लाइन उपलब्ध',
+    mr: 'ऑफलाइन उपलब्ध',
+  },
+  'ui.pwa.goToDashboard': {
+    en: 'Go to Dashboard',
+    hi: 'डैशबोर्ड पर जाएं',
+    mr: 'डॅशबोर्डवर जा',
+  },
+
+  // Badge
+  'ui.badge.new': {
+    en: 'New',
+    hi: 'नया',
+    mr: 'नवीन',
+  },
+  'ui.badge.pending': {
+    en: 'Pending',
+    hi: 'लंबित',
+    mr: 'प्रलंबित',
+  },
+
+  // Progress
+  'ui.progress.complete': {
+    en: 'Complete',
+    hi: 'पूर्ण',
+    mr: 'पूर्ण',
+  },
+  'ui.progress.inProgress': {
+    en: 'In Progress',
+    hi: 'प्रगति में',
+    mr: 'प्रगतीत',
   },
 };
 

@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         });
         return NextResponse.json(
           createErrorResponse(
-            ErrorCode.INVALID_INPUT,
+            ErrorCode.INSUFFICIENT_DATA,
             'errors.insufficientData',
             language
           ),

@@ -1,49 +1,199 @@
+/* Import Google Fonts - Noto Sans Devanagari for Hindi/Marathi support */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Custom Properties - Design Tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Colors */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  
+  /* Neutral colors */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-500: #6b7280;
+  --color-neutral-700: #374151;
+  --color-neutral-900: #111827;
+  
+  /* Financial colors */
+  --color-profit: #22c55e;
+  --color-loss: #ef4444;
+  --color-neutral-financial: #6b7280;
+  
+  /* Spacing scale (8px base unit) */
+  --spacing-1: 0.25rem;  /* 4px */
+  --spacing-2: 0.5rem;   /* 8px */
+  --spacing-3: 0.75rem;  /* 12px */
+  --spacing-4: 1rem;     /* 16px */
+  --spacing-5: 1.25rem;  /* 20px */
+  --spacing-6: 1.5rem;   /* 24px */
+  --spacing-8: 2rem;     /* 32px */
+  --spacing-10: 2.5rem;  /* 40px */
+  --spacing-12: 3rem;    /* 48px */
+  
+  /* Typography */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  --font-devanagari: 'Noto Sans Devanagari', system-ui, sans-serif;
+  
+  /* Font sizes */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-loose: 2;
+  
+  /* Border radius */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-base: 0.5rem;  /* 8px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+  
+  /* Touch target minimum size */
+  --touch-target-min: 44px;
+  
+  /* Background and foreground */
+  --background: var(--color-neutral-0);
+  --foreground: var(--color-neutral-900);
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure proper Devanagari font rendering */
-:lang(hi), :lang(mr) {
-  font-family: 'Noto Sans Devanagari', system-ui, sans-serif;
-}
-
-/* Mobile-first touch targets */
-button, a, input, select, textarea {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Better text rendering on mobile */
+/* Ensure minimum 16px base font size on mobile to prevent iOS zoom */
 @media (max-width: 640px) {
+  html {
+    font-size: 16px;
+  }
+  
   body {
-    font-size: 16px; /* Prevent zoom on iOS */
+    font-size: 1rem; /* 16px */
+  }
+}
+
+/* Devanagari font rendering for Hindi and Marathi */
+:lang(hi), :lang(mr) {
+  font-family: var(--font-devanagari);
+  line-height: var(--line-height-relaxed); /* Increased line height for better readability */
+  letter-spacing: 0.01em;
+}
+
+/* Apply Devanagari font to elements with lang attribute */
+[lang="hi"], [lang="mr"] {
+  font-family: var(--font-devanagari);
+  line-height: var(--line-height-relaxed);
+}
+
+/* Mobile-first touch targets - ensure minimum 44x44px for accessibility */
+button, a, input, select, textarea {
+  min-height: var(--touch-target-min);
+}
+
+/* Focus visible styles for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 @layer utilities {
+  /* Text utilities */
   .text-balance {
     text-wrap: balance;
   }
   
-  /* Toast animations */
+  /* Financial color utilities */
+  .text-profit {
+    color: var(--color-profit);
+  }
+  
+  .text-loss {
+    color: var(--color-loss);
+  }
+  
+  .bg-profit-light {
+    background-color: #f0fdf4; /* success-50 */
+  }
+  
+  .bg-loss-light {
+    background-color: #fef2f2; /* error-50 */
+  }
+  
+  /* Animation keyframes */
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
   @keyframes slide-in-right {
     from {
       transform: translateX(100%);
@@ -55,7 +205,158 @@ html {
     }
   }
   
+  @keyframes slide-out-right {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes slide-down {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes scale-in {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Animation utility classes */
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
   .animate-slide-in-right {
-    animation: slide-in-right 0.3s ease-out;
+    animation: slide-in-right var(--duration-base) ease-out;
+  }
+  
+  .animate-slide-out-right {
+    animation: slide-out-right 200ms ease-in;
+  }
+  
+  .animate-slide-down {
+    animation: slide-down var(--duration-base) ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up var(--duration-base) ease-out;
+  }
+  
+  .animate-fade-in {
+    animation: fade-in var(--duration-base) ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scale-in 200ms ease-out;
+  }
+  
+  /* Transition utilities */
+  .transition-fast {
+    transition-duration: var(--duration-fast);
+  }
+  
+  .transition-base {
+    transition-duration: var(--duration-base);
+  }
+  
+  .transition-slow {
+    transition-duration: var(--duration-slow);
+  }
+}
+
+/* Component layer for reusable patterns */
+@layer components {
+  /* Card base styles */
+  .card {
+    background-color: var(--color-neutral-0);
+    border: 1px solid var(--color-neutral-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Button base styles */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: 500;
+    border-radius: var(--radius-base);
+    transition: all var(--duration-base) ease;
+    min-height: var(--touch-target-min);
+  }
+  
+  .btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  
+  .btn:active {
+    transform: scale(0.98);
+  }
+  
+  /* Input base styles */
+  .input {
+    width: 100%;
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 2px solid var(--color-neutral-300);
+    border-radius: var(--radius-base);
+    font-size: var(--font-size-base);
+    transition: all var(--duration-base) ease;
+    min-height: var(--touch-target-min);
+  }
+  
+  .input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .input::placeholder {
+    color: var(--color-neutral-500);
+    opacity: 0.5;
   }
 }

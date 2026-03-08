@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { BusinessInsights, Language } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 interface InsightsDisplayProps {
   insights: BusinessInsights;
@@ -173,19 +175,19 @@ export default function InsightsDisplay({
   const renderContent = (content: string | string[]) => {
     if (Array.isArray(content)) {
       if (content.length === 0) {
-        return <p className="text-gray-600 text-sm">No issues found</p>;
+        return <p className="text-neutral-600 text-sm">No issues found</p>;
       }
       return (
         <ul className="list-disc list-inside space-y-1">
           {content.map((item, idx) => (
-            <li key={idx} className="text-gray-700 text-sm">
+            <li key={idx} className="text-neutral-700 text-sm">
               {item}
             </li>
           ))}
         </ul>
       );
     }
-    return <p className="text-gray-700 text-sm whitespace-pre-wrap">{content}</p>;
+    return <p className="text-neutral-700 text-sm whitespace-pre-wrap">{content}</p>;
   };
 
   const getTextContent = (content: string | string[]): string => {
@@ -199,18 +201,18 @@ export default function InsightsDisplay({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
+      <h2 className="text-2xl font-bold text-neutral-800 mb-4">
         {t('insights', language)}
       </h2>
 
       {voiceUnavailable && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-          <p className="text-sm text-yellow-800">
+        <Card className="bg-warning-50 border border-warning-200 mb-4" density="compact">
+          <p className="text-sm text-warning-800">
             {language === 'hi' && 'हिंदी के लिए टेक्स्ट-टू-स्पीच उपलब्ध नहीं है। कृपया अंग्रेजी का उपयोग करें।'}
             {language === 'mr' && 'मराठीसाठी टेक्स्ट-टू-स्पीच उपलब्ध नाही. कृपया इंग्रजी वापरा.'}
             {language === 'en' && 'Text-to-speech is not available for the selected language. Please use English.'}
           </p>
-        </div>
+        </Card>
       )}
 
       {sections.map((section) => {
@@ -220,37 +222,35 @@ export default function InsightsDisplay({
         if (!hasContent) return null;
 
         return (
-          <div
-            key={section.key}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
-          >
+          <Card key={section.key}>
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{section.icon}</span>
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-neutral-800">
                   {section.title}
                 </h3>
               </div>
 
               {isSpeechSupported && (
-                <button
+                <Button
                   onClick={() =>
                     speaking === section.key
                       ? handleStopSpeaking()
                       : handleSpeak(getTextContent(section.content), section.key)
                   }
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors min-h-[36px]"
+                  variant="secondary"
+                  size="sm"
                 >
                   <span>{speaking === section.key ? '⏸️' : '🔊'}</span>
                   <span>
                     {speaking === section.key ? t('stop', language) : t('listen', language)}
                   </span>
-                </button>
+                </Button>
               )}
             </div>
 
             <div className="mt-2">{renderContent(section.content)}</div>
-          </div>
+          </Card>
         );
       })}
     </div>

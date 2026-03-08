@@ -1,11 +1,11 @@
 'use client';
 
-import { ExpenseAlert } from '@/lib/types';
+import { ExpenseAlert, Language } from '@/lib/types';
 
 interface ExpenseAlertBannerProps {
   alert: ExpenseAlert | null;
   onDismiss: () => void;
-  language: 'en' | 'hi';
+  language: Language;
 }
 
 export default function ExpenseAlertBanner({ alert, onDismiss, language }: ExpenseAlertBannerProps) {
@@ -16,11 +16,22 @@ export default function ExpenseAlertBanner({ alert, onDismiss, language }: Expen
       dismiss: 'Dismiss',
       warning: 'Warning',
       critical: 'Critical Alert',
+      category: 'Category',
+      amount: 'Amount',
     },
     hi: {
       dismiss: 'खारिज करें',
       warning: 'चेतावनी',
       critical: 'गंभीर चेतावनी',
+      category: 'श्रेणी',
+      amount: 'राशि',
+    },
+    mr: {
+      dismiss: 'डिसमिस करा',
+      warning: 'चेतावणी',
+      critical: 'गंभीर इशारा',
+      category: 'श्रेणी',
+      amount: 'रक्कम',
     },
   };
 
@@ -51,8 +62,7 @@ export default function ExpenseAlertBanner({ alert, onDismiss, language }: Expen
           </div>
           <p className="text-sm leading-relaxed">{alert.explanation}</p>
           <div className="mt-2 text-xs opacity-75">
-            {language === 'hi' ? 'श्रेणी' : 'Category'}: {alert.category} | 
-            {language === 'hi' ? ' राशि' : ' Amount'}: ₹{alert.expenseAmount.toLocaleString('en-IN')}
+            {t.category}: {alert.category} | {t.amount}: ₹{alert.expenseAmount.toLocaleString('en-IN')}
           </div>
         </div>
         <button

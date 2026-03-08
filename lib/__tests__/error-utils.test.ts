@@ -703,9 +703,9 @@ describe('Error Utilities', () => {
         });
       });
 
-      test('should have exactly 8 error codes', () => {
+      test('should have exactly 18 error codes', () => {
         const errorCodeCount = Object.keys(ErrorCode).length;
-        expect(errorCodeCount).toBe(8);
+        expect(errorCodeCount).toBe(18);
       });
 
       test('each error code should map to itself', () => {

@@ -162,7 +162,7 @@ describe('POST /api/indices/calculate', () => {
 
     expect(response.status).toBe(400);
     expect(data.success).toBe(false);
-    expect(data.code).toBe('INVALID_INPUT');
+    expect(data.code).toBe('INSUFFICIENT_DATA');
     expect(data.message).toContain('Insufficient data');
   });
 

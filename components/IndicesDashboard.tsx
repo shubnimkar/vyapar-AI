@@ -8,7 +8,7 @@
  * Implements responsive layout and sync status indicators.
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import StressIndexDisplay from './StressIndexDisplay';
 import AffordabilityPlanner from './AffordabilityPlanner';
 import type {
@@ -18,6 +18,11 @@ import type {
   UserProfile,
 } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
+import { Spinner } from './ui/Spinner';
+import { ErrorState } from './ui/ErrorState';
+import { Badge } from './ui/Badge';
 
 interface IndicesDashboardProps {
   userId: string;
@@ -79,7 +84,23 @@ export default function IndicesDashboard({
         // No indices yet - need to calculate
         await calculateIndices();
       } else {
-        setError(data.error || t('indices.error', language));
+        // Check error code to determine message
+        // Handle both INSUFFICIENT_DATA (new) and INVALID_INPUT with insufficientData message (old)
+        const errorMsg = data.message || data.error || '';
+        if (
+          data.code === 'INSUFFICIENT_DATA' ||
+          (data.code === 'INVALID_INPUT' && errorMsg.includes('insufficientData'))
+        ) {
+          setError('INSUFFICIENT_DATA');  // Special marker
+        } else {
+          // For other errors, translate if it's a translation key
+          const finalErrorMsg = errorMsg || 'indices.error';
+          setError(
+            finalErrorMsg.startsWith('errors.') || finalErrorMsg.startsWith('indices.')
+              ? t(finalErrorMsg, language)
+              : finalErrorMsg
+          );
+        }
       }
     } catch (err) {
       setError(t('indices.error', language));
@@ -107,7 +128,23 @@ export default function IndicesDashboard({
       if (data.success && data.data) {
         setIndexData(data.data);
       } else {
-        setError(data.error || t('indices.error', language));
+        // Check error code first
+        // Handle both INSUFFICIENT_DATA (new) and INVALID_INPUT with insufficientData message (old)
+        const errorMsg = data.message || data.error || '';
+        if (
+          data.code === 'INSUFFICIENT_DATA' ||
+          (data.code === 'INVALID_INPUT' && errorMsg.includes('insufficientData'))
+        ) {
+          setError('INSUFFICIENT_DATA');
+        } else {
+          // For other errors, translate if it's a translation key
+          const finalErrorMsg = errorMsg || 'indices.error';
+          setError(
+            finalErrorMsg.startsWith('errors.') || finalErrorMsg.startsWith('indices.')
+              ? t(finalErrorMsg, language)
+              : finalErrorMsg
+          );
+        }
       }
     } catch (err) {
       setError(t('indices.error', language));
@@ -191,15 +228,15 @@ export default function IndicesDashboard({
   const renderSyncStatus = () => {
     const statusConfig = {
       online: {
-        color: 'bg-green-500',
+        variant: 'success' as const,
         text: t('indices.syncStatus.online', language),
       },
       offline: {
-        color: 'bg-gray-500',
+        variant: 'default' as const,
         text: t('indices.syncStatus.offline', language),
       },
       syncing: {
-        color: 'bg-blue-500',
+        variant: 'info' as const,
         text: t('indices.syncStatus.syncing', language),
       },
     };
@@ -207,68 +244,65 @@ export default function IndicesDashboard({
     const config = statusConfig[syncStatus];
 
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-600">
-        <div className={`w-2 h-2 rounded-full ${config.color}`} />
-        <span>{config.text}</span>
-      </div>
+      <Badge variant={config.variant}>
+        {config.text}
+      </Badge>
     );
   };
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-        <p className="text-gray-600">{t('indices.checking', language)}</p>
-      </div>
+      <Card className="text-center">
+        <Spinner size="lg" className="mx-auto mb-4" />
+        <p className="text-neutral-600">{t('indices.checking', language)}</p>
+      </Card>
     );
   }
 
   // Insufficient data state
-  if (error && error.includes('Insufficient')) {
+  if (error === 'INSUFFICIENT_DATA') {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
+      <Card className="text-center">
         <div className="text-6xl mb-4">📊</div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <h3 className="text-lg font-semibold text-neutral-800 mb-2">
           {t('indices.insufficientData', language)}
         </h3>
-        <p className="text-gray-600 mb-4">
+        <p className="text-neutral-600 mb-4">
           {t('indices.addMoreData', language)}
         </p>
         {renderSyncStatus()}
-      </div>
+      </Card>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <div className="text-red-600 mb-4">⚠️</div>
-        <p className="text-red-600">{error}</p>
-        <button
-          onClick={loadLatestIndices}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          {t('receipt.tryAgain', language)}
-        </button>
-      </div>
+      <ErrorState
+        title={t('indices.error', language)}
+        message={error}
+        action={{
+          label: t('receipt.tryAgain', language),
+          onClick: loadLatestIndices,
+        }}
+      />
     );
   }
 
   // No data yet
   if (!indexData?.stressIndex) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
+      <Card className="text-center">
         <div className="text-6xl mb-4">📊</div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <h3 className="text-lg font-semibold text-neutral-800 mb-2">
           {t('indices.insufficientData', language)}
         </h3>
-        <p className="text-gray-600 mb-4">
+        <p className="text-neutral-600 mb-4">
           {t('indices.addMoreData', language)}
         </p>
         {renderSyncStatus()}
-      </div>
+      </Card>
     );
   }
 
@@ -297,46 +331,46 @@ export default function IndicesDashboard({
 
       {/* Explain Button */}
       <div className="text-center">
-        <button
+        <Button
           onClick={handleExplain}
           disabled={isExplaining}
-          className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium shadow-md"
+          loading={isExplaining}
+          variant="primary"
+          size="lg"
         >
           {isExplaining
             ? t('indices.explaining', language)
             : t('indices.explain', language)}
-        </button>
+        </Button>
       </div>
 
       {/* AI Explanation Modal */}
       {showExplanation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">
-                  {t('indices.aiExplanation', language)}
-                </h3>
-                <button
-                  onClick={() => setShowExplanation(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="prose max-w-none">
-                <p className="text-gray-700 whitespace-pre-wrap">{explanation}</p>
-              </div>
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => setShowExplanation(false)}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  {t('indices.close', language)}
-                </button>
-              </div>
+          <Card className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-neutral-800">
+                {t('indices.aiExplanation', language)}
+              </h3>
+              <button
+                onClick={() => setShowExplanation(false)}
+                className="text-neutral-500 hover:text-neutral-700 text-2xl"
+              >
+                ×
+              </button>
             </div>
-          </div>
+            <div className="prose max-w-none">
+              <p className="text-neutral-700 whitespace-pre-wrap">{explanation}</p>
+            </div>
+            <div className="mt-6 text-center">
+              <Button
+                onClick={() => setShowExplanation(false)}
+                variant="primary"
+              >
+                {t('indices.close', language)}
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
     </div>

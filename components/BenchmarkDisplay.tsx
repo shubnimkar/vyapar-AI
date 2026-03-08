@@ -4,6 +4,11 @@ import React, { useState } from 'react';
 import { Language, BenchmarkComparison } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { getVisualIndicator } from '@/lib/finance/categorizePerformance';
+import { Card } from './ui/Card';
+import { Badge } from './ui/Badge';
+import { Button } from './ui/Button';
+import { Skeleton } from './ui/Skeleton';
+import { formatCurrency, formatPercentage } from '@/lib/design-system/utils';
 
 interface BenchmarkDisplayProps {
   comparison: BenchmarkComparison | null;
@@ -27,33 +32,31 @@ export default function BenchmarkDisplay({
   // Loading state
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-        <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-          <div className="h-8 bg-gray-200 rounded mb-2"></div>
-          <div className="h-8 bg-gray-200 rounded"></div>
-        </div>
-      </div>
+      <Card>
+        <Skeleton variant="text" width="50%" height={20} className="mb-4" />
+        <Skeleton variant="rectangular" width="100%" height={80} className="mb-2" />
+        <Skeleton variant="rectangular" width="100%" height={80} />
+      </Card>
     );
   }
   
   // Error state
   if (error) {
     return (
-      <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-        <p className="text-sm text-yellow-700">{error}</p>
-      </div>
+      <Card className="bg-warning-50 border-l-4 border-warning-500">
+        <p className="text-sm text-warning-700">{error}</p>
+      </Card>
     );
   }
   
   // No data state
   if (!comparison) {
     return (
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-        <p className="text-sm text-blue-700">
+      <Card className="bg-info-50 border-l-4 border-info-500">
+        <p className="text-sm text-info-700">
           {t('benchmark.noData', language)}
         </p>
-      </div>
+      </Card>
     );
   }
   
@@ -111,147 +114,143 @@ export default function BenchmarkDisplay({
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-      <h3 className="text-lg font-semibold mb-4 text-slate-800">
+    <Card>
+      <h3 className="text-lg font-semibold mb-4 text-neutral-800">
         {t('benchmark.title', language)}
       </h3>
       
       {/* Limited data warning */}
       {showLimitedDataWarning && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4 rounded">
-          <p className="text-sm text-yellow-700 flex items-center gap-2">
+        <Card className="bg-warning-50 border-l-4 border-warning-400 mb-4" density="compact">
+          <p className="text-sm text-warning-700 flex items-center gap-2">
             <span>⚠️</span>
             {t('benchmark.limitedData', language)}
           </p>
-        </div>
+        </Card>
       )}
       
       {/* Stale data indicator */}
       {isStale && (
-        <div className="bg-gray-50 border-l-4 border-gray-400 p-3 mb-4 rounded">
-          <p className="text-sm text-gray-600 flex items-center gap-2">
+        <Card className="bg-neutral-50 border-l-4 border-neutral-400 mb-4" density="compact">
+          <p className="text-sm text-neutral-600 flex items-center gap-2">
             <span>🕐</span>
             {t('benchmark.staleData', language).replace('{days}', daysSinceUpdate.toString())}
           </p>
-        </div>
+        </Card>
       )}
       
       {/* Health Score Comparison */}
-      <div className={`${healthIndicator.bgColor} ${healthIndicator.borderColor} border-l-4 p-4 rounded mb-4`}>
+      <Card className={`${healthIndicator.bgColor} ${healthIndicator.borderColor} border-l-4 mb-4`} density="compact">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-neutral-700">
             {t('benchmark.healthScore', language)}
           </span>
-          <span className="text-2xl">{healthIndicator.icon}</span>
+          <Badge variant={healthIndicator.icon === '🟢' ? 'success' : healthIndicator.icon === '🟡' ? 'warning' : 'default'}>
+            {healthIndicator.icon}
+          </Badge>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-gray-600">{t('benchmark.yourBusiness', language)}</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-xs text-neutral-600">{t('benchmark.yourBusiness', language)}</p>
+            <p className="text-2xl font-bold text-neutral-900">
               {comparison.healthScoreComparison.userValue}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-600">{t('benchmark.segmentAverage', language)}</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-xs text-neutral-600">{t('benchmark.segmentAverage', language)}</p>
+            <p className="text-2xl font-bold text-neutral-900">
               {comparison.healthScoreComparison.segmentMedian}
             </p>
           </div>
         </div>
         
-        <p className="text-sm mt-2 font-medium text-gray-700">
+        <p className="text-sm mt-2 font-medium text-neutral-700">
           {t(`benchmark.category.${comparison.healthScoreComparison.category}`, language)}
         </p>
-      </div>
+      </Card>
       
       {/* Profit Margin Comparison */}
-      <div className={`${marginIndicator.bgColor} ${marginIndicator.borderColor} border-l-4 p-4 rounded mb-4`}>
+      <Card className={`${marginIndicator.bgColor} ${marginIndicator.borderColor} border-l-4 mb-4`} density="compact">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-neutral-700">
             {t('benchmark.profitMargin', language)}
           </span>
-          <span className="text-2xl">{marginIndicator.icon}</span>
+          <Badge variant={marginIndicator.icon === '🟢' ? 'success' : marginIndicator.icon === '🟡' ? 'warning' : 'default'}>
+            {marginIndicator.icon}
+          </Badge>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-gray-600">{t('benchmark.yourBusiness', language)}</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {(comparison.marginComparison.userValue * 100).toFixed(1)}%
+            <p className="text-xs text-neutral-600">{t('benchmark.yourBusiness', language)}</p>
+            <p className="text-2xl font-bold text-neutral-900">
+              {formatPercentage(comparison.marginComparison.userValue * 100)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-600">{t('benchmark.segmentAverage', language)}</p>
-            <p className="text-2xl font-bold text-gray-900">
-              {(comparison.marginComparison.segmentMedian * 100).toFixed(1)}%
+            <p className="text-xs text-neutral-600">{t('benchmark.segmentAverage', language)}</p>
+            <p className="text-2xl font-bold text-neutral-900">
+              {formatPercentage(comparison.marginComparison.segmentMedian * 100)}
             </p>
           </div>
         </div>
         
-        <p className="text-sm mt-2 font-medium text-gray-700">
+        <p className="text-sm mt-2 font-medium text-neutral-700">
           {t(`benchmark.category.${comparison.marginComparison.category}`, language)}
         </p>
-      </div>
+      </Card>
       
       {/* Sample Size Info */}
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-neutral-500 text-center">
         {t('benchmark.sampleSize', language).replace('{count}', comparison.segmentInfo.sampleSize.toString())}
       </p>
 
       {/* AI Explanation Button (Optional Enhancement) */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
+      <div className="mt-4 pt-4 border-t border-neutral-200">
         {!showExplanation ? (
-          <button
+          <Button
             onClick={handleExplain}
             disabled={isExplaining || !userId}
-            className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-              isExplaining || !userId
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
+            loading={isExplaining}
+            fullWidth
+            variant="primary"
           >
-            {isExplaining ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin">⏳</span>
-                {language === 'hi' ? 'व्याख्या प्राप्त कर रहे हैं...' : language === 'mr' ? 'स्पष्टीकरण मिळवत आहे...' : 'Getting explanation...'}
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                <span>💡</span>
-                {language === 'hi' ? 'AI व्याख्या प्राप्त करें' : language === 'mr' ? 'AI स्पष्टीकरण मिळवा' : 'Get AI Explanation'}
-              </span>
-            )}
-          </button>
+            <span className="flex items-center justify-center gap-2">
+              <span>💡</span>
+              {language === 'hi' ? 'AI व्याख्या प्राप्त करें' : language === 'mr' ? 'AI स्पष्टीकरण मिळवा' : 'Get AI Explanation'}
+            </span>
+          </Button>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-neutral-700 flex items-center gap-2">
                 <span>💡</span>
                 {language === 'hi' ? 'AI व्याख्या' : language === 'mr' ? 'AI स्पष्टीकरण' : 'AI Explanation'}
               </h4>
-              <button
+              <Button
                 onClick={() => setShowExplanation(false)}
-                className="text-xs text-gray-500 hover:text-gray-700"
+                variant="ghost"
+                size="sm"
               >
                 {language === 'hi' ? 'छुपाएं' : language === 'mr' ? 'लपवा' : 'Hide'}
-              </button>
+              </Button>
             </div>
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-              <p className="text-sm text-gray-700 whitespace-pre-line">
+            <Card className="bg-info-50 border-l-4 border-info-500" density="compact">
+              <p className="text-sm text-neutral-700 whitespace-pre-line">
                 {explanation}
               </p>
-            </div>
+            </Card>
           </div>
         )}
 
         {/* Explanation Error (Graceful Degradation) */}
         {explanationError && (
-          <div className="mt-2 text-xs text-yellow-600 text-center">
+          <div className="mt-2 text-xs text-warning-600 text-center">
             {explanationError}
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

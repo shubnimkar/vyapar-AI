@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { tokens } from "./lib/design-system/tokens";
 
 const config: Config = {
   content: [
@@ -9,20 +10,50 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        primary: tokens.colors.primary,
+        success: tokens.colors.success,
+        warning: tokens.colors.warning,
+        error: tokens.colors.error,
+        info: tokens.colors.info,
+        neutral: tokens.colors.neutral,
+        financial: tokens.colors.financial,
+        // Keep existing CSS variables for backward compatibility
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
       fontFamily: {
-        sans: [
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'Noto Sans',
-          'Noto Sans Devanagari',
-          'sans-serif',
-        ],
+        sans: [...tokens.typography.fontFamily.sans],
+        devanagari: [...tokens.typography.fontFamily.devanagari],
+      },
+      fontSize: {
+        xs: [...tokens.typography.fontSize.xs],
+        sm: [...tokens.typography.fontSize.sm],
+        base: [...tokens.typography.fontSize.base],
+        lg: [...tokens.typography.fontSize.lg],
+        xl: [...tokens.typography.fontSize.xl],
+        '2xl': [...tokens.typography.fontSize['2xl']],
+        '3xl': [...tokens.typography.fontSize['3xl']],
+        '4xl': [...tokens.typography.fontSize['4xl']],
+      },
+      fontWeight: tokens.typography.fontWeight,
+      lineHeight: tokens.typography.lineHeight,
+      spacing: tokens.spacing,
+      boxShadow: tokens.shadows,
+      borderRadius: tokens.borderRadius,
+      screens: {
+        tablet: tokens.breakpoints.tablet,
+        desktop: tokens.breakpoints.desktop,
+        wide: tokens.breakpoints.wide,
+      },
+      transitionDuration: {
+        fast: tokens.animation.duration.fast,
+        base: tokens.animation.duration.base,
+        slow: tokens.animation.duration.slow,
+      },
+      transitionTimingFunction: {
+        'ease-in': tokens.animation.easing.easeIn,
+        'ease-out': tokens.animation.easing.easeOut,
+        'ease-in-out': tokens.animation.easing.easeInOut,
       },
     },
   },

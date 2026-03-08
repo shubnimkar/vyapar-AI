@@ -15,26 +15,37 @@ import {
 } from '@/lib/daily-entry-sync';
 import { TrendingUp, TrendingDown, Calendar, History, Plus, Edit2, Trash2, Cloud, CloudOff, RefreshCw, X } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card, CardHeader, CardBody } from '@/components/ui/Card';
+import { Spinner } from '@/components/ui/Spinner';
+import { ErrorState } from '@/components/ui/ErrorState';
 
 interface DailyEntryFormProps {
   language: Language;
   onEntrySubmitted?: () => void;
+  initialData?: {
+    date?: string;
+    totalSales?: number;
+    totalExpense?: number;
+    notes?: string;
+  };
 }
 
 type ViewMode = 'form' | 'history' | 'calendar';
 
-export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntryFormProps) {
+export default function DailyEntryForm({ language, onEntrySubmitted, initialData }: DailyEntryFormProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('form');
   const [entries, setEntries] = useState<LocalDailyEntry[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<LocalDailyEntry | null>(null);
   
   // Form state
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [totalSales, setTotalSales] = useState('');
-  const [totalExpense, setTotalExpense] = useState('');
+  const [date, setDate] = useState(initialData?.date || new Date().toISOString().split('T')[0]);
+  const [totalSales, setTotalSales] = useState(initialData?.totalSales?.toString() || '');
+  const [totalExpense, setTotalExpense] = useState(initialData?.totalExpense?.toString() || '');
   const [cashInHand, setCashInHand] = useState('');
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(initialData?.notes || '');
   
   // UI state
   const [loading, setLoading] = useState(false);
@@ -48,6 +59,18 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
     loadEntries();
     checkAndSync();
   }, []);
+
+  // Update form when initialData changes (e.g., from voice input)
+  useEffect(() => {
+    if (initialData) {
+      if (initialData.date) setDate(initialData.date);
+      if (initialData.totalSales !== undefined) setTotalSales(initialData.totalSales.toString());
+      if (initialData.totalExpense !== undefined) setTotalExpense(initialData.totalExpense.toString());
+      if (initialData.notes) setNotes(initialData.notes);
+      // Switch to form view to show the populated data
+      setViewMode('form');
+    }
+  }, [initialData]);
 
   const loadEntries = () => {
     const localEntries = getLocalEntries();
@@ -280,93 +303,77 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
   const pendingCount = entries.filter(e => e.syncStatus === 'pending' || e.syncStatus === 'error').length;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <Card elevation="raised" density="comfortable" className="overflow-hidden">
       {/* Header with Tabs */}
-      <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+      <CardHeader className="border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-white pb-0 mb-0">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-blue-600" />
+            <h2 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+              <Calendar className="w-6 h-6 text-primary-600" />
               {t('daily.title', language)}
             </h2>
             
             {/* Sync Status */}
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+              icon={syncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : pendingCount > 0 ? <CloudOff className="w-4 h-4" /> : <Cloud className="w-4 h-4" />}
+              iconPosition="left"
             >
-              {syncing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                  <span className="text-gray-600">{t('daily.syncing', language)}</span>
-                </>
-              ) : pendingCount > 0 ? (
-                <>
-                  <CloudOff className="w-4 h-4 text-orange-500" />
-                  <span className="text-gray-600">{pendingCount} {t('daily.pendingSync', language)}</span>
-                </>
-              ) : (
-                <>
-                  <Cloud className="w-4 h-4 text-green-500" />
-                  <span className="text-gray-600">{t('daily.syncSuccess', language)}</span>
-                </>
-              )}
-            </button>
+              {syncing ? t('daily.syncing', language) : pendingCount > 0 ? `${pendingCount} ${t('daily.pendingSync', language)}` : t('daily.syncSuccess', language)}
+            </Button>
           </div>
 
           {/* Tab Navigation */}
           <div className="flex gap-2">
-            <button
+            <Button
+              variant={viewMode === 'form' ? 'primary' : 'secondary'}
+              size="md"
               onClick={() => setViewMode('form')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                viewMode === 'form'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
+              icon={<Plus className="w-4 h-4" />}
+              iconPosition="left"
             >
-              <Plus className="w-4 h-4" />
               {isEditing ? t('daily.editEntry', language) : t('daily.addNew', language)}
-            </button>
+            </Button>
             
-            <button
+            <Button
+              variant={viewMode === 'history' ? 'primary' : 'secondary'}
+              size="md"
               onClick={() => setViewMode('history')}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                viewMode === 'history'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
+              icon={<History className="w-4 h-4" />}
+              iconPosition="left"
             >
-              <History className="w-4 h-4" />
               {t('daily.history', language)}
               {entries.length > 0 && (
-                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">
+                <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs rounded-full font-semibold">
                   {entries.length}
                 </span>
               )}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
+      </CardHeader>
 
       {/* Content Area */}
-      <div className="p-6">
+      <CardBody className="p-6">
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
-            <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mb-4 p-4 bg-success-50 border border-success-200 rounded-lg flex items-start gap-3">
+            <svg className="w-5 h-5 text-success-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-sm text-green-800">{success}</p>
+            <p className="text-sm text-success-800">{success}</p>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-            <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mb-4 p-4 bg-error-50 border border-error-200 rounded-lg flex items-start gap-3">
+            <svg className="w-5 h-5 text-error-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-sm text-red-800">{error}</p>
+            <p className="text-sm text-error-800">{error}</p>
           </div>
         )}
 
@@ -374,17 +381,17 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
         {viewMode === 'form' && (
           <form onSubmit={handleSubmit} className="space-y-6">
             {isEditing && (
-              <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-primary-50 border border-primary-200 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Edit2 className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-900">
+                  <Edit2 className="w-5 h-5 text-primary-600" />
+                  <span className="text-sm font-medium text-primary-900">
                     {t('daily.editEntry', language)} - {formatDate(date)}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                  className="text-primary-600 hover:text-primary-800 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -393,124 +400,90 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('daily.entryDate', language)}
-                </label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  required
-                />
-              </div>
+              <Input
+                type="date"
+                label={t('daily.entryDate', language)}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                required
+              />
 
               {/* Cash in Hand */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('cashInHand', language)}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={cashInHand}
-                    onChange={(e) => setCashInHand(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="20000"
-                  />
-                </div>
-              </div>
+              <Input
+                type="number"
+                label={t('cashInHand', language)}
+                value={cashInHand}
+                onChange={(e) => setCashInHand(e.target.value)}
+                min="0"
+                step="0.01"
+                prefix="₹"
+                placeholder="20000"
+              />
 
               {/* Total Sales */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('totalSales', language)} <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    required
-                    value={totalSales}
-                    onChange={(e) => setTotalSales(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="50000"
-                  />
-                </div>
-              </div>
+              <Input
+                type="number"
+                label={t('totalSales', language)}
+                value={totalSales}
+                onChange={(e) => setTotalSales(e.target.value)}
+                min="0"
+                step="0.01"
+                prefix="₹"
+                placeholder="50000"
+                required
+              />
 
               {/* Total Expenses */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t('totalExpenses', language)} <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    required
-                    value={totalExpense}
-                    onChange={(e) => setTotalExpense(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="35000"
-                  />
-                </div>
-              </div>
+              <Input
+                type="number"
+                label={t('totalExpenses', language)}
+                value={totalExpense}
+                onChange={(e) => setTotalExpense(e.target.value)}
+                min="0"
+                step="0.01"
+                prefix="₹"
+                placeholder="35000"
+                required
+              />
             </div>
 
             {/* Notes */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('daily.notes', language)}
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
-                placeholder={t('daily.addNotes', language)}
-              />
-            </div>
+            <Input
+              as="textarea"
+              rows={3}
+              label={t('daily.notes', language)}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t('daily.addNotes', language)}
+            />
 
             {/* Submit Button */}
             <div className="flex gap-3">
               {isEditing && (
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="lg"
+                  fullWidth
                   onClick={cancelEdit}
-                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
                 >
                   {t('cancel', language)}
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 type="submit"
-                disabled={loading}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                variant="primary"
+                size="lg"
+                fullWidth
+                loading={loading}
+                icon={!loading && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>}
+                iconPosition="left"
               >
-                {loading ? (
-                  <>
-                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                    {isEditing ? t('daily.updating', language) : t('daily.saving', language)}
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    {isEditing ? t('daily.updateEntry', language) : t('daily.saveEntry', language)}
-                  </>
-                )}
-              </button>
+                {loading ? (isEditing ? t('daily.updating', language) : t('daily.saving', language)) : (isEditing ? t('daily.updateEntry', language) : t('daily.saveEntry', language))}
+              </Button>
             </div>
           </form>
         )}
@@ -520,134 +493,143 @@ export default function DailyEntryForm({ language, onEntrySubmitted }: DailyEntr
           <div className="space-y-4">
             {entries.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                  <History className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
+                  <History className="w-8 h-8 text-neutral-400" />
                 </div>
-                <p className="text-gray-500 mb-4">{t('daily.noEntries', language)}</p>
-                <button
+                <p className="text-neutral-500 mb-4">{t('daily.noEntries', language)}</p>
+                <Button
+                  variant="primary"
+                  size="md"
                   onClick={() => setViewMode('form')}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  icon={<Plus className="w-5 h-5" />}
+                  iconPosition="left"
                 >
-                  <Plus className="w-5 h-5" />
                   {t('daily.addNew', language)}
-                </button>
+                </Button>
               </div>
             ) : (
               entries.map((entry) => (
-                <div
+                <Card
                   key={entry.date}
-                  className="p-5 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all"
+                  elevation="raised"
+                  density="comfortable"
+                  className="hover:border-primary-300 transition-all"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-neutral-900">
                           {formatDate(entry.date)}
                         </h3>
                         {entry.syncStatus === 'pending' && (
-                          <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium flex items-center gap-1">
+                          <span className="px-2 py-0.5 bg-warning-100 text-warning-700 text-xs rounded-full font-medium flex items-center gap-1">
                             <CloudOff className="w-3 h-3" />
                             {t('daily.pendingSync', language)}
                           </span>
                         )}
                         {entry.syncStatus === 'synced' && (
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium flex items-center gap-1">
+                          <span className="px-2 py-0.5 bg-success-100 text-success-700 text-xs rounded-full font-medium flex items-center gap-1">
                             <Cloud className="w-3 h-3" />
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">{entry.date}</p>
+                      <p className="text-sm text-neutral-500">{entry.date}</p>
                     </div>
                     
                     <div className="flex gap-2">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleEdit(entry)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title={t('daily.editEntry', language)}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
+                        icon={<Edit2 className="w-4 h-4" />}
+                        aria-label={t('daily.editEntry', language)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => confirmDelete(entry.date)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title={t('daily.deleteEntry', language)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        icon={<Trash2 className="w-4 h-4" />}
+                        className="text-error-600 hover:bg-error-50"
+                        aria-label={t('daily.deleteEntry', language)}
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">{t('totalSales', language)}</p>
-                      <p className="text-lg font-semibold text-gray-900">₹{entry.totalSales.toLocaleString('en-IN')}</p>
+                    <div className="p-3 bg-neutral-50 rounded-lg">
+                      <p className="text-xs text-neutral-500 mb-1">{t('totalSales', language)}</p>
+                      <p className="text-lg font-semibold text-neutral-900">₹{entry.totalSales.toLocaleString('en-IN')}</p>
                     </div>
                     
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">{t('totalExpenses', language)}</p>
-                      <p className="text-lg font-semibold text-gray-900">₹{entry.totalExpense.toLocaleString('en-IN')}</p>
+                    <div className="p-3 bg-neutral-50 rounded-lg">
+                      <p className="text-xs text-neutral-500 mb-1">{t('totalExpenses', language)}</p>
+                      <p className="text-lg font-semibold text-neutral-900">₹{entry.totalExpense.toLocaleString('en-IN')}</p>
                     </div>
                     
-                    <div className={`p-3 rounded-lg ${entry.estimatedProfit >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-                      <p className="text-xs text-gray-500 mb-1">{t('estimatedProfit', language)}</p>
-                      <p className={`text-lg font-semibold flex items-center gap-1 ${entry.estimatedProfit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                    <div className={`p-3 rounded-lg ${entry.estimatedProfit >= 0 ? 'bg-success-50' : 'bg-error-50'}`}>
+                      <p className="text-xs text-neutral-500 mb-1">{t('estimatedProfit', language)}</p>
+                      <p className={`text-lg font-semibold flex items-center gap-1 ${entry.estimatedProfit >= 0 ? 'text-success-700' : 'text-error-700'}`}>
                         {entry.estimatedProfit >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                         ₹{Math.abs(entry.estimatedProfit).toLocaleString('en-IN')}
                       </p>
                     </div>
                     
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">{t('profitMargin', language)}</p>
-                      <p className="text-lg font-semibold text-blue-700">{(entry.profitMargin * 100).toFixed(1)}%</p>
+                    <div className="p-3 bg-primary-50 rounded-lg">
+                      <p className="text-xs text-neutral-500 mb-1">{t('profitMargin', language)}</p>
+                      <p className="text-lg font-semibold text-primary-700">{(entry.profitMargin * 100).toFixed(1)}%</p>
                     </div>
                   </div>
 
                   {entry.notes && (
-                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700">{entry.notes}</p>
+                    <div className="mt-4 p-3 bg-neutral-50 rounded-lg">
+                      <p className="text-sm text-neutral-700">{entry.notes}</p>
                     </div>
                   )}
-                </div>
+                </Card>
               ))
             )}
           </div>
         )}
-      </div>
+      </CardBody>
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <Card elevation="elevated" density="comfortable" className="max-w-md w-full">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-red-600" />
+              <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-error-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">{t('daily.deleteEntry', language)}</h3>
+              <h3 className="text-lg font-bold text-neutral-900">{t('daily.deleteEntry', language)}</h3>
             </div>
             
-            <p className="text-gray-600 mb-6">{t('daily.confirmDelete', language)}</p>
+            <p className="text-neutral-600 mb-6">{t('daily.confirmDelete', language)}</p>
             
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="outline"
+                size="md"
+                fullWidth
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setDeleteTarget(null);
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 {t('cancel', language)}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                size="md"
+                fullWidth
+                loading={loading}
                 onClick={() => deleteTarget && handleDelete(deleteTarget)}
-                disabled={loading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors font-medium"
               >
                 {loading ? t('daily.deleting', language) : t('delete', language)}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

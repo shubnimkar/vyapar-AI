@@ -1,0 +1,592 @@
+/**
+ * Property-based tests for Toast Component
+ * Feature: ui-ux-redesign
+ * 
+ * These tests validate universal correctness properties for the Toast component
+ * across all possible prop combinations using fast-check.
+ * 
+ * Properties tested:
+ * - Property 24: Toast Type Rendering (Requirement 12.2)
+ * - Property 25: Toast Auto-Dismiss (Requirement 12.3)
+ * 
+ * @see .kiro/specs/ui-ux-redesign/design.md
+ * @jest-environment jsdom
+ */
+
+import React from 'react';
+import { render, screen, waitFor, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
+import * as fc from 'fast-check';
+import { ToastProvider, useToast, ToastType } from '../Toast';
+
+// Arbitraries for Toast props
+const toastTypeArb = fc.constantFrom<ToastType>('success', 'error', 'warning', 'info');
+
+const messageArb = fc.string({ minLength: 1, maxLength: 200 })
+  .filter(s => s.trim().length > 0 && s.trim().length === s.length) // No leading/trailing spaces
+  .map(s => s.replace(/[<>]/g, '')); // Remove HTML-like characters that might cause issues
+
+const durationArb = fc.integer({ min: 100, max: 10000 });
+
+// Helper component to test useToast hook
+function TestComponent({ type, message, duration, testId }: { type: ToastType; message: string; duration?: number; testId?: string }) {
+  const { showToast } = useToast();
+
+  return (
+    <button data-testid={testId || 'show-toast-btn'} onClick={() => showToast(type, message, duration)}>
+      Show Toast
+    </button>
+  );
+}
+
+describe('Property 24: Toast Type Rendering', () => {
+  /**
+   * **Validates: Requirements 12.2**
+   * 
+   * For any Toast type (success, error, warning, info), the component SHALL
+   * render the correct icon and color classes for that type.
+   */
+  it('should render correct colors for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `toast-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        const { unmount, container } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        const toast = await screen.findByRole('alert');
+        expect(toast).toBeInTheDocument();
+        expect(toast).toHaveTextContent(message);
+
+        // Verify type-specific colors are applied
+        const typeColors: Record<ToastType, { bg: string; border: string }> = {
+          success: { bg: 'bg-success-50', border: 'border-success-500' },
+          error: { bg: 'bg-error-50', border: 'border-error-500' },
+          warning: { bg: 'bg-warning-50', border: 'border-warning-500' },
+          info: { bg: 'bg-info-50', border: 'border-info-500' },
+        };
+
+        const expectedColors = typeColors[type];
+        expect(toast).toHaveClass(expectedColors.bg);
+        expect(toast).toHaveClass(expectedColors.border);
+        expect(toast).toHaveClass('border-l-4');
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+
+  it('should render correct icon for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `toast-test-${Date.now()}-${Math.random()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        const toast = await screen.findByRole('alert');
+        expect(toast).toBeInTheDocument();
+
+        // Each type should have an icon (svg element)
+        const icon = toast.querySelector('svg');
+        expect(icon).toBeInTheDocument();
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+
+  it('should have slide-in animation for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `toast-test-${Date.now()}-${Math.random()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        const toast = await screen.findByRole('alert');
+        expect(toast).toBeInTheDocument();
+        expect(toast).toHaveClass('animate-slide-in-right');
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+
+  it('should have close button for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `toast-test-${Date.now()}-${Math.random()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        await screen.findByRole('alert');
+        
+        const closeButton = screen.getByLabelText('Close notification');
+        expect(closeButton).toBeInTheDocument();
+        expect(closeButton).toHaveClass('focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2');
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+
+  it('should be positioned in top-right corner for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `toast-test-${Date.now()}-${Math.random()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        const toast = await screen.findByRole('alert');
+        const container = toast.parentElement;
+        
+        expect(container).toHaveClass('fixed', 'top-4', 'right-4', 'z-50');
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+});
+
+describe('Property 25: Toast Auto-Dismiss', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  /**
+   * **Validates: Requirements 12.3**
+   * 
+   * For any Toast component, it SHALL call the onClose callback after
+   * the specified duration (default 3000ms for success/info, 5000ms for error/warning).
+   */
+  it('should auto-dismiss success and info toasts after 3 seconds', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.constantFrom<ToastType>('success', 'info'),
+        messageArb,
+        async (type, message) => {
+          const user = userEvent.setup({ delay: null });
+          const testId = `Show-${type}-${Date.now()}`;
+          
+          const { unmount } = render(
+            <ToastProvider>
+              <TestComponent type={type} message={message} testId={testId} />
+            </ToastProvider>
+          );
+
+          await user.click(screen.getByTestId(testId));
+
+          const toast = await screen.findByRole('alert');
+          expect(toast).toBeInTheDocument();
+
+          // Fast-forward time by 3 seconds
+          act(() => {
+            jest.advanceTimersByTime(3000);
+          });
+
+          await waitFor(() => {
+            expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+          });
+
+          unmount();
+        }
+      ),
+      { numRuns: 10 } // Reduced runs for timer-based tests
+    );
+  }, 30000);
+
+  it('should auto-dismiss error and warning toasts after 5 seconds', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.constantFrom<ToastType>('error', 'warning'),
+        messageArb,
+        async (type, message) => {
+          const user = userEvent.setup({ delay: null });
+          const testId = `Show-${type}-${Date.now()}`;
+          
+          const { unmount } = render(
+            <ToastProvider>
+              <TestComponent type={type} message={message} testId={testId} />
+            </ToastProvider>
+          );
+
+          await user.click(screen.getByTestId(testId));
+
+          const toast = await screen.findByRole('alert');
+          expect(toast).toBeInTheDocument();
+
+          // Should still be visible after 3 seconds
+          act(() => {
+            jest.advanceTimersByTime(3000);
+          });
+          expect(screen.getByRole('alert')).toBeInTheDocument();
+
+          // Should be dismissed after 5 seconds total
+          act(() => {
+            jest.advanceTimersByTime(2000);
+          });
+
+          await waitFor(() => {
+            expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+          });
+
+          unmount();
+        }
+      ),
+      { numRuns: 10 } // Reduced runs for timer-based tests
+    );
+  }, 30000);
+
+  it('should respect custom duration for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        toastTypeArb,
+        messageArb,
+        fc.integer({ min: 500, max: 3000 }),
+        async (type, message, customDuration) => {
+          const user = userEvent.setup({ delay: null });
+          const testId = `Show-${type}-${Date.now()}`;
+          
+          const { unmount } = render(
+            <ToastProvider>
+              <TestComponent type={type} message={message} duration={customDuration} testId={testId} />
+            </ToastProvider>
+          );
+
+          await user.click(screen.getByTestId(testId));
+
+          const toast = await screen.findByRole('alert');
+          expect(toast).toBeInTheDocument();
+
+          // Should still be visible before custom duration
+          act(() => {
+            jest.advanceTimersByTime(customDuration - 100);
+          });
+          expect(screen.getByRole('alert')).toBeInTheDocument();
+
+          // Should be dismissed after custom duration
+          act(() => {
+            jest.advanceTimersByTime(100);
+          });
+
+          await waitFor(() => {
+            expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+          });
+
+          unmount();
+        }
+      ),
+      { numRuns: 10 } // Reduced runs for timer-based tests
+    );
+  }, 30000);
+
+  it('should allow manual dismissal before auto-dismiss for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `Show-${type}-${Date.now()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        const toast = await screen.findByRole('alert');
+        expect(toast).toBeInTheDocument();
+
+        // Close manually before auto-dismiss
+        const closeButton = screen.getByLabelText('Close notification');
+        await user.click(closeButton);
+
+        await waitFor(() => {
+          expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        });
+
+        // Advance time to ensure no errors from timer
+        act(() => {
+          jest.advanceTimersByTime(10000);
+        });
+
+        unmount();
+      }),
+      { numRuns: 10 } // Reduced runs for timer-based tests
+    );
+  }, 30000);
+});
+
+describe('Property Integration: Toast Stacking', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  /**
+   * Tests that multiple toasts can be displayed simultaneously and stack correctly.
+   * Validates Requirements 12.5 (vertical stacking with 8px gap).
+   */
+  it('should stack multiple toasts vertically with correct gap', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        fc.array(toastTypeArb, { minLength: 2, maxLength: 5 }),
+        fc.array(messageArb, { minLength: 2, maxLength: 5 }),
+        async (types, messages) => {
+          const user = userEvent.setup({ delay: null });
+          
+          function MultiToastComponent() {
+            const { showToast } = useToast();
+            return (
+              <div>
+                {types.map((type, index) => (
+                  <button
+                    key={index}
+                    onClick={() => showToast(type, messages[index] || `Message ${index}`)}
+                  >
+                    Show Toast {index}
+                  </button>
+                ))}
+              </div>
+            );
+          }
+
+          const { unmount } = render(
+            <ToastProvider>
+              <MultiToastComponent />
+            </ToastProvider>
+          );
+
+          // Show all toasts
+          for (let i = 0; i < types.length; i++) {
+            await user.click(screen.getByText(`Show Toast ${i}`));
+          }
+
+          const toasts = await screen.findAllByRole('alert');
+          expect(toasts.length).toBe(types.length);
+
+          // Verify container has gap-2 (8px gap)
+          const container = toasts[0].parentElement;
+          expect(container).toHaveClass('gap-2');
+
+          unmount();
+        }
+      ),
+      { numRuns: 10 } // Reduced runs for complex multi-toast tests
+    );
+  }, 30000);
+
+  it('should maintain unique IDs for simultaneous toasts', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        toastTypeArb,
+        messageArb,
+        fc.integer({ min: 2, max: 4 }),
+        async (type, message, count) => {
+          const user = userEvent.setup({ delay: null });
+          
+          function MultiSameToastComponent() {
+            const { showToast } = useToast();
+            return (
+              <button onClick={() => {
+                for (let i = 0; i < count; i++) {
+                  showToast(type, message);
+                }
+              }}>
+                Show Multiple
+              </button>
+            );
+          }
+
+          const { unmount } = render(
+            <ToastProvider>
+              <MultiSameToastComponent />
+            </ToastProvider>
+          );
+
+          await user.click(screen.getByText('Show Multiple'));
+
+          const toasts = await screen.findAllByRole('alert');
+          expect(toasts.length).toBe(count);
+
+          // All toasts should have the same message
+          const messages = screen.getAllByText(message);
+          expect(messages.length).toBe(count);
+
+          unmount();
+        }
+      ),
+      { numRuns: 10 } // Reduced runs for complex multi-toast tests
+    );
+  }, 30000);
+});
+
+describe('Property: Accessibility', () => {
+  /**
+   * Tests that accessibility attributes are present for any toast type.
+   * Validates Requirements 14.2, 14.3, 14.6 (keyboard accessibility, ARIA labels, ARIA attributes).
+   */
+  it('should have role="alert" for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `Show-${type}-${Date.now()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        const toast = await screen.findByRole('alert');
+        expect(toast).toHaveAttribute('role', 'alert');
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+
+  it('should have aria-live="polite" on container for any toast', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `Show-${type}-${Date.now()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        const toast = await screen.findByRole('alert');
+        const container = toast.parentElement;
+        expect(container).toHaveAttribute('aria-live', 'polite');
+        expect(container).toHaveAttribute('aria-atomic', 'true');
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+
+  it('should have accessible close button for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(toastTypeArb, messageArb, async (type, message) => {
+        const user = userEvent.setup({ delay: null });
+        const testId = `Show-${type}-${Date.now()}`;
+        
+        const { unmount } = render(
+          <ToastProvider>
+            <TestComponent type={type} message={message} testId={testId} />
+          </ToastProvider>
+        );
+
+        await user.click(screen.getByTestId(testId));
+
+        await screen.findByRole('alert');
+        
+        const closeButton = screen.getByLabelText('Close notification');
+        expect(closeButton).toHaveAttribute('aria-label', 'Close notification');
+        expect(closeButton).toHaveClass('focus:outline-none', 'focus:ring-2');
+
+        unmount();
+      }),
+      { numRuns: 20 }
+    );
+  }, 30000);
+});
+
+describe('Property: Multi-Language Support', () => {
+  /**
+   * Tests that toast messages support any language text.
+   * Validates Requirement 12.6 (multi-language messages).
+   */
+  it('should display message in any language for any toast type', async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        toastTypeArb,
+        fc.oneof(
+          fc.string({ minLength: 5, maxLength: 100 }).filter(s => s.trim().length >= 5), // English with min length
+          fc.constant('प्रविष्टि सफलतापूर्वक सहेजी गई'), // Hindi
+          fc.constant('नोंद यशस्वीरित्या जतन केली'), // Marathi
+          fc.constant('操作成功'), // Chinese
+          fc.constant('عملية ناجحة') // Arabic
+        ),
+        async (type, message) => {
+          const user = userEvent.setup({ delay: null });
+          const testId = `Show-${type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          
+          const { unmount } = render(
+            <ToastProvider>
+              <TestComponent type={type} message={message} testId={testId} />
+            </ToastProvider>
+          );
+
+          await user.click(screen.getByTestId(testId));
+
+          // Wait for toast to appear and verify message is present
+          await waitFor(() => {
+            expect(screen.getByText(message)).toBeInTheDocument();
+          });
+
+          unmount();
+        }
+      ),
+      { numRuns: 20 }
+    );
+  }, 30000);
+});
+

@@ -8,6 +8,10 @@ import {
   updatePendingTransaction,
 } from '@/lib/pending-transaction-store';
 import { Receipt, FileText, Calendar, DollarSign, Tag, User, X, Check, Clock, Trash2, Edit2 } from 'lucide-react';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
+import { Badge } from './ui/Badge';
+import { formatCurrency } from '@/lib/design-system/utils';
 
 interface PendingTransactionConfirmationProps {
   language: Language;
@@ -180,27 +184,25 @@ export default function PendingTransactionConfirmation({
   // Empty state
   if (transactions.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-            <Receipt className="w-8 h-8 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            {language === 'hi' 
-              ? 'कोई लंबित लेनदेन नहीं'
-              : language === 'mr'
-              ? 'कोणतेही प्रलंबित व्यवहार नाहीत'
-              : 'No Pending Transactions'}
-          </h3>
-          <p className="text-gray-500 text-sm">
-            {language === 'hi'
-              ? 'रसीद या CSV फ़ाइल अपलोड करें'
-              : language === 'mr'
-              ? 'पावती किंवा CSV फाइल अपलोड करा'
-              : 'Upload a receipt or CSV file to get started'}
-          </p>
+      <Card className="text-center">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
+          <Receipt className="w-8 h-8 text-neutral-400" />
         </div>
-      </div>
+        <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+          {language === 'hi' 
+            ? 'कोई लंबित लेनदेन नहीं'
+            : language === 'mr'
+            ? 'कोणतेही प्रलंबित व्यवहार नाहीत'
+            : 'No Pending Transactions'}
+        </h3>
+        <p className="text-neutral-500 text-sm">
+          {language === 'hi'
+            ? 'रसीद या CSV फ़ाइल अपलोड करें'
+            : language === 'mr'
+            ? 'पावती किंवा CSV फाइल अपलोड करा'
+            : 'Upload a receipt or CSV file to get started'}
+        </p>
+      </Card>
     );
   }
 
@@ -222,11 +224,11 @@ export default function PendingTransactionConfirmation({
   const SourceIcon = source.icon;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <Card className="overflow-hidden" density="compact">
       {/* Header with counter */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+      <div className="bg-gradient-to-r from-info-50 to-primary-50 px-6 py-4 border-b border-neutral-200 -m-4 mb-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-neutral-900">
             {language === 'hi'
               ? 'लेनदेन की समीक्षा करें'
               : language === 'mr'
@@ -236,28 +238,28 @@ export default function PendingTransactionConfirmation({
           
           {/* Counter */}
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-600">
+            <span className="text-sm font-medium text-neutral-600">
               {currentIndex + 1} {language === 'hi' ? 'का' : language === 'mr' ? 'चा' : 'of'} {transactions.length}
             </span>
             
             {/* Source badge */}
-            <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${source.color}`}>
-              <SourceIcon className="w-3 h-3" />
+            <Badge variant={currentTransaction.source === 'receipt' ? 'info' : 'success'}>
+              <SourceIcon className="w-3 h-3 mr-1" />
               {source.label}
-            </span>
+            </Badge>
           </div>
         </div>
       </div>
 
       {/* Transaction details */}
-      <div className="p-6 space-y-4">
+      <div className="space-y-4">
         {/* Date */}
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-            <Calendar className="w-5 h-5 text-gray-600" />
+          <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+            <Calendar className="w-5 h-5 text-neutral-600" />
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               {language === 'hi' ? 'तिथि' : language === 'mr' ? 'तारीख' : 'Date'}
             </label>
             {isEditing ? (
@@ -265,10 +267,10 @@ export default function PendingTransactionConfirmation({
                 type="date"
                 value={editedDate}
                 onChange={(e) => setEditedDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
               />
             ) : (
-              <p className="text-gray-900 font-medium">
+              <p className="text-neutral-900 font-medium">
                 {new Date(currentTransaction.date).toLocaleDateString(
                   language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN',
                   { day: 'numeric', month: 'long', year: 'numeric' }
@@ -280,28 +282,28 @@ export default function PendingTransactionConfirmation({
 
         {/* Amount */}
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-            <DollarSign className="w-5 h-5 text-gray-600" />
+          <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+            <DollarSign className="w-5 h-5 text-neutral-600" />
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               {language === 'hi' ? 'राशि' : language === 'mr' ? 'रक्कम' : 'Amount'}
             </label>
             {isEditing ? (
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">₹</span>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
                   value={editedAmount}
                   onChange={(e) => setEditedAmount(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-8 pr-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
                 />
               </div>
             ) : (
-              <p className="text-2xl font-bold text-gray-900">
-                ₹{currentTransaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <p className="text-2xl font-bold text-neutral-900">
+                {formatCurrency(currentTransaction.amount)}
               </p>
             )}
           </div>
@@ -310,19 +312,19 @@ export default function PendingTransactionConfirmation({
         {/* Type */}
         <div className="flex items-start gap-3">
           <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-            currentTransaction.type === 'expense' ? 'bg-red-100' : 'bg-green-100'
+            currentTransaction.type === 'expense' ? 'bg-error-100' : 'bg-success-100'
           }`}>
-            <Tag className={`w-5 h-5 ${currentTransaction.type === 'expense' ? 'text-red-600' : 'text-green-600'}`} />
+            <Tag className={`w-5 h-5 ${currentTransaction.type === 'expense' ? 'text-error-600' : 'text-success-600'}`} />
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               {language === 'hi' ? 'प्रकार' : language === 'mr' ? 'प्रकार' : 'Type'}
             </label>
             {isEditing ? (
               <select
                 value={editedType}
                 onChange={(e) => setEditedType(e.target.value as 'expense' | 'sale')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
               >
                 <option value="expense">
                   {language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense'}
@@ -332,15 +334,11 @@ export default function PendingTransactionConfirmation({
                 </option>
               </select>
             ) : (
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                currentTransaction.type === 'expense'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-green-100 text-green-700'
-              }`}>
+              <Badge variant={currentTransaction.type === 'expense' ? 'error' : 'success'}>
                 {currentTransaction.type === 'expense'
                   ? (language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense')
                   : (language === 'hi' ? 'बिक्री' : language === 'mr' ? 'विक्री' : 'Sale')}
-              </span>
+              </Badge>
             )}
           </div>
         </div>
@@ -348,11 +346,11 @@ export default function PendingTransactionConfirmation({
         {/* Vendor */}
         {(currentTransaction.vendor_name || isEditing) && (
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-gray-600" />
+            <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-neutral-600" />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 {language === 'hi' ? 'विक्रेता' : language === 'mr' ? 'विक्रेता' : 'Vendor'}
               </label>
               {isEditing ? (
@@ -360,11 +358,11 @@ export default function PendingTransactionConfirmation({
                   type="text"
                   value={editedVendor}
                   onChange={(e) => setEditedVendor(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
                   placeholder={language === 'hi' ? 'विक्रेता का नाम' : language === 'mr' ? 'विक्रेत्याचे नाव' : 'Vendor name'}
                 />
               ) : (
-                <p className="text-gray-900">{currentTransaction.vendor_name}</p>
+                <p className="text-neutral-900">{currentTransaction.vendor_name}</p>
               )}
             </div>
           </div>
@@ -373,11 +371,11 @@ export default function PendingTransactionConfirmation({
         {/* Category */}
         {(currentTransaction.category || isEditing) && (
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <Tag className="w-5 h-5 text-gray-600" />
+            <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+              <Tag className="w-5 h-5 text-neutral-600" />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 {language === 'hi' ? 'श्रेणी' : language === 'mr' ? 'श्रेणी' : 'Category'}
               </label>
               {isEditing ? (
@@ -385,11 +383,11 @@ export default function PendingTransactionConfirmation({
                   type="text"
                   value={editedCategory}
                   onChange={(e) => setEditedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
                   placeholder={language === 'hi' ? 'श्रेणी' : language === 'mr' ? 'श्रेणी' : 'Category'}
                 />
               ) : (
-                <p className="text-gray-900">{currentTransaction.category}</p>
+                <p className="text-neutral-900">{currentTransaction.category}</p>
               )}
             </div>
           </div>
@@ -397,67 +395,55 @@ export default function PendingTransactionConfirmation({
       </div>
 
       {/* Action buttons */}
-      <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+      <div className="mt-6 pt-4 border-t border-neutral-200 -mx-4 px-4 -mb-4 pb-4 bg-neutral-50">
         <div className="flex gap-3">
           {/* Edit/Cancel Edit button */}
-          <button
+          <Button
             onClick={toggleEdit}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="outline"
+            icon={isEditing ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
           >
-            {isEditing ? (
-              <>
-                <X className="w-4 h-4" />
-                {language === 'hi' ? 'रद्द करें' : language === 'mr' ? 'रद्द करा' : 'Cancel'}
-              </>
-            ) : (
-              <>
-                <Edit2 className="w-4 h-4" />
-                {language === 'hi' ? 'संपादित करें' : language === 'mr' ? 'संपादित करा' : 'Edit'}
-              </>
-            )}
-          </button>
+            {isEditing 
+              ? (language === 'hi' ? 'रद्द करें' : language === 'mr' ? 'रद्द करा' : 'Cancel')
+              : (language === 'hi' ? 'संपादित करें' : language === 'mr' ? 'संपादित करा' : 'Edit')}
+          </Button>
 
           {/* Discard button */}
-          <button
+          <Button
             onClick={handleDiscard}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="danger"
+            icon={<Trash2 className="w-4 h-4" />}
           >
-            <Trash2 className="w-4 h-4" />
             {language === 'hi' ? 'हटाएं' : language === 'mr' ? 'टाकून द्या' : 'Discard'}
-          </button>
+          </Button>
 
           {/* Later button */}
-          <button
+          <Button
             onClick={handleLater}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 border border-orange-300 text-orange-700 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="secondary"
+            icon={<Clock className="w-4 h-4" />}
           >
-            <Clock className="w-4 h-4" />
             {language === 'hi' ? 'बाद में' : language === 'mr' ? 'नंतर' : 'Later'}
-          </button>
+          </Button>
 
           {/* Add button */}
-          <button
+          <Button
             onClick={handleAdd}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg hover:shadow-xl"
+            loading={loading}
+            variant="primary"
+            fullWidth
+            icon={<Check className="w-5 h-5" />}
           >
-            {loading ? (
-              <>
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                {language === 'hi' ? 'जोड़ रहे हैं...' : language === 'mr' ? 'जोडत आहे...' : 'Adding...'}
-              </>
-            ) : (
-              <>
-                <Check className="w-5 h-5" />
-                {language === 'hi' ? 'जोड़ें' : language === 'mr' ? 'जोडा' : 'Add'}
-              </>
-            )}
-          </button>
+            {loading 
+              ? (language === 'hi' ? 'जोड़ रहे हैं...' : language === 'mr' ? 'जोडत आहे...' : 'Adding...')
+              : (language === 'hi' ? 'जोड़ें' : language === 'mr' ? 'जोडा' : 'Add')}
+          </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
