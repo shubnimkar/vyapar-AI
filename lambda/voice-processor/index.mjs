@@ -51,9 +51,36 @@ export const handler = async (event) => {
       console.log(`Transcription status: ${status}`);
 
       if (status === 'COMPLETED') {
+        // Get transcript from S3 using AWS SDK (has proper permissions)
         const transcriptUri = jobResult.TranscriptionJob.Transcript.TranscriptFileUri;
-        const transcriptResponse = await fetch(transcriptUri);
-        const transcriptData = await transcriptResponse.json();
+        console.log(`Transcript URI: ${transcriptUri}`);
+        
+        // Parse S3 URL: https://s3.region.amazonaws.com/bucket-name/key
+        // or https://bucket-name.s3.region.amazonaws.com/key
+        const url = new URL(transcriptUri);
+        let transcriptBucket, transcriptKey;
+        
+        if (url.hostname.startsWith('s3.')) {
+          // Path-style URL: https://s3.region.amazonaws.com/bucket/key
+          const pathParts = url.pathname.substring(1).split('/');
+          transcriptBucket = pathParts[0];
+          transcriptKey = pathParts.slice(1).join('/');
+        } else {
+          // Virtual-hosted-style URL: https://bucket.s3.region.amazonaws.com/key
+          transcriptBucket = url.hostname.split('.')[0];
+          transcriptKey = url.pathname.substring(1);
+        }
+        
+        console.log(`Fetching transcript from bucket: ${transcriptBucket}, key: ${transcriptKey}`);
+        
+        const getTranscriptCommand = new GetObjectCommand({
+          Bucket: transcriptBucket,
+          Key: transcriptKey,
+        });
+        
+        const transcriptObject = await s3Client.send(getTranscriptCommand);
+        const transcriptText = await transcriptObject.Body.transformToString();
+        const transcriptData = JSON.parse(transcriptText);
         transcript = transcriptData.results.transcripts[0].transcript;
         console.log(`Transcript: ${transcript}`);
         break;
@@ -67,13 +94,14 @@ export const handler = async (event) => {
     }
 
     // Extract structured data using Bedrock
+    const todayDate = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    
     const prompt = `You are a data extraction assistant for a business accounting system.
 Extract the following information from this Hindi transcript:
 - Sales amount (number)
 - Expense amount (number)
 - Expense category (string)
 - Inventory changes (string description)
-- Date mentioned (YYYY-MM-DD format, or use today's date if not specified)
 
 Transcript: ${transcript}
 
@@ -83,7 +111,6 @@ Return ONLY valid JSON format:
   "expenses": number or null,
   "expenseCategory": string or null,
   "inventoryChanges": string or null,
-  "date": "YYYY-MM-DD",
   "confidence": number (0-1)
 }`;
 
@@ -139,10 +166,12 @@ Return ONLY valid JSON format:
         expenses: null,
         expenseCategory: null,
         inventoryChanges: null,
-        date: new Date().toISOString().split("T")[0],
         confidence: 0,
       };
     }
+
+    // Always use today's date (the date when voice was uploaded)
+    extractedData.date = todayDate;
 
     console.log("Extracted data:", JSON.stringify(extractedData, null, 2));
 

@@ -4,6 +4,7 @@ import { SegmentData, UserProfile, UserMetrics, BenchmarkComparison, CityTier, B
 import { isValidCityTier, isValidBusinessType } from './finance/segmentKeyFormatter';
 import { compareWithSegment } from './finance/compareWithSegment';
 import { logger } from './logger';
+import { seedDemoData } from './demoSegmentData';
 
 /**
  * Orchestrate benchmark comparison workflow
@@ -19,10 +20,31 @@ import { logger } from './logger';
 export class BenchmarkService {
   private cacheManager: SegmentCacheManager;
   private segmentStore: SegmentStore;
+  private seedingInProgress: boolean = false;
   
   constructor() {
     this.cacheManager = new SegmentCacheManager();
     this.segmentStore = new SegmentStore();
+  }
+  
+  /**
+   * Check if database is empty and auto-seeding should occur
+   * 
+   * Probes DynamoDB with tier1/kirana to determine if any segment data exists
+   * Returns true only if database is completely empty
+   * Returns false on errors to prevent seeding during error conditions
+   * 
+   * @returns true if database is empty and should be seeded, false otherwise
+   */
+  private async shouldAutoSeed(): Promise<boolean> {
+    try {
+      // Probe with tier1/kirana (most common segment)
+      const probe = await this.segmentStore.getSegmentData('tier1', 'kirana');
+      return probe === null; // Seed only if database is completely empty
+    } catch (error) {
+      logger.error('Error checking if auto-seed needed', { error });
+      return false; // Don't seed on errors
+    }
   }
   
   /**
@@ -62,6 +84,7 @@ export class BenchmarkService {
    * Implements offline-first strategy:
    * - Returns fresh cache if available and not stale
    * - Fetches from DynamoDB if online and cache miss/stale
+   * - Auto-seeds benchmark data if database is empty
    * - Updates cache with fresh data
    * - Falls back to stale cache if offline
    * 
@@ -81,10 +104,49 @@ export class BenchmarkService {
       return cached;
     }
     
-    // Try DynamoDB if online
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
+    // Try DynamoDB (server-side always online, client-side checks navigator.onLine)
+    // On server: typeof window === 'undefined' → always try DynamoDB
+    // On client: check navigator.onLine
+    const isServer = typeof window === 'undefined';
+    const isOnline = isServer || (typeof navigator !== 'undefined' && navigator.onLine);
+    
+    logger.debug('Online check', { 
+      isOnline,
+      isServer,
+      navigatorType: typeof navigator,
+      navigatorOnLine: typeof navigator !== 'undefined' ? navigator.onLine : 'N/A',
+      windowType: typeof window
+    });
+    
+    if (isOnline) {
       try {
-        const segmentData = await this.segmentStore.getSegmentData(cityTier, businessType);
+        let segmentData = await this.segmentStore.getSegmentData(cityTier, businessType);
+        
+        // If not found, check if database is empty and seed if needed
+        if (!segmentData) {
+          const shouldSeed = await this.shouldAutoSeed();
+          
+          if (shouldSeed && !this.seedingInProgress) {
+            // Set guard to prevent concurrent seeding
+            this.seedingInProgress = true;
+            
+            try {
+              logger.info('No benchmark data found, auto-seeding all 15 segment combinations...');
+              await seedDemoData();
+              logger.info('Auto-seeding completed successfully');
+              
+              // Retry after seeding
+              segmentData = await this.segmentStore.getSegmentData(cityTier, businessType);
+            } catch (seedError) {
+              logger.error('Auto-seeding failed', { error: seedError });
+            } finally {
+              // Clear guard after seeding attempt
+              this.seedingInProgress = false;
+            }
+          } else if (this.seedingInProgress) {
+            logger.debug('Seeding already in progress, skipping duplicate seed attempt');
+          }
+        }
         
         if (segmentData) {
           // Update cache with fresh data

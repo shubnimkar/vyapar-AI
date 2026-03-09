@@ -244,12 +244,12 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6 border-2 border-blue-100">
+    <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Camera className="w-6 h-6 text-blue-600" />
           <div>
-            <h3 className="text-lg font-semibold text-gray-800">{t.title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t.title}</h3>
             <p className="text-sm text-gray-600">{t.subtitle}</p>
           </div>
         </div>
@@ -286,7 +286,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
             <img 
               src={preview} 
               alt="Receipt preview" 
-              className="w-20 h-20 object-cover rounded-lg"
+              className="w-20 h-20 object-cover rounded-lg border border-gray-200"
             />
           )}
           <div className="flex flex-col items-center">
@@ -301,7 +301,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
 
       {status === "success" && extractedData && (
         <div className="space-y-4 animate-in fade-in duration-300">
-          <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+          <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
             <CheckCircle className="w-5 h-5 flex-shrink-0" />
             <span className="font-medium">{t.success}</span>
           </div>
@@ -314,10 +314,10 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
             />
           )}
 
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200">
             <div className="flex justify-between items-center pb-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-600">{t.date}:</span>
-              <span className="font-semibold text-gray-800">{extractedData.date}</span>
+              <span className="font-semibold text-gray-900">{extractedData.date}</span>
             </div>
             <div className="flex justify-between items-center pb-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-600">{t.amount}:</span>
@@ -325,7 +325,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
             </div>
             <div className="flex justify-between items-center pb-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-600">{t.vendor}:</span>
-              <span className="font-medium text-gray-800">{extractedData.vendor}</span>
+              <span className="font-medium text-gray-900">{extractedData.vendor}</span>
             </div>
             <div>
               <span className="text-sm font-medium text-gray-600 block mb-2">{t.items}:</span>
@@ -349,7 +349,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
             </button>
             <button
               onClick={handleReset}
-              className="px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
             >
               {t.tryAgain}
             </button>
@@ -359,7 +359,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
 
       {status === "pending_saved" && extractedData && (
         <div className="space-y-4 animate-in fade-in duration-300">
-          <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
+          <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
             <CheckCircle className="w-5 h-5 flex-shrink-0" />
             <span className="font-medium">{t.pendingSaved}</span>
           </div>
@@ -372,10 +372,10 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
             />
           )}
 
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3 border border-gray-200">
             <div className="flex justify-between items-center pb-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-600">{t.date}:</span>
-              <span className="font-semibold text-gray-800">{extractedData.date}</span>
+              <span className="font-semibold text-gray-900">{extractedData.date}</span>
             </div>
             <div className="flex justify-between items-center pb-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-600">{t.amount}:</span>
@@ -383,7 +383,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
             </div>
             <div className="flex justify-between items-center pb-2 border-b border-gray-200">
               <span className="text-sm font-medium text-gray-600">{t.vendor}:</span>
-              <span className="font-medium text-gray-800">{extractedData.vendor}</span>
+              <span className="font-medium text-gray-900">{extractedData.vendor}</span>
             </div>
           </div>
 
@@ -397,7 +397,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
             </a>
             <button
               onClick={handleReset}
-              className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
             >
               {t.uploadAnother}
             </button>
@@ -407,7 +407,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
 
       {status === "error" && (
         <div className="space-y-4 animate-in fade-in duration-300">
-          <div className="flex items-start gap-2 text-red-600 bg-red-50 p-4 rounded-lg">
+          <div className="flex items-start gap-2 text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">
             <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">{t.error}</p>
@@ -416,7 +416,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
           </div>
           <button
             onClick={handleReset}
-            className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-gray-700"
           >
             {t.tryAgain}
           </button>

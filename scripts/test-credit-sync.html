@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Credit Sync</title>
+</head>
+<body>
+  <h1>Credit Sync Test</h1>
+  <button onclick="testSync()">Test Sync</button>
+  <button onclick="clearLocal()">Clear LocalStorage</button>
+  <button onclick="showLocal()">Show LocalStorage</button>
+  <pre id="output"></pre>
+
+  <script>
+    const output = document.getElementById('output');
+    
+    async function testSync() {
+      output.textContent = 'Testing sync...\n';
+      
+      try {
+        // Test API call
+        const response = await fetch('http://localhost:3000/api/credit?userId=vyapar_demo');
+        const result = await response.json();
+        
+        output.textContent += `API Response:\n`;
+        output.textContent += `- Status: ${response.status}\n`;
+        output.textContent += `- Success: ${result.success}\n`;
+        output.textContent += `- Data length: ${result.data?.length || 0}\n`;
+        output.textContent += `- First entry: ${JSON.stringify(result.data?.[0], null, 2)}\n\n`;
+        
+        // Test localStorage
+        const stored = localStorage.getItem('vyapar-credit-entries');
+        output.textContent += `LocalStorage:\n`;
+        output.textContent += `- Has data: ${!!stored}\n`;
+        if (stored) {
+          const entries = JSON.parse(stored);
+          output.textContent += `- Entry count: ${entries.length}\n`;
+        }
+      } catch (error) {
+        output.textContent += `Error: ${error.message}\n`;
+      }
+    }
+    
+    function clearLocal() {
+      localStorage.removeItem('vyapar-credit-entries');
+      localStorage.removeItem('vyapar-credit-sync-status');
+      output.textContent = 'LocalStorage cleared\n';
+    }
+    
+    function showLocal() {
+      const stored = localStorage.getItem('vyapar-credit-entries');
+      if (stored) {
+        const entries = JSON.parse(stored);
+        output.textContent = `LocalStorage has ${entries.length} entries:\n`;
+        output.textContent += JSON.stringify(entries.slice(0, 3), null, 2);
+      } else {
+        output.textContent = 'LocalStorage is empty\n';
+      }
+    }
+  </script>
+</body>
+</html>

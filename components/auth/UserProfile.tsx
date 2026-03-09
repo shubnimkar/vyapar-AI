@@ -118,28 +118,67 @@ export default function UserProfile({ language }: UserProfileProps) {
   const hasCompleteProfile = profileData && profileData.shopName && profileData.userName;
   const showBusinessProfile = hasCompleteProfile && !profileLoading;
 
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <div className="flex items-center justify-between gap-4">
-        <div 
-          className="flex-1 cursor-pointer hover:bg-gray-50 -m-2 p-2 rounded-lg transition-colors"
-          onClick={() => router.push('/profile')}
-        >
+  // Compact sidebar version
+  const renderSidebarVersion = () => (
+    <div className="space-y-2">
+      {/* Profile Card - Compact */}
+      <div 
+        className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+        onClick={() => router.push('/profile')}
+      >
+        {/* Avatar */}
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        
+        {/* User Info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-gray-900 truncate">
+            {showBusinessProfile ? profileData!.userName : user.username}
+          </p>
+          {showBusinessProfile && profileData!.shopName && (
+            <p className="text-xs text-gray-500 truncate flex items-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              {profileData!.shopName}
+            </p>
+          )}
+        </div>
+      </div>
+      
+      {/* Logout Button */}
+      <button
+        onClick={handleLogout}
+        disabled={loading}
+        className="w-full px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {loading ? '...' : t('logout', language)}
+      </button>
+    </div>
+  );
+
+  // Full page version
+  const renderFullVersion = () => (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
           {showBusinessProfile ? (
-            // Display complete business profile information prominently
             <>
-              {/* Shop Name - Primary identifier (most prominent) */}
-              <div className="mb-2">
+              {/* Shop Name */}
+              <div className="mb-4">
                 <p className="text-sm text-gray-500 mb-1">
                   {language === 'hi' ? 'दुकान का नाम' : language === 'mr' ? 'दुकानाचे नाव' : 'Shop Name'}
                 </p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900">
                   {profileData!.shopName}
                 </p>
               </div>
 
-              {/* User Name - Secondary identifier */}
-              <div className="mb-2">
+              {/* Owner Name */}
+              <div className="mb-4">
                 <p className="text-sm text-gray-500 mb-1">
                   {language === 'hi' ? 'मालिक का नाम' : language === 'mr' ? 'मालकाचे नाव' : 'Owner Name'}
                 </p>
@@ -148,10 +187,10 @@ export default function UserProfile({ language }: UserProfileProps) {
                 </p>
               </div>
 
-              {/* Business Type and City - Additional info */}
+              {/* Business Details */}
               {(profileData!.businessType || profileData!.city) && (
-                <div className="mb-2">
-                  <p className="text-xs text-gray-500">
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600">
                     {[
                       profileData!.businessType && (
                         language === 'hi' ? 
@@ -175,83 +214,51 @@ export default function UserProfile({ language }: UserProfileProps) {
                 </div>
               )}
 
-              {/* Phone Number - Tertiary information */}
-              <div className="mt-3 pt-2 border-t border-gray-100">
-                <p className="text-xs text-gray-400 mb-1">{t('phoneNumber', language)}</p>
-                <p className="text-sm text-gray-600">
+              {/* Phone */}
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-500 mb-1">{t('phoneNumber', language)}</p>
+                <p className="text-base text-gray-700">
                   {profileData?.phoneNumber ? formatPhoneDisplay(profileData.phoneNumber) : 'Not provided'}
                 </p>
               </div>
-
-              {/* View Profile Link */}
-              <div className="mt-2">
-                <span className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-                  {language === 'hi' ? 'प्रोफ़ाइल देखें' : language === 'mr' ? 'प्रोफाइल पहा' : 'View Profile'}
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
             </>
           ) : (
-            // Fallback to basic auth display (original behavior)
             <>
               {profileLoading && (
-                <div className="mb-2">
-                  <p className="text-sm text-gray-500">
-                    {language === 'hi' ? 'प्रोफ़ाइल लोड हो रहा है...' : 
-                     language === 'mr' ? 'प्रोफाइल लोड होत आहे...' : 
-                     'Loading profile...'}
-                  </p>
-                </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  {language === 'hi' ? 'प्रोफ़ाइल लोड हो रहा है...' : 
+                   language === 'mr' ? 'प्रोफाइल लोड होत आहे...' : 
+                   'Loading profile...'}
+                </p>
               )}
               
               <p className="text-sm text-gray-500 mb-1">{t('phoneNumber', language)}</p>
-              <p className="text-lg font-semibold text-gray-900">
+              <p className="text-lg font-semibold text-gray-900 mb-4">
                 {profileData?.phoneNumber ? formatPhoneDisplay(profileData.phoneNumber) : 'Not provided'}
               </p>
-              <p className="text-xs text-gray-500 mt-2">
-                {t('accountCreated', language)}: {profileData?.createdAt ? formatDate(profileData.createdAt) : 'N/A'}
-              </p>
-
+              
               {profileError === 'connection' && (
-                <p className="text-xs text-amber-600 mt-1">
-                  {language === 'hi' ? 'कनेक्शन की समस्या - बेसिक जानकारी दिखाई जा रही है' :
-                   language === 'mr' ? 'कनेक्शन समस्या - मूलभूत माहिती दाखवली जात आहे' :
-                   'Connection issue - showing basic info'}
+                <p className="text-sm text-amber-600 mb-4">
+                  {language === 'hi' ? 'कनेक्शन की समस्या' :
+                   language === 'mr' ? 'कनेक्शन समस्या' :
+                   'Connection issue'}
                 </p>
               )}
-
-              {/* View Profile Link */}
-              <div className="mt-2">
-                <span className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-                  {language === 'hi' ? 'प्रोफ़ाइल देखें' : language === 'mr' ? 'प्रोफाइल पहा' : 'View Profile'}
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
             </>
           )}
         </div>
         
         <div className="flex flex-col gap-2">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push('/profile');
-            }}
-            className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors whitespace-nowrap"
+            onClick={() => router.push('/profile')}
+            className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
           >
-            {language === 'hi' ? 'प्रोफ़ाइल' : language === 'mr' ? 'प्रोफाइल' : 'Profile'}
+            {language === 'hi' ? 'संपादित करें' : language === 'mr' ? 'संपादित करा' : 'Edit Profile'}
           </button>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleLogout();
-            }}
+            onClick={handleLogout}
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? '...' : t('logout', language)}
           </button>
@@ -259,4 +266,11 @@ export default function UserProfile({ language }: UserProfileProps) {
       </div>
     </div>
   );
+
+  // Determine which version to render based on context
+  // If rendered in sidebar (small container), use compact version
+  // If rendered in account section (full page), use full version
+  const isInSidebar = typeof window !== 'undefined' && window.innerWidth >= 1024;
+  
+  return isInSidebar ? renderSidebarVersion() : renderFullVersion();
 }

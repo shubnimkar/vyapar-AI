@@ -72,6 +72,11 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       return;
     }
 
+    // Generate ID on client side to prevent duplicates
+    const entryId = `credit_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    const today = new Date().toISOString().split('T')[0];
+    const now = new Date().toISOString();
+
     try {
       // Try to sync to cloud first
       const response = await fetch('/api/credit', {
@@ -79,27 +84,35 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
+          id: entryId, // Send the client-generated ID
           customerName,
           amount: parseFloat(amount),
           dueDate,
-          phoneNumber: phoneNumber || undefined, // Only include if provided
+          dateGiven: today,
+          phoneNumber: phoneNumber || undefined,
+          createdAt: now,
+          updatedAt: now,
         }),
       });
 
       const data = await response.json();
       
-      if (data.success) {
-        // API call succeeded - save to localStorage as synced
-        const today = new Date().toISOString().split('T')[0];
-        createCreditEntry(customerName, parseFloat(amount), dueDate, today, phoneNumber || undefined, true);
+      if (data.success && data.data) {
+        // API call succeeded - save the returned entry to localStorage as synced
+        const { saveLocalEntry } = await import('@/lib/credit-sync');
+        const localEntry = {
+          ...data.data,
+          syncStatus: 'synced' as const,
+          lastSyncAttempt: new Date().toISOString(),
+        };
+        saveLocalEntry(localEntry);
         logger.info('[CreditTracking] Entry synced to cloud');
       } else {
         throw new Error(data.error || 'Failed to sync');
       }
     } catch (error) {
       logger.error('[CreditTracking] Failed to sync, saving offline', { error });
-      // API call failed - save to localStorage as pending
-      const today = new Date().toISOString().split('T')[0];
+      // API call failed - save to localStorage as pending with the SAME ID
       createCreditEntry(customerName, parseFloat(amount), dueDate, today, phoneNumber || undefined, false);
     }
 
@@ -129,15 +142,22 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           userId,
           id,
           isPaid: true,
-          paidAt: new Date().toISOString(),
+          paidDate: new Date().toISOString(),
         }),
       });
 
       const data = await response.json();
       
-      if (data.success) {
-        // API call succeeded - update localStorage as synced
-        updateCreditEntry(id, { isPaid: true, paidAt: new Date().toISOString() }, true);
+      if (data.success && data.data) {
+        // API call succeeded - save the returned entry to localStorage as synced
+        const { saveLocalEntry } = await import('@/lib/credit-sync');
+        const localEntry = {
+          ...data.data,
+          syncStatus: 'synced' as const,
+          lastSyncAttempt: new Date().toISOString(),
+          paidAt: data.data.paidDate, // Alias for backward compatibility
+        };
+        saveLocalEntry(localEntry);
         logger.info('[CreditTracking] Entry marked paid and synced');
       } else {
         throw new Error(data.error || 'Failed to sync');
@@ -196,13 +216,82 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           <CreditCard className="w-6 h-6 text-purple-600" />
           {t('creditTracking', language)}
         </h2>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-1"
-        >
-          <Plus className="w-4 h-4" />
-          {t('addCredit', language)}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              try {
+                // Force clear and re-pull
+                console.log('[Force Sync] Clearing localStorage...');
+                localStorage.removeItem('vyapar-credit-entries');
+                localStorage.removeItem('vyapar-credit-sync-status');
+                
+                console.log('[Force Sync] Fetching from API...');
+                const response = await fetch(`/api/credit?userId=${userId}`);
+                
+                // Get raw text first
+                const rawText = await response.text();
+                console.log('[Force Sync] Raw response (first 500 chars):', rawText.substring(0, 500));
+                
+                // Parse JSON
+                const result = JSON.parse(rawText);
+                
+                console.log('[Force Sync] Parsed result:', {
+                  success: result.success,
+                  count: result.count,
+                  dataType: typeof result.data,
+                  dataIsArray: Array.isArray(result.data),
+                  dataLength: result.data?.length,
+                  dataKeys: result.data ? Object.keys(result.data).slice(0, 5) : []
+                });
+                
+                if (result.success && result.data && Array.isArray(result.data)) {
+                  // Directly save to localStorage
+                  const entries = result.data.map((entry: any) => ({
+                    ...entry,
+                    syncStatus: 'synced',
+                    paidAt: entry.paidDate
+                  }));
+                  
+                  localStorage.setItem('vyapar-credit-entries', JSON.stringify(entries));
+                  console.log('[Force Sync] Saved', entries.length, 'entries to localStorage');
+                  
+                  loadEntries();
+                  alert(`Force sync complete! Loaded ${entries.length} entries.`);
+                } else {
+                  console.error('[Force Sync] Invalid data:', result);
+                  alert('Force sync failed: Invalid data format');
+                }
+              } catch (error) {
+                console.error('[Force Sync] Error:', error);
+                alert('Force sync failed: ' + (error as Error).message);
+              }
+            }}
+            className="text-sm bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+          >
+            🔄 Force Pull
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await fullSync(userId);
+                loadEntries();
+                alert('Sync complete!');
+              } catch (error) {
+                alert('Sync failed: ' + (error as Error).message);
+              }
+            }}
+            className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+          >
+            🔄 Sync
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" />
+            {t('addCredit', language)}
+          </button>
+        </div>
       </div>
 
       {/* Summary */}

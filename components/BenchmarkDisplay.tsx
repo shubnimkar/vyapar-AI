@@ -76,7 +76,7 @@ export default function BenchmarkDisplay({
   // Handle AI explanation request
   const handleExplain = async () => {
     if (!userId) {
-      setExplanationError('Please log in to get AI explanation');
+      setExplanationError(t('error.loginRequired', language));
       return;
     }
 
@@ -103,11 +103,11 @@ export default function BenchmarkDisplay({
         setShowExplanation(true);
       } else {
         // Graceful degradation - comparison still works without AI
-        setExplanationError('AI explanation temporarily unavailable');
+        setExplanationError(t('error.aiExplanationUnavailable', language));
       }
     } catch (error) {
       // Graceful degradation - comparison still works without AI
-      setExplanationError('AI explanation temporarily unavailable');
+      setExplanationError(t('error.aiExplanationUnavailable', language));
     } finally {
       setIsExplaining(false);
     }
@@ -218,7 +218,7 @@ export default function BenchmarkDisplay({
           >
             <span className="flex items-center justify-center gap-2">
               <span>💡</span>
-              {language === 'hi' ? 'AI व्याख्या प्राप्त करें' : language === 'mr' ? 'AI स्पष्टीकरण मिळवा' : 'Get AI Explanation'}
+              {t('benchmark.getAiExplanation', language)}
             </span>
           </Button>
         ) : (
@@ -226,14 +226,14 @@ export default function BenchmarkDisplay({
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold text-neutral-700 flex items-center gap-2">
                 <span>💡</span>
-                {language === 'hi' ? 'AI व्याख्या' : language === 'mr' ? 'AI स्पष्टीकरण' : 'AI Explanation'}
+                {t('benchmark.aiExplanation', language)}
               </h4>
               <Button
                 onClick={() => setShowExplanation(false)}
                 variant="ghost"
                 size="sm"
               >
-                {language === 'hi' ? 'छुपाएं' : language === 'mr' ? 'लपवा' : 'Hide'}
+                {t('benchmark.hide', language)}
               </Button>
             </div>
             <Card className="bg-info-50 border-l-4 border-info-500" density="compact">

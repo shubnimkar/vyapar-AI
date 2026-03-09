@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       // 5. Get benchmark comparison
       const benchmarkService = new BenchmarkService();
       const comparison = await benchmarkService.getBenchmarkComparison(
-        profile,
+        profile as any, // Type cast: dynamodb-client.UserProfile -> types.UserProfile (both have city_tier and business_type)
         userMetrics
       );
       

@@ -14,6 +14,33 @@ import {
   BODY_SIZE_LIMITS
 } from '@/lib/error-utils';
 
+/**
+ * Strip markdown formatting from AI responses
+ * Removes bold (**text**), bullet points, and other markdown syntax
+ */
+function stripMarkdownFormatting(text: string): string {
+  if (!text) return text;
+  
+  let cleaned = text;
+  
+  // Remove bold formatting: **text** -> text
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  
+  // Remove bullet points at start of lines: - text or * text -> text
+  cleaned = cleaned.replace(/^[\s]*[-*]\s+/gm, '');
+  
+  // Remove numbered lists: 1. text -> text
+  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm, '');
+  
+  // Remove markdown headings: ### text -> text
+  cleaned = cleaned.replace(/^[\s]*#{1,6}\s+/gm, '');
+  
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+  
+  return cleaned;
+}
+
 export async function POST(request: NextRequest) {
   try {
     logger.info('Q&A request received', {
@@ -94,6 +121,9 @@ export async function POST(request: NextRequest) {
     
     const answer = aiResponse.content || '';
     
+    // Strip markdown formatting from AI response
+    const cleanedAnswer = stripMarkdownFormatting(answer);
+    
     // Store question and answer in conversation history
     const userMessage: ChatMessage = {
       role: 'user',
@@ -103,7 +133,7 @@ export async function POST(request: NextRequest) {
     
     const assistantMessage: ChatMessage = {
       role: 'assistant',
-      content: answer,
+      content: cleanedAnswer,
       timestamp: new Date(),
     };
     
@@ -122,7 +152,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      answer,
+      answer: cleanedAnswer,
     });
   } catch (error) {
     return NextResponse.json(

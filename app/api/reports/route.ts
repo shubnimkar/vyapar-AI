@@ -30,14 +30,18 @@ export async function GET(request: NextRequest) {
         'REPORT#'
       );
 
-      // Sort by date descending (most recent first)
+      // Sort by date descending (most recent first) and flatten structure
       const sortedReports = reports
         .map(item => ({
-          reportId: item.reportId,
-          reportType: item.reportType,
+          id: item.reportId,
+          userId: item.userId,
           date: item.date,
-          reportData: item.reportData,
-          createdAt: item.createdAt,
+          generatedAt: item.createdAt,
+          totalSales: item.reportData?.totalSales || 0,
+          totalExpenses: item.reportData?.totalExpenses || 0,
+          netProfit: item.reportData?.netProfit || 0,
+          topExpenseCategories: item.reportData?.topExpenseCategories || [],
+          insights: item.reportData?.insights || '',
         }))
         .sort((a, b) => b.date.localeCompare(a.date));
 

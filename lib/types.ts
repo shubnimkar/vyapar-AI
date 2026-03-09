@@ -342,8 +342,11 @@ export interface ProfileSetupData {
   shopName: string;
   userName: string;
   language: Language;
-  businessType?: string;
-  city?: string;
+  businessType?: BusinessType;
+  city?: CityTier;
+  business_type?: BusinessType;
+  city_tier?: CityTier | null;
+  explanation_mode?: 'simple' | 'detailed';
 }
 
 export interface DeletionInfo {
@@ -434,7 +437,7 @@ export interface SuggestionContext {
 // Click-to-Add Transactions Types
 // ============================================
 
-export type TransactionSource = 'receipt' | 'csv';
+export type TransactionSource = 'receipt' | 'csv' | 'voice';
 export type TransactionType = 'expense' | 'sale';
 
 export interface InferredTransaction {
@@ -553,7 +556,7 @@ export interface IndexVisualConfig {
 /**
  * City tier classification
  */
-export type CityTier = 'tier1' | 'tier2' | 'tier3';
+export type CityTier = 'tier1' | 'tier2' | 'tier3' | 'rural';
 
 /**
  * Business type classification

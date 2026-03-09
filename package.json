@@ -7,13 +7,14 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "seed:segments": "ts-node scripts/seed-segment-data.ts"
+  "dev": "next dev --webpack",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "test": "jest",
+  "test:watch": "jest --watch",
+  "seed:segments": "ts-node scripts/seed-segment-data.ts",
+  "seed:benchmark": "node scripts/seed-benchmark-data.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.998.0",

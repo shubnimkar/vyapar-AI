@@ -22,7 +22,7 @@ export default function SettingsPage() {
     }
 
     // Get language from localStorage or default to 'en'
-    const savedLanguage = localStorage.getItem('vyapar-language') as Language;
+    const savedLanguage = localStorage.getItem('vyapar-lang') as Language;
     if (savedLanguage) {
       setLanguage(savedLanguage);
     }
@@ -32,7 +32,7 @@ export default function SettingsPage() {
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
-    localStorage.setItem('vyapar-language', newLanguage);
+    localStorage.setItem('vyapar-lang', newLanguage);
   };
 
   if (isLoading) {

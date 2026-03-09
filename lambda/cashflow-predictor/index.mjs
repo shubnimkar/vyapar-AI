@@ -76,26 +76,14 @@ export const handler = async (event) => {
 
     console.log("MILESTONE: Calling Bedrock for prediction");
 
-    // Group entries by date and calculate daily totals
-    const dailyTotals = {};
-    historicalData.forEach(entry => {
-      if (!dailyTotals[entry.date]) {
-        dailyTotals[entry.date] = { sales: 0, expenses: 0 };
-      }
-      if (entry.type === 'sale') {
-        dailyTotals[entry.date].sales += entry.amount;
-      } else if (entry.type === 'expense') {
-        dailyTotals[entry.date].expenses += entry.amount;
-      }
-    });
-
-    // Prepare data for Bedrock
-    const dataForPrediction = Object.entries(dailyTotals)
-      .map(([date, totals]) => ({
-        date,
-        sales: totals.sales,
-        expenses: totals.expenses,
-        balance: totals.sales - totals.expenses,
+    // Prepare data for Bedrock - entries already have totalSales and totalExpense
+    const dataForPrediction = historicalData
+      .map(entry => ({
+        date: entry.date,
+        sales: entry.totalSales || 0,
+        expenses: entry.totalExpense || 0,
+        balance: (entry.totalSales || 0) - (entry.totalExpense || 0),
+        cashInHand: entry.cashInHand || null,
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 

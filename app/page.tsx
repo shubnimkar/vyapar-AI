@@ -3,6 +3,7 @@
 import { useState, useEffect, type ComponentType } from 'react';
 import AuthGuard from '@/components/auth/AuthGuard';
 import UserProfile from '@/components/auth/UserProfile';
+import ProfileContent from '@/components/ProfileContent';
 import LanguageSelector from '@/components/LanguageSelector';
 import SyncStatus from '@/components/SyncStatus';
 import TrustBanner from '@/components/TrustBanner';
@@ -28,7 +29,7 @@ import Toast, { ToastType } from '@/components/Toast';
 import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
 import ExportPDF from '@/components/ExportPDF';
-import { Language, BusinessInsights, FileType, BenchmarkData, InferredTransaction, ExpenseAlert, ExtractedVoiceData } from '@/lib/types';
+import { Language, BusinessInsights, FileType, BenchmarkData, InferredTransaction, ExpenseAlert, ExtractedVoiceData, TransactionSource } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { addTransactionToDailyEntry } from '@/lib/add-transaction-to-entry';
 import {
@@ -116,14 +117,6 @@ export default function Home() {
   // Expense Alert state
   const [expenseAlert, setExpenseAlert] = useState<ExpenseAlert | null>(null);
   
-  // Voice data state for populating form
-  const [voiceFormData, setVoiceFormData] = useState<{
-    date?: string;
-    totalSales?: number;
-    totalExpense?: number;
-    notes?: string;
-  } | undefined>(undefined);
-  
   // Toast notification state
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   
@@ -190,6 +183,17 @@ export default function Home() {
     const savedLang = localStorage.getItem('vyapar-lang') as Language;
     if (savedLang && ['en', 'hi', 'mr'].includes(savedLang)) {
       setLanguage(savedLang);
+    }
+    
+    // Load demo segment data to cache on first load (for offline benchmark)
+    if (typeof window !== 'undefined') {
+      const { loadDemoDataToCache } = require('@/lib/demoSegmentData');
+      try {
+        loadDemoDataToCache();
+        logger.debug('Demo segment data loaded to cache');
+      } catch (error) {
+        logger.error('Failed to load demo segment data', { error });
+      }
     }
   }, []);
 
@@ -385,9 +389,6 @@ export default function Home() {
   };
 
   const handleDailyEntrySubmitted = async () => {
-    // Clear voice form data after submission
-    setVoiceFormData(undefined);
-    
     // Refresh health score and indices
     refreshHealthScore();
     recalculateIndices();
@@ -528,37 +529,83 @@ export default function Home() {
     }
 
     try {
-      // Populate the DailyEntryForm with extracted voice data
-      // User will review and confirm before submission
-      const formData = {
-        date: data.date,
-        totalSales: data.sales || undefined,
-        totalExpense: data.expenses || undefined,
-        notes: data.expenseCategory ? `Category: ${data.expenseCategory}` : undefined,
-      };
-
-      setVoiceFormData(formData);
-
-      logger.info('Voice data extracted and form populated', { 
-        sales: data.sales,
-        expenses: data.expenses,
-        confidence: data.confidence
-      });
-
-      // Show success toast with confidence level
-      const successMessage = language === 'hi' 
-        ? `वॉइस डेटा निकाला गया! (विश्वास: ${Math.round(data.confidence * 100)}%) कृपया समीक्षा करें और सबमिट करें।`
-        : language === 'mr'
-        ? `व्हॉइस डेटा काढला! (विश्वास: ${Math.round(data.confidence * 100)}%) कृपया पुनरावलोकन करा आणि सबमिट करा.`
-        : `Voice data extracted! (Confidence: ${Math.round(data.confidence * 100)}%) Please review and submit.`;
+      // Import pending transaction utilities
+      const { savePendingTransaction } = await import('@/lib/pending-transaction-store');
+      const { isDuplicate } = await import('@/lib/duplicate-detector');
       
-      setToast({
-        message: successMessage,
-        type: 'success'
+      // Determine transaction type based on which field has data
+      const type: 'expense' | 'sale' = data.expenses && data.expenses > 0 ? 'expense' : 'sale';
+      const amount = type === 'expense' ? (data.expenses || 0) : (data.sales || 0);
+      
+      // Generate deterministic ID based on voice data
+      const idString = `voice-${data.date}-${amount}-${type}-${data.confidence}`;
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(idString));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const id = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+      
+      // Create InferredTransaction object
+      const inferredTransaction: InferredTransaction = {
+        id,
+        date: data.date,
+        type,
+        amount,
+        category: data.expenseCategory || undefined,
+        source: 'voice' as TransactionSource,
+        created_at: new Date().toISOString(),
+        raw_data: data,
+      };
+      
+      // Check for duplicates
+      const duplicate = isDuplicate({
+        date: inferredTransaction.date,
+        amount: inferredTransaction.amount,
+        type: inferredTransaction.type,
+        category: inferredTransaction.category,
+        source: inferredTransaction.source
       });
-
-      // Switch to entries section to show the populated form
-      setActiveSection('entries');
+      
+      if (duplicate) {
+        logger.info('Duplicate voice transaction detected', { transactionId: inferredTransaction.id });
+        setToast({
+          message: language === 'hi'
+            ? 'यह लेनदेन पहले से जोड़ा जा चुका है'
+            : language === 'mr'
+            ? 'हा व्यवहार आधीच जोडला गेला आहे'
+            : 'This transaction has already been added',
+          type: 'error'
+        });
+        return;
+      }
+      
+      // Save to pending store
+      const saved = savePendingTransaction(inferredTransaction);
+      
+      if (saved) {
+        logger.info('Voice transaction saved to pending', { 
+          transactionId: inferredTransaction.id,
+          type,
+          amount,
+          confidence: data.confidence
+        });
+        
+        // Show success toast with confidence level
+        const successMessage = language === 'hi' 
+          ? `वॉइस डेटा निकाला गया! (विश्वास: ${Math.round(data.confidence * 100)}%) लंबित टैब में जाएं।`
+          : language === 'mr'
+          ? `व्हॉइस डेटा काढला! (विश्वास: ${Math.round(data.confidence * 100)}%) प्रलंबित टॅबमध्ये जा.`
+          : `Voice data extracted! (Confidence: ${Math.round(data.confidence * 100)}%) Go to Pending tab.`;
+        
+        setToast({
+          message: successMessage,
+          type: 'success'
+        });
+        
+        // Switch to pending section to show the transaction
+        setActiveSection('pending');
+      } else {
+        throw new Error('Failed to save to pending store');
+      }
     } catch (error) {
       logger.error('Failed to process voice data', { error });
       
@@ -899,64 +946,80 @@ export default function Home() {
         />
       )}
       
-      <div className="min-h-screen bg-slate-100">
-        <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
-          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t('appTitle', language)}</h1>
-                <p className="text-sm text-gray-600 mt-1">{t('appSubtitle', language)}</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+      <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+        {/* Sidebar */}
+        <aside className="hidden lg:flex w-64 border-r border-gray-200 bg-white flex-col h-screen sticky top-0">
+          {/* Logo/Brand */}
+          <div className="p-6 flex items-center gap-3 border-b border-gray-200">
+            <div className="bg-blue-600 text-white p-2 rounded-lg">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="font-bold text-lg leading-tight text-gray-900">{t('appTitle', language)}</h1>
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Business</p>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            {sectionItems.map((section) => {
+              const Icon = section.icon;
+              const active = activeSection === section.id;
+              const showBadge = section.id === 'pending' && pendingCount.badge > 0;
+              
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    active
+                      ? 'bg-blue-50 text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="flex-1 text-left">{getSectionLabel(section.id)}</span>
+                  {showBadge && (
+                    <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                      {pendingCount.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* User Profile Footer */}
+          <div className="p-4 mt-auto border-t border-gray-200">
+            <UserProfile language={language} />
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
+          {/* Header */}
+          <header className="sticky top-0 z-30 flex items-center justify-between px-8 py-4 bg-white/95 backdrop-blur-md border-b border-gray-200">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">
+                {getSectionLabel(activeSection)}
+              </h2>
+              <div className="flex items-center gap-4 mt-1">
                 <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
                 <SyncStatus language={language} />
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6">
-            <aside className="bg-white rounded-xl border border-slate-200 p-3 h-fit lg:sticky lg:top-24">
-              <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0">
-                {sectionItems.map((section) => {
-                  const Icon = section.icon;
-                  const active = activeSection === section.id;
-                  const showBadge = section.id === 'pending' && pendingCount.badge > 0;
-                  
-                  return (
-                    <button
-                      key={section.id}
-                      onClick={() => setActiveSection(section.id)}
-                      className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors relative ${
-                        active
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                          : 'text-slate-700 hover:bg-slate-50 border border-transparent'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {getSectionLabel(section.id)}
-                      {showBadge && (
-                        <span className="ml-auto flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-orange-500 text-white text-xs font-bold rounded-full">
-                          {pendingCount.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-
-              <div className="mt-4 hidden lg:block">
-                <UserProfile language={language} />
-              </div>
-            </aside>
-
-            <section className="space-y-6">
+          {/* Scrollable Dashboard Content */}
+          <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
+            <div className="space-y-6 max-w-7xl mx-auto">
               {activeSection === 'dashboard' && (
                 <>
+                  {/* Top Banners */}
                   <TrustBanner language={language} />
-
-                  {/* Expense Alert Banner - positioned at top of dashboard */}
+                  
                   {expenseAlert && (
                     <ExpenseAlertBanner
                       alert={expenseAlert}
@@ -965,7 +1028,8 @@ export default function Home() {
                     />
                   )}
 
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {/* Grid: OCR & Health Score */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
 
                     {typeof healthScore === 'number' && 
@@ -979,13 +1043,14 @@ export default function Home() {
                         breakdown={healthBreakdown}
                         language={language}
                         sessionId={sessionId || undefined}
+                        userId={user?.userId}
                       />
                     ) : (
-                      <div className="bg-white rounded-lg shadow-md p-6 border border-slate-200">
-                        <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           {language === 'hi' ? 'स्वास्थ्य स्कोर' : language === 'mr' ? 'हेल्थ स्कोअर' : 'Health Score'}
                         </h3>
-                        <p className="text-sm text-slate-600">
+                        <p className="text-sm text-gray-600">
                           {language === 'hi'
                             ? 'दैनिक एंट्री के बाद स्कोर दिखेगा।'
                             : language === 'mr'
@@ -996,19 +1061,20 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* Segment Benchmark Display - positioned near health score */}
+                  {/* Benchmark Display */}
                   <BenchmarkDisplay
                     comparison={benchmarkComparison}
                     language={language}
                     isLoading={benchmarkLoading}
                     error={benchmarkError || undefined}
+                    userId={user?.userId}
                   />
 
-                  {/* Cash Flow Predictor - positioned below benchmark */}
+                  {/* Cash Flow Predictor */}
                   {user && (
                     <CashFlowPredictor
                       userId={user.userId}
-                      language={language === 'mr' ? 'hi' : language}
+                      language={language}
                     />
                   )}
 
@@ -1021,8 +1087,15 @@ export default function Home() {
                     />
                   )}
 
-                  {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
-                  {user && <CreditTracking userId={user.userId} language={language} onCreditChange={handleCreditChange} />}
+                  {/* Daily Entry Form & Credit Tracking */}
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 pb-8">
+                    <div className="xl:col-span-2">
+                      {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
+                    </div>
+                    <div>
+                      {user && <CreditTracking userId={user.userId} language={language} onCreditChange={handleCreditChange} />}
+                    </div>
+                  </div>
                 </>
               )}
 
@@ -1030,7 +1103,7 @@ export default function Home() {
                 <>
                   {user && <VoiceRecorder onDataExtracted={handleVoiceDataExtracted} language={language === 'mr' ? 'hi' : language} />}
                   <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
-                  {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} initialData={voiceFormData} />}
+                  {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
                 </>
               )}
 
@@ -1073,8 +1146,10 @@ export default function Home() {
                 />
               )}
 
-              {activeSection === 'account' && <UserProfile language={language} />}
-            </section>
+              {activeSection === 'account' && user && (
+                <ProfileContent language={language} user={user} />
+              )}
+            </div>
           </div>
         </main>
       </div>

@@ -2,6 +2,33 @@
 // Gets AI explanation for deterministic results
 // AI explains, does NOT calculate
 
+/**
+ * Strip markdown formatting from AI responses
+ * Removes bold (**text**), bullet points, and other markdown syntax
+ */
+function stripMarkdownFormatting(text: string): string {
+  if (!text) return text;
+  
+  let cleaned = text;
+  
+  // Remove bold formatting: **text** -> text
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  
+  // Remove bullet points at start of lines: - text or * text -> text
+  cleaned = cleaned.replace(/^[\s]*[-*]\s+/gm, '');
+  
+  // Remove numbered lists: 1. text -> text
+  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm, '');
+  
+  // Remove markdown headings: ### text -> text
+  cleaned = cleaned.replace(/^[\s]*#{1,6}\s+/gm, '');
+  
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+  
+  return cleaned;
+}
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session-store';
 import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
@@ -33,20 +60,38 @@ export async function POST(request: NextRequest) {
     }
 
     const body = JSON.parse(bodyCheck.bodyText);
-    const { sessionId, userId, metric, value, context, language: requestLanguage } = body;
+    const { sessionId, userId, metric, value, context, predictions, language: requestLanguage } = body;
     
     // Set language from request
     if (requestLanguage) {
       language = requestLanguage;
     }
     
-    // Validate inputs
-    if (!sessionId || !metric || value === undefined) {
+    // Validate inputs - cashflowPrediction doesn't need sessionId or value
+    const isCashflowPrediction = metric === 'cashflowPrediction';
+    
+    if (!metric) {
+      logger.warn('Missing metric in explain request');
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
+        { status: 400 }
+      );
+    }
+    
+    if (!isCashflowPrediction && (!sessionId || value === undefined)) {
       logger.warn('Missing required fields in explain request', { 
         sessionId: !!sessionId, 
         metric: !!metric, 
         value: value !== undefined 
       });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
+        { status: 400 }
+      );
+    }
+    
+    if (isCashflowPrediction && !predictions) {
+      logger.warn('Missing predictions for cashflow explanation');
       return NextResponse.json(
         createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
         { status: 400 }
@@ -62,14 +107,16 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Get session
-    const session = await getSession(sessionId);
-    if (!session) {
-      logger.warn('Session not found', { sessionId });
-      return NextResponse.json(
-        createErrorResponse(ErrorCode.NOT_FOUND, 'errors.notFound', language),
-        { status: 404 }
-      );
+    // Get session (not required for cashflow predictions)
+    if (!isCashflowPrediction) {
+      const session = await getSession(sessionId);
+      if (!session) {
+        logger.warn('Session not found', { sessionId });
+        return NextResponse.json(
+          createErrorResponse(ErrorCode.NOT_FOUND, 'errors.notFound', language),
+          { status: 404 }
+        );
+      }
     }
     
     // Retrieve profile for persona context
@@ -84,25 +131,31 @@ export async function POST(request: NextRequest) {
     
     // Build persona context
     const personaContext: PersonaContext = {
-      business_type: profile.business_type,
-      city_tier: profile.city_tier,
-      explanation_mode: profile.explanation_mode,
+      business_type: profile.business_type as 'kirana' | 'salon' | 'pharmacy' | 'restaurant' | 'other',
+      city_tier: profile.city_tier as 'tier-1' | 'tier-2' | 'tier-3' | 'rural' | undefined,
+      explanation_mode: profile.explanation_mode as 'simple' | 'detailed',
       language: profile.language as Language,
     };
     
     // Build persona-aware prompt
-    const promptData = {
-      metric,
-      value,
-      calculatedMetrics: context?.breakdown || {},
-    };
+    const promptData = isCashflowPrediction 
+      ? {
+          metric,
+          predictions,
+          historicalDays: predictions?.length || 0,
+        }
+      : {
+          metric,
+          value,
+          calculatedMetrics: context?.breakdown || {},
+        };
     
     const promptStructure = buildPersonaPrompt(personaContext, 'explain', promptData);
     
     // Log persona context
     logger.info('Building persona-aware explanation', {
       userId,
-      sessionId,
+      sessionId: sessionId || 'N/A',
       metric,
       persona_context: {
         business_type: personaContext.business_type,
@@ -123,29 +176,27 @@ export async function POST(request: NextRequest) {
       // Graceful degradation: return deterministic value without AI explanation
       logger.warn('AI unavailable, returning deterministic value only', {
         userId,
-        sessionId,
+        sessionId: sessionId || 'N/A',
         metric,
         error: aiResponse.error,
       });
       return NextResponse.json({
         success: true,
-        explanation: {
-          success: false,
-          content: 'AI explanation temporarily unavailable. Your calculated metrics are accurate.',
-        },
+        explanation: 'AI explanation temporarily unavailable.', // Flat string
         metric,
-        value,
+        value: value || null,
       });
     }
     
-    logger.info('Explanation completed successfully', { userId, sessionId, metric });
+    logger.info('Explanation completed successfully', { userId, sessionId: sessionId || 'N/A', metric });
     
+    // Strip markdown formatting from AI response
+    const cleanedExplanation = stripMarkdownFormatting(aiResponse.content || '');
+    
+    // Return flat structure for consistency with other endpoints
     return NextResponse.json({
       success: true,
-      explanation: {
-        success: true,
-        content: aiResponse.content,
-      },
+      explanation: cleanedExplanation, // Flat string, not nested object
       metric,
       value,
     });

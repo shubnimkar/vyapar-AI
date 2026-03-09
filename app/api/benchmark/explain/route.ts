@@ -2,6 +2,33 @@
 // Gets AI explanation for benchmark comparison results
 // CRITICAL: AI explains pre-calculated values, does NOT recalculate
 
+/**
+ * Strip markdown formatting from AI responses
+ * Removes bold (**text**), bullet points, and other markdown syntax
+ */
+function stripMarkdownFormatting(text: string): string {
+  if (!text) return text;
+  
+  let cleaned = text;
+  
+  // Remove bold formatting: **text** -> text
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  
+  // Remove bullet points at start of lines: - text or * text -> text
+  cleaned = cleaned.replace(/^[\s]*[-*]\s+/gm, '');
+  
+  // Remove numbered lists: 1. text -> text
+  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm, '');
+  
+  // Remove markdown headings: ### text -> text
+  cleaned = cleaned.replace(/^[\s]*#{1,6}\s+/gm, '');
+  
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+  
+  return cleaned;
+}
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
 import { Language, BenchmarkComparison } from '@/lib/types';
@@ -71,11 +98,12 @@ export async function POST(request: NextRequest) {
     }
     
     // Build persona context
+    // Use language from request (current UI language) instead of profile language
     const personaContext: PersonaContext = {
-      business_type: profile.business_type,
-      city_tier: profile.city_tier,
-      explanation_mode: profile.explanation_mode,
-      language: profile.language as Language,
+      business_type: profile.business_type as 'kirana' | 'salon' | 'pharmacy' | 'restaurant' | 'other',
+      city_tier: profile.city_tier as 'tier-1' | 'tier-2' | 'tier-3' | 'rural' | undefined,
+      explanation_mode: profile.explanation_mode as 'simple' | 'detailed',
+      language: language, // Use current request language, not profile language
     };
     
     // Build benchmark explanation prompt
@@ -121,9 +149,12 @@ export async function POST(request: NextRequest) {
     
     logger.info('Benchmark explanation completed successfully', { userId });
     
+    // Strip markdown formatting from AI response
+    const cleanedExplanation = stripMarkdownFormatting(aiResponse.content || '');
+    
     return NextResponse.json({
       success: true,
-      explanation: aiResponse.content,
+      explanation: cleanedExplanation,
     });
     
   } catch (error) {

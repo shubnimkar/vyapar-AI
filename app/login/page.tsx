@@ -25,7 +25,7 @@ export default function LoginPage() {
     }
 
     // Load language preference
-    const savedLanguage = localStorage.getItem('vyapar-language') as Language;
+    const savedLanguage = localStorage.getItem('vyapar-lang') as Language;
     if (savedLanguage) {
       setLanguage(savedLanguage);
     }
@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
-    localStorage.setItem('vyapar-language', newLanguage);
+    localStorage.setItem('vyapar-lang', newLanguage);
   };
 
   const handleSignup = async (data: SignupData) => {
@@ -63,7 +63,7 @@ export default function LoginPage() {
         SessionManager.saveSession(session);
         
         // Save language preference
-        localStorage.setItem('vyapar-language', data.language);
+        localStorage.setItem('vyapar-lang', data.language);
         
         // Redirect to home
         router.push('/');
@@ -122,16 +122,32 @@ export default function LoginPage() {
             logger.info('Profile found, redirecting to home');
             router.push('/');
           } else {
-            logger.info('Profile not found, redirecting to profile setup');
-            router.push('/profile-setup');
+            logger.info('Profile not found, redirecting to home (profile can be completed inline)');
+            router.push('/');
           }
         } catch (profileError) {
           logger.error('Error checking profile', { error: profileError });
           router.push('/');
         }
       } else {
-        logger.warn('Login failed', { error: result.error });
-        setError(result.error || t('authenticationFailed', language));
+        logger.warn('Login failed', { error: result.error, status: response.status });
+
+        if (response.status === 401) {
+          setError(t('authenticationFailed', language));
+          return;
+        }
+
+        if (result.message) {
+          setError(result.message);
+          return;
+        }
+
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+
+        setError(t('connectionError', language));
       }
     } catch (err) {
       logger.error('Login network error', { error: err });

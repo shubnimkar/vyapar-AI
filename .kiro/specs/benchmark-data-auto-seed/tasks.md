@@ -1,0 +1,90 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - Empty Database Returns 404
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: Scope the property to concrete failing cases - empty DynamoDB with valid user profile and daily entries
+  - Test that benchmark requests fail with 404 when no segment data exists in DynamoDB
+  - Test implementation details from Fault Condition in design:
+    - User has valid profile with cityTier and businessType
+    - User has daily entries
+    - Segment data does NOT exist in DynamoDB
+    - AWS credentials are configured (not offline mode)
+  - The test assertions should match the Expected Behavior Properties from design:
+    - System should automatically seed benchmark data
+    - Benchmark comparison should succeed without manual intervention
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found:
+    - `SegmentStore.getSegmentData()` returns `null` when database is empty
+    - `/api/benchmark` endpoint returns 404 with "Benchmark data not available for your segment"
+    - No automatic seeding mechanism is triggered
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Existing Data Retrieval Behavior
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs:
+    - When segment data already exists in DynamoDB, observe that it is retrieved without re-seeding
+    - When manual seeding endpoint is called, observe that it seeds data correctly
+    - When cache-first retrieval is performed, observe that cache is checked before DynamoDB
+    - When offline mode is active, observe graceful fallback to cached data
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements:
+    - For all requests where segment data exists, result equals existing data retrieval (no re-seeding)
+    - For all manual seeding calls, behavior matches current implementation
+    - For all cache scenarios, cache-first logic is preserved
+    - For all offline scenarios, fallback logic is preserved
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+- [x] 3. Fix for benchmark data auto-seeding
+
+  - [x] 3.1 Implement the fix in lib/benchmarkService.ts
+    - Add `shouldAutoSeed()` helper method to check if database is empty
+    - Modify `getSegmentData()` to detect missing segment data
+    - Add automatic seeding call to `seedDemoData()` when database is empty
+    - Implement seeding guard to prevent concurrent seeding operations
+    - Add logging for visibility when auto-seeding is triggered
+    - Preserve existing error handling for offline mode and credential errors
+    - Preserve existing cache-first retrieval logic
+    - _Bug_Condition: isBugCondition(input) where userHasValidProfile(input.userId) AND userHasDailyEntries(input.userId) AND NOT segmentDataExistsInDynamoDB(input.cityTier, input.businessType) AND awsCredentialsConfigured()_
+    - _Expected_Behavior: System automatically seeds all 15 segment combinations to DynamoDB before attempting to retrieve the requested segment data, ensuring benchmark comparison succeeds without manual intervention_
+    - _Preservation: When benchmark data already exists, retrieve without re-seeding; manual seeding endpoint continues to work; cache-first retrieval preserved; offline mode fallback preserved; same DynamoDB single-table design; same comparison logic_
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+  - [x] 3.2 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Automatic Seeding on Missing Data
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify that benchmark requests with empty DynamoDB now succeed
+    - Verify that all 15 segment combinations are automatically seeded
+    - Verify that subsequent requests retrieve the seeded data
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+  - [x] 3.3 Verify preservation tests still pass
+    - **Property 2: Preservation** - Existing Data Retrieval Behavior
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix (no regressions)
+    - Verify existing data retrieval behavior unchanged
+    - Verify manual seeding endpoint still works
+    - Verify cache-first logic preserved
+    - Verify offline mode fallback preserved
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+  - Verify unit tests for `shouldAutoSeed()` helper method
+  - Verify integration tests for full auto-seeding flow
+  - Verify property-based tests for all 15 segment combinations
+  - Verify no regressions in existing benchmark functionality

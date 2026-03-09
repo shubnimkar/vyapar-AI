@@ -59,6 +59,8 @@ export default function CSVUpload({
       invalidRows: 'Invalid',
       errorTitle: 'Upload Failed',
       tryAgain: 'Try Again',
+      trySampleData: 'Try Sample Data',
+      sampleDataDesc: 'Load 90 days of realistic demo data to see AI insights',
     },
     hi: {
       title: 'CSV फ़ाइल अपलोड करें',
@@ -73,6 +75,8 @@ export default function CSVUpload({
       invalidRows: 'अमान्य',
       errorTitle: 'अपलोड विफल',
       tryAgain: 'पुनः प्रयास करें',
+      trySampleData: 'नमूना डेटा आज़माएं',
+      sampleDataDesc: 'AI इनसाइट्स देखने के लिए 90 दिनों का डेमो डेटा लोड करें',
     },
     mr: {
       title: 'CSV फाइल अपलोड करा',
@@ -87,6 +91,8 @@ export default function CSVUpload({
       invalidRows: 'अवैध',
       errorTitle: 'अपलोड अयशस्वी',
       tryAgain: 'पुन्हा प्रयत्न करा',
+      trySampleData: 'नमुना डेटा वापरा',
+      sampleDataDesc: 'AI इनसाइट्स पाहण्यासाठी 90 दिवसांचा डेमो डेटा लोड करा',
     },
   };
 
@@ -197,6 +203,86 @@ export default function CSVUpload({
     }
   };
 
+  const handleLoadSampleData = async () => {
+    setUploading(true);
+    setUploadResult(null);
+
+    try {
+      // Fetch sample CSV files from public directory
+      const [salesRes, expensesRes, inventoryRes] = await Promise.all([
+        fetch('/demo-data/sample-sales.csv'),
+        fetch('/demo-data/sample-expenses.csv'),
+        fetch('/demo-data/sample-inventory.csv')
+      ]);
+
+      if (!salesRes.ok || !expensesRes.ok || !inventoryRes.ok) {
+        throw new Error('Failed to load sample data files');
+      }
+
+      const [salesText, expensesText, inventoryText] = await Promise.all([
+        salesRes.text(),
+        expensesRes.text(),
+        inventoryRes.text()
+      ]);
+
+      // Create File objects
+      const salesFile = new File([salesText], 'sample-sales.csv', { type: 'text/csv' });
+      const expensesFile = new File([expensesText], 'sample-expenses.csv', { type: 'text/csv' });
+      const inventoryFile = new File([inventoryText], 'sample-inventory.csv', { type: 'text/csv' });
+
+      // Upload all three files
+      let totalValid = 0;
+      let totalInvalid = 0;
+
+      for (const file of [salesFile, expensesFile, inventoryFile]) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/csv-upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || `Failed to upload ${file.name}`);
+        }
+
+        if (result.summary) {
+          totalValid += result.summary.validRows;
+          totalInvalid += result.summary.invalidRows;
+        }
+      }
+
+      // Success
+      setUploadResult({
+        success: true,
+        summary: {
+          totalRows: totalValid + totalInvalid,
+          validRows: totalValid,
+          invalidRows: totalInvalid,
+        },
+      });
+
+      if (onUploadSuccess) {
+        onUploadSuccess({
+          totalRows: totalValid + totalInvalid,
+          validRows: totalValid,
+          invalidRows: totalInvalid,
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load sample data';
+      setUploadResult({ success: false, error: errorMessage });
+      if (onUploadError) {
+        onUploadError(errorMessage);
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center gap-3 mb-4">
@@ -252,36 +338,50 @@ export default function CSVUpload({
 
       {/* Upload area */}
       {!uploading && (
-        <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            dragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-700 mb-2">
-            {t.dragDrop}{' '}
+        <>
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              dragActive
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-700 mb-2">
+              {t.dragDrop}{' '}
+              <button
+                onClick={handleBrowseClick}
+                className="text-blue-600 hover:text-blue-700 font-medium underline"
+              >
+                {t.browse}
+              </button>
+            </p>
+            <p className="text-sm text-gray-500">{t.maxSize}</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,text/csv,application/csv"
+              onChange={handleFileInput}
+              className="hidden"
+            />
+          </div>
+
+          {/* Try Sample Data Button */}
+          <div className="mt-4">
             <button
-              onClick={handleBrowseClick}
-              className="text-blue-600 hover:text-blue-700 font-medium underline"
+              onClick={handleLoadSampleData}
+              className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
-              {t.browse}
+              <FileText className="w-5 h-5" />
+              {t.trySampleData}
             </button>
-          </p>
-          <p className="text-sm text-gray-500">{t.maxSize}</p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv,text/csv,application/csv"
-            onChange={handleFileInput}
-            className="hidden"
-          />
-        </div>
+            <p className="text-xs text-gray-500 text-center mt-2">{t.sampleDataDesc}</p>
+          </div>
+        </>
       )}
 
       {/* Uploading state */}

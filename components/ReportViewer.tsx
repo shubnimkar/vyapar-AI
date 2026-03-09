@@ -15,6 +15,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedReport, setSelectedReport] = useState<DailyReport | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const translations = {
     en: {
@@ -32,6 +33,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
       insights: 'Insights',
       topCategories: 'Top Expense Categories',
       generatedAt: 'Generated at',
+      generateNow: 'Generate Report Now',
+      generating: 'Generating...',
     },
     hi: {
       title: 'दैनिक रिपोर्ट',
@@ -48,6 +51,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
       insights: 'अंतर्दृष्टि',
       topCategories: 'शीर्ष व्यय श्रेणियां',
       generatedAt: 'उत्पन्न',
+      generateNow: 'अभी रिपोर्ट बनाएं',
+      generating: 'बना रहे हैं...',
     },
   };
 
@@ -63,8 +68,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
       const result = await response.json();
 
       if (result.success) {
-        setReports(result.reports || []);
-        setIsAutomationEnabled(result.automationEnabled ?? true);
+        setReports(result.data || []);
       }
     } catch (error) {
       logger.error('Failed to fetch reports', { error });
@@ -81,19 +85,43 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
-          enabled: !isAutomationEnabled,
+          automationEnabled: !isAutomationEnabled,
         }),
       });
 
       const result = await response.json();
 
       if (result.success) {
-        setIsAutomationEnabled(result.automationEnabled);
+        setIsAutomationEnabled(result.data.automationEnabled);
       }
     } catch (error) {
       logger.error('Failed to toggle automation', { error });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const generateReportNow = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Refresh reports list
+        await fetchReports();
+      } else {
+        logger.error('Failed to generate report', { error: result.message });
+      }
+    } catch (error) {
+      logger.error('Failed to generate report', { error });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -237,6 +265,21 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             {isAutomationEnabled ? t.enabled : t.disabled}
           </span>
         </div>
+      </div>
+
+      {/* Generate Report Now Button */}
+      <div className="border-t border-gray-200 pt-4">
+        <button
+          onClick={generateReportNow}
+          disabled={isGenerating}
+          className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
+            isGenerating
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700'
+          }`}
+        >
+          {isGenerating ? t.generating : t.generateNow}
+        </button>
       </div>
 
       {reports.length === 0 ? (

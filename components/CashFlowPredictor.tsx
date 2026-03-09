@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { DailyPrediction } from '@/lib/types';
+import { DailyPrediction, Language } from '@/lib/types';
 
 interface CashFlowPredictorProps {
   userId: string;
-  language: 'en' | 'hi';
+  language: Language;
 }
 
 export default function CashFlowPredictor({ userId, language }: CashFlowPredictorProps) {
@@ -13,6 +13,8 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [insufficientData, setInsufficientData] = useState(false);
+  const [explaining, setExplaining] = useState(false);
+  const [explanation, setExplanation] = useState('');
 
   const translations = {
     en: {
@@ -26,6 +28,8 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       balance: 'Balance',
       trend: 'Trend',
       confidence: 'Confidence',
+      days: 'days',
+      explainPrediction: 'Explain Prediction',
     },
     hi: {
       title: 'कैश फ्लो पूर्वानुमान',
@@ -38,6 +42,22 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       balance: 'शेष राशि',
       trend: 'रुझान',
       confidence: 'विश्वास',
+      days: 'दिन',
+      explainPrediction: 'पूर्वानुमान समझाएं',
+    },
+    mr: {
+      title: 'रोख प्रवाह अंदाज',
+      predict: 'पुढील 7 दिवसांचा अंदाज लावा',
+      loading: 'विश्लेषण करत आहे...',
+      insufficientData: 'अंदाजासाठी किमान 7 दिवसांचा डेटा आवश्यक आहे',
+      error: 'त्रुटी',
+      negativeAlert: 'चेतावणी: नकारात्मक शिल्लक अंदाजित',
+      date: 'तारीख',
+      balance: 'शिल्लक',
+      trend: 'ट्रेंड',
+      confidence: 'विश्वास',
+      days: 'दिवस',
+      explainPrediction: 'अंदाज समजावून सांगा',
     },
   };
 
@@ -78,6 +98,44 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
   const hasNegativePredictions = predictions.some((p) => p.isNegative);
   const negativeCount = predictions.filter((p) => p.isNegative).length;
 
+  const handleExplainPrediction = async () => {
+    if (predictions.length === 0) return;
+    
+    setExplaining(true);
+    setExplanation('');
+    
+    try {
+      const response = await fetch('/api/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          metric: 'cashflowPrediction',
+          predictions,
+          language,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.explanation) {
+        // Handle both flat string and nested object formats for backward compatibility
+        if (typeof data.explanation === 'string') {
+          setExplanation(data.explanation);
+        } else if (typeof data.explanation === 'object' && data.explanation.content) {
+          setExplanation(data.explanation.content);
+        } else {
+          setExplanation('Unable to generate explanation at this time.');
+        }
+      } else {
+        setExplanation('Unable to generate explanation at this time.');
+      }
+    } catch (err) {
+      setExplanation('Unable to generate explanation at this time.');
+    } finally {
+      setExplaining(false);
+    }
+  };
+
   const getTrendEmoji = (trend: string) => {
     if (trend === 'up') return '📈';
     if (trend === 'down') return '📉';
@@ -93,14 +151,25 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
+    <div className="bg-white rounded-lg shadow-md p-6 space-y-4 border border-gray-200">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">{t.title}</h3>
-        {hasNegativePredictions && (
-          <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-            ⚠️ {negativeCount} {language === 'hi' ? 'दिन' : 'days'}
-          </span>
-        )}
+        <h3 className="text-lg font-semibold text-gray-900">{t.title}</h3>
+        <div className="flex items-center gap-2">
+          {predictions.length > 0 && (
+            <button
+              onClick={handleExplainPrediction}
+              disabled={explaining}
+              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 disabled:text-gray-400 transition-colors"
+            >
+              ℹ️ {t.explainPrediction}
+            </button>
+          )}
+          {hasNegativePredictions && (
+            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium border border-red-200">
+              ⚠️ {negativeCount} {t.days}
+            </span>
+          )}
+        </div>
       </div>
 
       {predictions.length === 0 && !insufficientData && (
@@ -133,6 +202,12 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
             </div>
           )}
 
+          {explanation && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{explanation}</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             {predictions.map((prediction, index) => (
               <div
@@ -145,7 +220,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-gray-800">
+                    <div className="font-medium text-gray-900">
                       {new Date(prediction.date).toLocaleDateString('en-IN', {
                         weekday: 'short',
                         month: 'short',
@@ -170,14 +245,6 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
               </div>
             ))}
           </div>
-
-          <button
-            onClick={fetchPredictions}
-            disabled={isLoading}
-            className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors text-sm"
-          >
-            🔄 {language === 'hi' ? 'रीफ्रेश करें' : 'Refresh'}
-          </button>
         </div>
       )}
     </div>

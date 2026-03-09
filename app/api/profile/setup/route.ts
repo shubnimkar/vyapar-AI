@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ProfileService, type UserProfile as DynamoProfile } from '@/lib/dynamodb-client';
-import { APIResponse, UserProfile, ValidationError } from '@/lib/types';
+import { APIResponse, UserProfile, ValidationError, BusinessType, CityTier } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
@@ -80,12 +80,15 @@ export async function POST(request: NextRequest) {
     }
 
     // city_tier is optional, but validate if provided
-    if (city_tier !== undefined && city_tier !== null && !ProfileService.validateCityTier(city_tier)) {
-      errors.push({
-        field: 'city_tier',
-        message: 'Must be one of: tier-1, tier-2, tier-3, rural, or null',
-        code: 'invalid_enum',
-      });
+    if (city_tier !== undefined && city_tier !== null) {
+      const validTiers = ['tier1', 'tier2', 'tier3'];
+      if (!validTiers.includes(city_tier)) {
+        errors.push({
+          field: 'city_tier',
+          message: 'Must be one of: tier1, tier2, tier3, or null',
+          code: 'invalid_enum',
+        });
+      }
     }
 
     if (errors.length > 0) {
@@ -154,9 +157,9 @@ export async function POST(request: NextRequest) {
         language: dynamoProfile.language as 'en' | 'hi' | 'mr',
         businessType: dynamoProfile.businessType,
         city: dynamoProfile.city,
-        business_type: dynamoProfile.business_type,
-        city_tier: dynamoProfile.city_tier,
-        explanation_mode: dynamoProfile.explanation_mode,
+        business_type: (dynamoProfile.business_type || 'other') as BusinessType,
+        city_tier: dynamoProfile.city_tier as CityTier | undefined,
+        explanation_mode: (dynamoProfile.explanation_mode || 'simple') as 'simple' | 'detailed',
         createdAt: dynamoProfile.createdAt,
         lastActiveAt: dynamoProfile.updatedAt,
         isActive: true,

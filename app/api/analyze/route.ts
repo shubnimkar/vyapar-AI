@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     const aiResponse = await orchestrator.generateResponse(
       prompt,
       { language },
-      { endpoint: '/api/analyze', userId: session.userId }
+      { endpoint: '/api/analyze' }
     );
     
     if (!aiResponse.success) {
@@ -178,7 +178,36 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Strip markdown formatting from text
+ * Removes bold (**text**), bullet points, and other markdown syntax
+ */
+function stripMarkdownFormatting(text: string): string {
+  if (!text) return text;
+  
+  let cleaned = text;
+  
+  // Remove bold formatting: **text** -> text
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  
+  // Remove bullet points at start of lines: - text or * text -> text
+  cleaned = cleaned.replace(/^[\s]*[-*]\s+/gm, '');
+  
+  // Remove numbered lists: 1. text -> text
+  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm, '');
+  
+  // Remove markdown headings: ### text -> text
+  cleaned = cleaned.replace(/^[\s]*#{1,6}\s+/gm, '');
+  
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+  
+  return cleaned;
+}
+
+/**
  * Parse AI response into structured insights
+ * Improved parsing to handle various AI response formats
+ * Returns raw content as fallback if parsing fails
  */
 function parseInsights(content: string): BusinessInsights {
   const sections: BusinessInsights = {
@@ -189,53 +218,125 @@ function parseInsights(content: string): BusinessInsights {
     cashflowForecast: '',
   };
   
-  // Split by markdown headers (** or ##)
-  const parts = content.split(/\*\*|\#{2,}/);
+  // If content is empty or too short, return it as-is in trueProfitAnalysis
+  if (!content || content.trim().length < 20) {
+    sections.trueProfitAnalysis = content || 'No analysis available';
+    return sections;
+  }
   
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i].trim();
-    if (!part) continue;
-    
-    const lowerPart = part.toLowerCase();
-    
-    // Check which section this is
-    if (lowerPart.includes('true profit') || lowerPart.includes('असली लाभ') || lowerPart.includes('खरा नफा')) {
-      // Get content after the header (next part)
-      if (i + 1 < parts.length) {
-        sections.trueProfitAnalysis = parts[i + 1].trim();
-      }
-    } else if (lowerPart.includes('loss-making') || lowerPart.includes('नुकसान देने') || lowerPart.includes('तोटा देणारी')) {
-      // Get content and parse as list
-      if (i + 1 < parts.length) {
-        const listContent = parts[i + 1].trim();
-        sections.lossMakingProducts = listContent
-          .split('\n')
-          .filter(line => line.trim().match(/^[-•*\d.]/))
-          .map(line => line.trim());
-      }
-    } else if (lowerPart.includes('blocked') || lowerPart.includes('फंसा हुआ') || lowerPart.includes('अडकलेली')) {
-      if (i + 1 < parts.length) {
-        sections.blockedInventoryCash = parts[i + 1].trim();
-      }
-    } else if (lowerPart.includes('abnormal') || lowerPart.includes('असामान्य') || lowerPart.includes('expense') || lowerPart.includes('खर्च')) {
-      if (i + 1 < parts.length) {
-        const listContent = parts[i + 1].trim();
-        sections.abnormalExpenses = listContent
-          .split('\n')
-          .filter(line => line.trim().match(/^[-•*\d.]/))
-          .map(line => line.trim());
-      }
-    } else if (lowerPart.includes('cashflow') || lowerPart.includes('forecast') || lowerPart.includes('7-day') || lowerPart.includes('कैशफ्लो') || lowerPart.includes('कॅशफ्लो')) {
-      if (i + 1 < parts.length) {
-        sections.cashflowForecast = parts[i + 1].trim();
+  // DEFENSIVE FIX: Strip generic placeholder headings that AI might generate
+  // These are template-style headings we explicitly told AI not to use
+  const placeholderHeadings = [
+    /^#{1,4}\s*Understanding\s+Your\s+HealthScore.*$/gim,
+    /^#{1,4}\s*Explanation\s+of.*$/gim,
+    /^#{1,4}\s*Identify\s*$/gim,
+    /^#{1,4}\s*Highlight\s*$/gim,
+    /^#{1,4}\s*Analysis\s*$/gim,
+  ];
+  
+  let cleanedContent = content;
+  for (const pattern of placeholderHeadings) {
+    cleanedContent = cleanedContent.replace(pattern, '');
+  }
+  
+  // Clean up extra whitespace after removing headings
+  cleanedContent = cleanedContent.replace(/\n{3,}/g, '\n\n').trim();
+  
+  // Use cleaned content for parsing
+  content = cleanedContent;
+  
+  // Try to extract sections using regex patterns that match section headers
+  // Pattern matches: **Header:** or ## Header or **Header** followed by content
+  const sectionPatterns = [
+    {
+      key: 'trueProfitAnalysis',
+      patterns: [
+        /(?:\*\*|##)\s*(?:1\.\s*)?(?:true profit|असली लाभ|खरा नफा)(?:\s*vs\s*cash\s*flow)?(?:\*\*|:|\n)([\s\S]*?)(?=(?:\*\*|##)\s*(?:\d+\.|loss|blocked|abnormal|cashflow|$)|$)/i,
+        /(?:true profit|असली लाभ|खरा नफा)[\s\S]*?:([\s\S]*?)(?=(?:loss-making|blocked|abnormal|cashflow|$))/i
+      ]
+    },
+    {
+      key: 'lossMakingProducts',
+      patterns: [
+        /(?:\*\*|##)\s*(?:2\.\s*)?(?:loss-making|नुकसान देने|तोटा देणारी)(?:\s*products)?(?:\*\*|:|\n)([\s\S]*?)(?=(?:\*\*|##)\s*(?:\d+\.|blocked|abnormal|cashflow|$)|$)/i,
+        /(?:loss-making|नुकसान देने|तोटा देणारी)[\s\S]*?:([\s\S]*?)(?=(?:blocked|abnormal|cashflow|$))/i
+      ],
+      isList: true
+    },
+    {
+      key: 'blockedInventoryCash',
+      patterns: [
+        /(?:\*\*|##)\s*(?:3\.\s*)?(?:blocked|फंसा हुआ|अडकलेली)(?:\s*inventory)?(?:\s*cash)?(?:\*\*|:|\n)([\s\S]*?)(?=(?:\*\*|##)\s*(?:\d+\.|abnormal|cashflow|$)|$)/i,
+        /(?:blocked|फंसा हुआ|अडकलेली)[\s\S]*?:([\s\S]*?)(?=(?:abnormal|cashflow|$))/i
+      ]
+    },
+    {
+      key: 'abnormalExpenses',
+      patterns: [
+        /(?:\*\*|##)\s*(?:4\.\s*)?(?:abnormal|unusual|असामान्य)(?:\s*expenses)?(?:\*\*|:|\n)([\s\S]*?)(?=(?:\*\*|##)\s*(?:\d+\.|cashflow|$)|$)/i,
+        /(?:abnormal|unusual|असामान्य)[\s\S]*?:([\s\S]*?)(?=(?:cashflow|$))/i
+      ],
+      isList: true
+    },
+    {
+      key: 'cashflowForecast',
+      patterns: [
+        /(?:\*\*|##)\s*(?:5\.\s*)?(?:cashflow|कैशफ्लो|कॅशफ्लो)(?:\s*forecast)?(?:\s*7-day)?(?:\*\*|:|\n)([\s\S]*?)$/i,
+        /(?:cashflow|कैशफ्लो|कॅशफ्लो)[\s\S]*?:([\s\S]*?)$/i
+      ]
+    }
+  ];
+  
+  let parsedAnySection = false;
+  
+  // Try each section pattern
+  for (const section of sectionPatterns) {
+    for (const pattern of section.patterns) {
+      const match = content.match(pattern);
+      if (match && match[1]) {
+        let extractedContent = match[1].trim();
+        
+        // Clean up the content - remove trailing section markers
+        extractedContent = extractedContent.replace(/(?:\*\*|##)\s*(?:\d+\.|\w+)/g, '').trim();
+        
+        if (section.isList) {
+          // Parse as list
+          const listItems = extractedContent
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line && line.match(/^[-•*\d.]/))
+            .map(line => line.replace(/^[-•*\d.]\s*/, '').trim())
+            .filter(line => line.length > 0);
+          
+          if (listItems.length > 0) {
+            (sections as any)[section.key] = listItems;
+            parsedAnySection = true;
+            break;
+          }
+        } else {
+          // Parse as text
+          if (extractedContent.length > 0) {
+            (sections as any)[section.key] = extractedContent;
+            parsedAnySection = true;
+            break;
+          }
+        }
       }
     }
   }
   
-  // Fallback: if no sections parsed, return raw content
-  if (!sections.trueProfitAnalysis && !sections.cashflowForecast && !sections.blockedInventoryCash) {
+  // Fallback: if no sections parsed successfully, return raw content in trueProfitAnalysis
+  // This ensures we always show SOMETHING instead of empty placeholders
+  if (!parsedAnySection) {
     sections.trueProfitAnalysis = content;
   }
+  
+  // Apply markdown stripping to all sections
+  sections.trueProfitAnalysis = stripMarkdownFormatting(sections.trueProfitAnalysis);
+  sections.blockedInventoryCash = stripMarkdownFormatting(sections.blockedInventoryCash);
+  sections.cashflowForecast = stripMarkdownFormatting(sections.cashflowForecast);
+  sections.lossMakingProducts = sections.lossMakingProducts.map(stripMarkdownFormatting);
+  sections.abnormalExpenses = sections.abnormalExpenses.map(stripMarkdownFormatting);
   
   return sections;
 }

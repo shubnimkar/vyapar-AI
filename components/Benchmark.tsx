@@ -1,6 +1,7 @@
 'use client';
 
 import { BenchmarkData, Language } from '@/lib/types';
+import { t } from '@/lib/translations';
 
 interface BenchmarkProps {
   benchmark: BenchmarkData;
@@ -8,12 +9,7 @@ interface BenchmarkProps {
 }
 
 export default function Benchmark({ benchmark, language }: BenchmarkProps) {
-  const title =
-    language === 'hi'
-      ? '📊 उद्योग तुलना'
-      : language === 'mr'
-      ? '📊 उद्योग तुलना'
-      : '📊 Industry Comparison';
+  const title = `📊 ${t('benchmark.title', language)}`;
 
   const getPerformanceColor = () => {
     if (benchmark.yourMetric >= benchmark.topPerformers) return 'text-green-600';
@@ -23,24 +19,12 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
 
   const getPerformanceMessage = () => {
     if (benchmark.yourMetric >= benchmark.topPerformers) {
-      return language === 'hi'
-        ? '🎉 उत्कृष्ट! आप शीर्ष प्रदर्शन करने वालों में हैं'
-        : language === 'mr'
-        ? '🎉 उत्कृष्ट! तुम्ही शीर्ष कामगिरी करणाऱ्यांमध्ये आहात'
-        : '🎉 Excellent! You\'re among top performers';
+      return `🎉 ${t('benchmark.category.above_average', language)}`;
     }
     if (benchmark.yourMetric >= benchmark.industryAverage) {
-      return language === 'hi'
-        ? '👍 अच्छा! आप औसत से ऊपर हैं'
-        : language === 'mr'
-        ? '👍 चांगले! तुम्ही सरासरीपेक्षा वर आहात'
-        : '👍 Good! You\'re above average';
+      return `👍 ${t('benchmark.category.at_average', language)}`;
     }
-    return language === 'hi'
-      ? '⚠️ सुधार की आवश्यकता - औसत से नीचे'
-      : language === 'mr'
-      ? '⚠️ सुधारणा आवश्यक - सरासरीपेक्षा कमी'
-      : '⚠️ Needs improvement - below average';
+    return `⚠️ ${t('benchmark.category.below_average', language)}`;
   };
 
   return (
@@ -56,12 +40,7 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
           {/* Your Metric */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">
-              {language === 'hi'
-                ? 'आपका'
-                : language === 'mr'
-                ? 'तुमचा'
-                : 'Your'}{' '}
-              {benchmark.metricName}:
+              {t('benchmark.yourBusiness', language)} {benchmark.metricName}:
             </span>
             <span className="text-lg font-bold text-blue-600">
               {benchmark.yourMetric}
@@ -72,11 +51,7 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
           {/* Industry Average */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">
-              {language === 'hi'
-                ? 'उद्योग औसत'
-                : language === 'mr'
-                ? 'उद्योग सरासरी'
-                : 'Industry Average'}:
+              {t('benchmark.segmentAverage', language)}:
             </span>
             <span className="text-lg font-semibold text-gray-700">
               {benchmark.industryAverage}
@@ -87,11 +62,7 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
           {/* Top Performers */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">
-              {language === 'hi'
-                ? 'शीर्ष प्रदर्शनकर्ता'
-                : language === 'mr'
-                ? 'शीर्ष कामगिरी'
-                : 'Top Performers'}:
+              {t('benchmark.category.above_average', language)}:
             </span>
             <span className="text-lg font-semibold text-green-600">
               {benchmark.topPerformers}

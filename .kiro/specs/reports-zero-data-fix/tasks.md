@@ -1,0 +1,81 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - Daily Entry Aggregation Returns Zero
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: Scope the property to concrete failing cases - DailyEntry records with non-zero totalSales/totalExpense values
+  - Test that report generation correctly aggregates totalSales and totalExpense from DailyEntry objects (from Fault Condition in design)
+  - Create DailyEntry with totalSales: 5000, totalExpense: 3000
+  - Call report generation endpoint
+  - Assert report.totalSales equals 5000 (will fail on unfixed code - returns 0)
+  - Assert report.totalExpenses equals 3000 (will fail on unfixed code - returns 0)
+  - Assert report.netProfit equals 2000 (will fail on unfixed code - returns 0)
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found: "Report returns totalSales: 0, totalExpenses: 0 when DailyEntry has totalSales: 5000, totalExpense: 3000"
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 2.1, 2.2, 2.3_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Non-Aggregation Logic Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-aggregation operations
+  - Test 1: Observe that missing userId returns auth error on unfixed code
+  - Test 2: Observe that no daily entries returns "No daily entries found" error on unfixed code
+  - Test 3: Observe that report storage uses correct PK/SK format and TTL on unfixed code
+  - Test 4: Observe that Bedrock AI integration continues to work on unfixed code
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [x] 3. Fix report aggregation logic to use correct DailyEntry fields
+
+  - [x] 3.1 Implement the fix in app/api/reports/generate/route.ts
+    - Replace transaction-based aggregation loop (lines 63-73)
+    - Change from: `if (entry.type === 'sale') { totalSales += entry.amount || 0; }`
+    - Change to: `totalSales += entry.totalSales || 0; totalExpenses += entry.totalExpense || 0;`
+    - Remove category aggregation logic (expensesByCategory) since DailyEntry doesn't store category-level data
+    - Add proper TypeScript typing: `const filteredEntries: DailyEntry[] = todayEntries.filter(...) as DailyEntry[];`
+    - Import DailyEntry type from `@/lib/types`
+    - Update Bedrock prompt to handle missing category data: replace `Expense breakdown: ${JSON.stringify(expensesByCategory)}` with placeholder or remove
+    - Ensure multiple DailyEntry records for same date are properly summed
+    - _Bug_Condition: isBugCondition(entry) where entry has totalSales/totalExpense fields but aggregation checks for entry.type/entry.amount_
+    - _Expected_Behavior: Report correctly aggregates totalSales and totalExpense from DailyEntry objects to produce accurate totals_
+    - _Preservation: Error handling, authentication, date filtering, Bedrock AI integration, report storage, and logging remain unchanged_
+    - _Requirements: 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 3.4_
+
+  - [x] 3.2 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Daily Entry Aggregation Correct
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify report.totalSales equals sum of entry.totalSales values
+    - Verify report.totalExpenses equals sum of entry.totalExpense values
+    - Verify report.netProfit equals totalSales - totalExpenses
+    - _Requirements: 2.1, 2.2, 2.3_
+
+  - [x] 3.3 Verify preservation tests still pass
+    - **Property 2: Preservation** - Non-Aggregation Logic Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm authentication error handling still works
+    - Confirm no-data error handling still works
+    - Confirm report storage format unchanged
+    - Confirm Bedrock AI integration still works
+    - Confirm all tests still pass after fix (no regressions)
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Run all exploration tests - should PASS after fix
+  - Run all preservation tests - should still PASS
+  - Run existing integration tests for report generation
+  - Verify dashboard and reports show consistent data
+  - Ensure all tests pass, ask the user if questions arise

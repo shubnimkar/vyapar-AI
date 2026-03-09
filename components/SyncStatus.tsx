@@ -44,15 +44,22 @@ export default function SyncStatus({ language }: SyncStatusProps) {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Initial sync check
+    // Initial sync check - run immediately if online and user exists
     if (navigator.onLine && currentUser) {
-      checkSyncStatus();
+      checkSyncStatus(currentUser);
+    } else if (navigator.onLine && !currentUser) {
+      // Online but no user - show as synced (no data to sync)
+      setSyncStatus('synced');
     }
 
     // Check sync status periodically
     const interval = setInterval(() => {
-      if (navigator.onLine && currentUser) {
-        checkSyncStatus();
+      const latestUser = SessionManager.getCurrentUser();
+      if (navigator.onLine && latestUser) {
+        checkSyncStatus(latestUser);
+      } else if (navigator.onLine && !latestUser) {
+        // Online but no user - show as synced
+        setSyncStatus('synced');
       }
     }, 10000); // Check every 10 seconds
 
@@ -64,8 +71,16 @@ export default function SyncStatus({ language }: SyncStatusProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount
 
-  const checkSyncStatus = () => {
-    if (!user || !navigator.onLine) return;
+  const checkSyncStatus = (currentUser?: { userId: string } | null) => {
+    const userToCheck = currentUser !== undefined ? currentUser : user;
+    
+    if (!userToCheck || !navigator.onLine) {
+      // If online but no user, show synced (nothing to sync)
+      if (navigator.onLine && !userToCheck) {
+        setSyncStatus('synced');
+      }
+      return;
+    }
 
     try {
       const dailyStatus = getDailySyncStatus();
@@ -147,90 +162,95 @@ export default function SyncStatus({ language }: SyncStatusProps) {
 
   const getStatusIcon = () => {
     if (!online) {
-      return <CloudOff className="w-4 h-4 text-gray-400" />;
+      return <CloudOff className="w-5 h-5" />;
     }
     
     if (syncing) {
-      return <RefreshCw className="w-4 h-4 text-blue-500 animate-spin" />;
+      return <RefreshCw className="w-5 h-5 animate-spin" />;
     }
     
     switch (syncStatus) {
       case 'synced':
-        return <Check className="w-4 h-4 text-green-500" />;
+        return (
+          <div className="relative">
+            <Cloud className="w-5 h-5" fill="currentColor" />
+            <Check className="w-3 h-3 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" strokeWidth={3} />
+          </div>
+        );
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return <AlertCircle className="w-5 h-5" />;
       case 'pending':
-        return <Cloud className="w-4 h-4 text-yellow-500" />;
+        return <Cloud className="w-5 h-5" />;
       default:
-        return <Cloud className="w-4 h-4 text-gray-400" />;
+        return <Cloud className="w-5 h-5" />;
     }
   };
 
   const getStatusText = () => {
     if (!online) {
       return language === 'hi' 
-        ? 'ऑफ़लाइन' 
+        ? 'Sync: ऑफ़लाइन' 
         : language === 'mr' 
-        ? 'ऑफलाइन' 
-        : 'Offline';
+        ? 'Sync: ऑफलाइन' 
+        : 'Sync: Offline';
     }
     
     if (syncing) {
       return language === 'hi' 
-        ? 'सिंक हो रहा है...' 
+        ? 'Sync: सिंक हो रहा है...' 
         : language === 'mr' 
-        ? 'सिंक होत आहे...' 
-        : 'Syncing...';
+        ? 'Sync: सिंक होत आहे...' 
+        : 'Sync: Syncing...';
     }
     
     switch (syncStatus) {
       case 'synced':
         return language === 'hi' 
-          ? 'सिंक हो गया' 
+          ? 'Sync: सक्रिय' 
           : language === 'mr' 
-          ? 'सिंक झाले' 
-          : 'Synced';
+          ? 'Sync: सक्रिय' 
+          : 'Sync: Active';
       case 'error':
         return language === 'hi' 
-          ? 'सिंक विफल' 
+          ? 'Sync: विफल' 
           : language === 'mr' 
-          ? 'सिंक अयशस्वी' 
-          : 'Sync failed';
+          ? 'Sync: अयशस्वी' 
+          : 'Sync: Failed';
       case 'pending':
         const pendingText = language === 'hi' 
-          ? `${pendingCount} लंबित` 
+          ? `Sync: ${pendingCount} लंबित` 
           : language === 'mr' 
-          ? `${pendingCount} प्रलंबित` 
-          : `${pendingCount} pending`;
+          ? `Sync: ${pendingCount} प्रलंबित` 
+          : `Sync: ${pendingCount} pending`;
         return pendingText;
       default:
         return language === 'hi' 
-          ? 'ऑफ़लाइन' 
+          ? 'Sync: ऑफ़लाइन' 
           : language === 'mr' 
-          ? 'ऑफलाइन' 
-          : 'Offline';
+          ? 'Sync: ऑफलाइन' 
+          : 'Sync: Offline';
     }
   };
 
   const getStatusColor = () => {
-    if (!online) return 'bg-gray-100 text-gray-600';
-    if (syncing) return 'bg-blue-50 text-blue-700';
+    if (!online) return 'text-gray-600';
+    if (syncing) return 'text-blue-600';
     
     switch (syncStatus) {
       case 'synced':
-        return 'bg-green-50 text-green-700';
+        return 'text-green-600';
       case 'error':
-        return 'bg-red-50 text-red-700';
+        return 'text-red-600';
       case 'pending':
-        return 'bg-yellow-50 text-yellow-700';
+        return 'text-yellow-600';
       default:
-        return 'bg-gray-100 text-gray-600';
+        return 'text-gray-600';
     }
   };
 
   return (
     <div className="flex items-center gap-2">
-      <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor()}`}>
+      <div className={`flex items-center gap-2 text-sm font-semibold ${getStatusColor()}`}>
         {getStatusIcon()}
         <span>{getStatusText()}</span>
       </div>

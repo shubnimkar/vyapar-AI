@@ -118,12 +118,15 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
       if (result.success) {
         setProfile(result.data);
         setHasChanges(false);
-        setSuccessMessage(t('success.profileUpdated', language));
         
-        // Update language if changed
+        // Update language if changed (must happen before success message)
         if (editableData.language !== language) {
           onLanguageChange(editableData.language);
+          // Also update localStorage directly to ensure persistence
+          localStorage.setItem('vyapar-lang', editableData.language);
         }
+        
+        setSuccessMessage(t('success.profileUpdated', editableData.language));
       } else {
         setError(result.error || t('error.profileUpdateFailed', language));
       }

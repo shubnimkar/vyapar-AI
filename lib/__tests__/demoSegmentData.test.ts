@@ -20,6 +20,12 @@ Object.defineProperty(global, 'localStorage', {
   writable: true
 });
 
+// Mock window object to simulate browser environment
+Object.defineProperty(global, 'window', {
+  value: {},
+  writable: true
+});
+
 describe('Demo Segment Data Generator', () => {
   beforeEach(() => {
     localStorage.clear();

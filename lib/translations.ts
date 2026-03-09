@@ -918,6 +918,11 @@ export const translations: Translations = {
     hi: 'विनिर्माण',
     mr: 'उत्पादन',
   },
+  'businessType.restaurant': {
+    en: 'Restaurant',
+    hi: 'रेस्टोरेंट',
+    mr: 'रेस्टॉरंट',
+  },
   'businessType.other': {
     en: 'Other',
     hi: 'अन्य',
@@ -1000,6 +1005,11 @@ export const translations: Translations = {
     en: 'Sign In',
     hi: 'साइन इन करें',
     mr: 'साइन इन करा',
+  },
+  authenticationFailed: {
+    en: 'Incorrect username or password. Please try again.',
+    hi: 'उपयोगकर्ता नाम या पासवर्ड गलत है। कृपया दोबारा कोशिश करें।',
+    mr: 'वापरकर्तानाव किंवा पासवर्ड चुकीचा आहे. कृपया पुन्हा प्रयत्न करा.',
   },
   switchToSignup: {
     en: 'Need an account? Sign up',
@@ -1907,13 +1917,224 @@ export const translations: Translations = {
     hi: 'प्रगति में',
     mr: 'प्रगतीत',
   },
+
+  // Financial Health Meter & Purchase Planner translations (formerly Stress & Affordability Index)
+  'indices.stressIndex': {
+    en: 'Financial Health Meter',
+    hi: 'आर्थिक सेहत',
+    mr: 'आर्थिक आरोग्य'
+  },
+  'indices.affordabilityIndex': {
+    en: 'Purchase Planner',
+    hi: 'खरीदारी योजना',
+    mr: 'खरेदी योजना'
+  },
+  'indices.score': {
+    en: 'Score',
+    hi: 'स्कोर',
+    mr: 'स्कोअर'
+  },
+  'indices.breakdown': {
+    en: 'Breakdown',
+    hi: 'विवरण',
+    mr: 'तपशील'
+  },
+  'indices.showBreakdown': {
+    en: 'Show Breakdown',
+    hi: 'विवरण दिखाएं',
+    mr: 'तपशील दाखवा'
+  },
+  'indices.hideBreakdown': {
+    en: 'Hide Breakdown',
+    hi: 'विवरण छुपाएं',
+    mr: 'तपशील लपवा'
+  },
+  'indices.creditRatio': {
+    en: 'Credit Ratio',
+    hi: 'उधार अनुपात',
+    mr: 'उधार प्रमाण'
+  },
+  'indices.cashBuffer': {
+    en: 'Cash Buffer',
+    hi: 'नकद बफर',
+    mr: 'रोकड बफर'
+  },
+  'indices.expenseVolatility': {
+    en: 'Expense Volatility',
+    hi: 'खर्च अस्थिरता',
+    mr: 'खर्च अस्थिरता'
+  },
+  'indices.calculatedAt': {
+    en: 'Calculated at',
+    hi: 'गणना की गई',
+    mr: 'गणना केली'
+  },
+  'indices.plannedExpense': {
+    en: 'Planned Expense',
+    hi: 'नियोजित खर्च',
+    mr: 'नियोजित खर्च'
+  },
+  'indices.enterAmount': {
+    en: 'Enter amount',
+    hi: 'राशि दर्ज करें',
+    mr: 'रक्कम प्रविष्ट करा'
+  },
+  'indices.checkAffordability': {
+    en: 'Check Affordability',
+    hi: 'सामर्थ्य जांचें',
+    mr: 'परवडणारा तपासा'
+  },
+  'indices.checking': {
+    en: 'Checking...',
+    hi: 'जांच रहा है...',
+    mr: 'तपासत आहे...'
+  },
+  'indices.costToProfitRatio': {
+    en: 'Cost to Profit Ratio',
+    hi: 'लाभ के लिए लागत अनुपात',
+    mr: 'नफ्यासाठी खर्च प्रमाण'
+  },
+  'indices.avgMonthlyProfit': {
+    en: 'Avg Monthly Profit',
+    hi: 'औसत मासिक लाभ',
+    mr: 'सरासरी मासिक नफा'
+  },
+  'indices.category': {
+    en: 'Category',
+    hi: 'श्रेणी',
+    mr: 'श्रेणी'
+  },
+  'indices.category.easilyAffordable': {
+    en: 'Easily Affordable',
+    hi: 'आसानी से सामर्थ्य',
+    mr: 'सहज परवडणारे'
+  },
+  'indices.category.affordable': {
+    en: 'Affordable',
+    hi: 'सामर्थ्य',
+    mr: 'परवडणारे'
+  },
+  'indices.category.stretch': {
+    en: 'Stretch',
+    hi: 'खिंचाव',
+    mr: 'ताणलेले'
+  },
+  'indices.category.risky': {
+    en: 'Risky',
+    hi: 'जोखिम भरा',
+    mr: 'धोकादायक'
+  },
+  'indices.category.notRecommended': {
+    en: 'Not Recommended',
+    hi: 'अनुशंसित नहीं',
+    mr: 'शिफारस केलेले नाही'
+  },
+  'indices.explain': {
+    en: 'Explain',
+    hi: 'समझाएं',
+    mr: 'समजावून सांगा'
+  },
+  'indices.explaining': {
+    en: 'Explaining...',
+    hi: 'समझा रहा है...',
+    mr: 'समजावत आहे...'
+  },
+  'indices.aiExplanation': {
+    en: 'AI Explanation',
+    hi: 'AI स्पष्टीकरण',
+    mr: 'AI स्पष्टीकरण'
+  },
+  'indices.close': {
+    en: 'Close',
+    hi: 'बंद करें',
+    mr: 'बंद करा'
+  },
+  'indices.syncStatus.online': {
+    en: 'Online',
+    hi: 'ऑनलाइन',
+    mr: 'ऑनलाइन'
+  },
+  'indices.syncStatus.offline': {
+    en: 'Offline',
+    hi: 'ऑफ़लाइन',
+    mr: 'ऑफलाइन'
+  },
+  'indices.syncStatus.syncing': {
+    en: 'Syncing...',
+    hi: 'सिंक हो रहा है...',
+    mr: 'सिंक होत आहे...'
+  },
+  'indices.insufficientData': {
+    en: 'Need at least 7 days of data to calculate indices',
+    hi: 'सूचकांक की गणना के लिए कम से कम 7 दिनों के डेटा की आवश्यकता है',
+    mr: 'निर्देशांक मोजण्यासाठी किमान 7 दिवसांचा डेटा आवश्यक आहे'
+  },
+  'indices.addMoreData': {
+    en: 'Add more daily entries to see your financial health metrics',
+    hi: 'अपने वित्तीय स्वास्थ्य मेट्रिक्स देखने के लिए अधिक दैनिक प्रविष्टियाँ जोड़ें',
+    mr: 'तुमचे आर्थिक आरोग्य मेट्रिक्स पाहण्यासाठी अधिक दैनिक नोंदी जोडा'
+  },
+  'indices.error': {
+    en: 'Error calculating indices',
+    hi: 'सूचकांक की गणना में त्रुटि',
+    mr: 'निर्देशांक मोजण्यात त्रुटी'
+  },
+  'indices.invalidAmount': {
+    en: 'Please enter a valid positive amount',
+    hi: 'कृपया एक मान्य सकारात्मक राशि दर्ज करें',
+    mr: 'कृपया वैध सकारात्मक रक्कम प्रविष्ट करा'
+  },
 };
 
 /**
  * Get translated text for a key
  */
 export function t(key: string, language: Language): string {
-  return translations[key]?.[language] || translations[key]?.['en'] || key;
+  // Runtime validation: ensure translations object exists and is properly initialized
+  if (!translations || typeof translations !== 'object' || Object.keys(translations).length === 0) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[Translation Error] translations object is not defined, not an object, or empty');
+    }
+    return key;
+  }
+
+  // Check if the key exists in translations using hasOwnProperty for safer access
+  if (!Object.prototype.hasOwnProperty.call(translations, key)) {
+    if (process.env.NODE_ENV === 'development' && key.startsWith('benchmark.')) {
+      console.warn(`[Translation Warning] Missing translation for key: ${key}`);
+    }
+    return key;
+  }
+
+  const translationEntry = translations[key];
+  
+  // Validate translation entry structure
+  if (!translationEntry || typeof translationEntry !== 'object') {
+    if (process.env.NODE_ENV === 'development' && key.startsWith('benchmark.')) {
+      console.warn(`[Translation Warning] Invalid translation entry for key: ${key}`);
+    }
+    return key;
+  }
+
+  // Try requested language first with explicit property check
+  let translatedText: string | undefined;
+  
+  if (Object.prototype.hasOwnProperty.call(translationEntry, language)) {
+    translatedText = translationEntry[language];
+  } else if (Object.prototype.hasOwnProperty.call(translationEntry, 'en')) {
+    // Fallback to English
+    translatedText = translationEntry['en'];
+  }
+  
+  // Additional validation: ensure we got a non-empty string
+  if (typeof translatedText !== 'string' || translatedText.length === 0) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[Translation Warning] Empty or invalid translation for key: ${key}, language: ${language}`);
+    }
+    return key;
+  }
+
+  return translatedText;
 }
 
 /**
@@ -2051,16 +2272,16 @@ export const errorTranslations: Translations = {
     mr: 'AI सेवा प्रमाणीकरण अयशस्वी झाले. कृपया समर्थनाशी संपर्क साधा.'
   },
 
-  // Stress & Affordability Index translations
+  // Financial Health Meter & Purchase Planner translations (formerly Stress & Affordability Index)
   'indices.stressIndex': {
-    en: 'Stress Index',
-    hi: 'तनाव सूचकांक',
-    mr: 'तणाव निर्देशांक'
+    en: 'Financial Health Meter',
+    hi: 'आर्थिक सेहत',
+    mr: 'आर्थिक आरोग्य'
   },
   'indices.affordabilityIndex': {
-    en: 'Affordability Index',
-    hi: 'सामर्थ्य सूचकांक',
-    mr: 'परवडणारा निर्देशांक'
+    en: 'Purchase Planner',
+    hi: 'खरीदारी योजना',
+    mr: 'खरेदी योजना'
   },
   'indices.score': {
     en: 'Score',
@@ -2293,6 +2514,62 @@ export const errorTranslations: Translations = {
     en: 'Benchmark data not available for your segment',
     hi: 'आपके खंड के लिए बेंचमार्क डेटा उपलब्ध नहीं है',
     mr: 'तुमच्या विभागासाठी बेंचमार्क डेटा उपलब्ध नाही'
+  },
+  
+  // Benchmark AI Explanation
+  'benchmark.getAiExplanation': {
+    en: 'Get AI Explanation',
+    hi: 'AI व्याख्या प्राप्त करें',
+    mr: 'AI स्पष्टीकरण मिळवा'
+  },
+  'benchmark.aiExplanation': {
+    en: 'AI Explanation',
+    hi: 'AI व्याख्या',
+    mr: 'AI स्पष्टीकरण'
+  },
+  'benchmark.hide': {
+    en: 'Hide',
+    hi: 'छुपाएं',
+    mr: 'लपवा'
+  },
+  
+  // Benchmark Error Messages
+  'error.loginRequired': {
+    en: 'Please log in to get AI explanation',
+    hi: 'AI व्याख्या प्राप्त करने के लिए कृपया लॉग इन करें',
+    mr: 'AI स्पष्टीकरण मिळवण्यासाठी कृपया लॉग इन करा'
+  },
+  'error.aiExplanationUnavailable': {
+    en: 'AI explanation temporarily unavailable',
+    hi: 'AI व्याख्या अस्थायी रूप से अनुपलब्ध है',
+    mr: 'AI स्पष्टीकरण तात्पुरते अनुपलब्ध आहे'
+  },
+  
+  // Offline Page translations
+  'offline.viewCachedEntries': {
+    en: 'View cached daily entries',
+    hi: 'कैश की गई दैनिक प्रविष्टियाँ देखें',
+    mr: 'कॅश केलेल्या दैनिक नोंदी पहा'
+  },
+  'offline.addNewEntries': {
+    en: 'Add new entries (will sync when online)',
+    hi: 'नई प्रविष्टियाँ जोड़ें (ऑनलाइन होने पर सिंक होंगी)',
+    mr: 'नवीन नोंदी जोडा (ऑनलाइन असताना सिंक होतील)'
+  },
+  'offline.viewHealthScore': {
+    en: 'View health score and indices',
+    hi: 'स्वास्थ्य स्कोर और सूचकांक देखें',
+    mr: 'आरोग्य स्कोअर आणि निर्देशांक पहा'
+  },
+  'offline.manageCredit': {
+    en: 'Manage credit entries',
+    hi: 'उधार प्रविष्टियाँ प्रबंधित करें',
+    mr: 'उधार नोंदी व्यवस्थापित करा'
+  },
+  'offline.autoSyncMessage': {
+    en: 'Your data will automatically sync when you\'re back online',
+    hi: 'ऑनलाइन होने पर आपका डेटा स्वचालित रूप से सिंक हो जाएगा',
+    mr: 'तुम्ही ऑनलाइन परत आल्यावर तुमचा डेटा आपोआप सिंक होईल'
   }
 };
 

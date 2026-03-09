@@ -35,9 +35,9 @@ function formatCSVData(data: ParsedCSV | undefined, label: string): string {
  */
 function getLanguageInstructions(language: Language): string {
   const instructions = {
-    en: 'RESPOND IN ENGLISH ONLY. Provide insights in simple English. Use conversational tone appropriate for small shop owners. Avoid financial jargon.',
-    hi: 'केवल हिंदी में जवाब दें। सरल हिंदी में जानकारी प्रदान करें। अंग्रेजी शब्दों का उपयोग न करें। भारतीय दुकानदारों के लिए उपयुक्त सांस्कृतिक उदाहरण उपयोग करें। वित्तीय शब्दजाल से बचें।',
-    mr: 'फक्त मराठीत उत्तर द्या। सोप्या मराठीत माहिती द्या। इंग्रजी शब्द वापरू नका. भारतीय दुकानदारांसाठी योग्य सांस्कृतिक उदाहरणे वापरा. आर्थिक शब्दजाल टाळा।',
+    en: 'IMPORTANT: You MUST respond in English. All your responses must be in English language only. Provide insights in simple English. Use conversational tone appropriate for small shop owners. Avoid financial jargon.',
+    hi: 'अत्यंत महत्वपूर्ण: आपको केवल हिंदी में जवाब देना है। आपके सभी उत्तर केवल हिंदी भाषा में होने चाहिए। अंग्रेजी का उपयोग बिल्कुल न करें। सरल हिंदी में जानकारी प्रदान करें। भारतीय दुकानदारों के लिए उपयुक्त सांस्कृतिक उदाहरण उपयोग करें। वित्तीय शब्दजाल से बचें।',
+    mr: 'अत्यंत महत्त्वाचे: तुम्ही फक्त मराठीत उत्तर द्यावे. तुमची सर्व उत्तरे फक्त मराठी भाषेत असावीत. इंग्रजीचा वापर अजिबात करू नका. सोप्या मराठीत माहिती द्या. भारतीय दुकानदारांसाठी योग्य सांस्कृतिक उदाहरणे वापरा. आर्थिक शब्दजाल टाळा।',
   };
   
   return instructions[language];
@@ -118,6 +118,16 @@ ${getLanguageInstructions(language)}
 - Be encouraging and helpful in tone
 - Use specific numbers from the data
 
+**CRITICAL - Anti-Template Instructions:**
+DO NOT use generic templates, placeholder headings, or section markers like:
+- "### Understanding Your HealthScore"
+- "#### Identify"
+- "#### Highlight"
+- "### Explanation of"
+- Any other generic headings or templates
+
+Instead, start DIRECTLY with specific, personalized business advice based on the actual data and business context. Reference specific numbers, products, and provide actionable recommendations immediately.
+
 Please provide the analysis now.`;
 
   return prompt;
@@ -171,6 +181,16 @@ ${getLanguageInstructions(language)}
 - If data is insufficient, say so clearly
 - Provide specific numbers and examples
 - Be helpful and encouraging
+
+**CRITICAL - Anti-Template Instructions:**
+DO NOT use generic templates, placeholder headings, or section markers like:
+- "### Understanding Your HealthScore"
+- "#### Identify"
+- "#### Highlight"
+- "### Explanation of"
+- Any other generic headings or templates
+
+Instead, start DIRECTLY with specific, personalized answers based on the actual data and business context.
 
 Please answer the question now.`;
 

@@ -77,12 +77,7 @@ function generateSK(entityType: string, id?: string): string {
   return id ? `${entityType}#${id}` : entityType;
 }
 
-/**
- * Parse entity ID from key
- */
-function parseId(key: string): string {
-  return key.split('#')[1] || '';
-}
+
 
 /**
  * Check if error is an AWS credential error
@@ -294,6 +289,9 @@ export interface UserProfile {
   city?: string;
   phoneNumber?: string;
   language: string;
+  business_type?: string;
+  city_tier?: string | null;
+  explanation_mode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -325,27 +323,18 @@ export class ProfileService {
     if (!item) return null;
 
     return {
-      id: userId,
-      userId: item.userId,
-      shopName: item.shopName,
-      userName: item.userName,
-      phoneNumber: item.phoneNumber,
-      language: item.language,
-      businessType: item.businessType,
-      city: item.city,
-      createdAt: item.createdAt || new Date().toISOString(),
-      lastActiveAt: item.lastActiveAt || new Date().toISOString(),
-      isActive: item.isActive !== false,
-      subscriptionTier: item.subscriptionTier || 'free',
-      preferences: item.preferences || {
-        dataRetentionDays: 90,
-        autoArchive: false,
-        notificationsEnabled: true,
-        reminderTime: '09:00'
-      },
-      business_type: item.business_type || item.businessType,
-      city_tier: item.city_tier,
-      explanation_mode: item.explanation_mode || 'simple',
+      userId: item.userId as string,
+      shopName: item.shopName as string,
+      userName: item.userName as string,
+      phoneNumber: item.phoneNumber as string | undefined,
+      language: item.language as string,
+      businessType: item.businessType as string | undefined,
+      city: item.city as string | undefined,
+      business_type: (item.business_type || item.businessType) as string | undefined,
+      city_tier: item.city_tier as string | null | undefined,
+      explanation_mode: (item.explanation_mode || 'simple') as string,
+      createdAt: (item.createdAt || new Date().toISOString()) as string,
+      updatedAt: (item.updatedAt || new Date().toISOString()) as string,
     };
   }
 
@@ -387,7 +376,7 @@ export class ProfileService {
    */
   static validateCityTier(tier: string | null): boolean {
     if (tier === null) return true;
-    const validTiers = ['tier-1', 'tier-2', 'tier-3', 'rural'];
+    const validTiers = ['tier1', 'tier2', 'tier3', 'rural'];
     return validTiers.includes(tier);
   }
 
@@ -425,6 +414,9 @@ export interface DailyEntry {
     title: string;
     description: string;
     dismissed_at?: string;
+    title_key: string;                 // Translation key for title
+    description_key: string;           // Translation key for description
+    description_params?: Record<string, string>;  // Parameters for description interpolation
     rule_type: 'high_credit' | 'margin_drop' | 'low_cash' | 'healthy_state';
     context_data?: Record<string, any>;
   }>;
@@ -468,18 +460,18 @@ export class DailyEntryService {
     if (!item) return null;
 
     return {
-      userId: item.userId,
-      entryId: item.entryId,
-      date: item.date,
-      totalSales: item.totalSales,
-      totalExpense: item.totalExpense,
-      cashInHand: item.cashInHand,
-      notes: item.notes,
-      estimatedProfit: item.estimatedProfit,
-      expenseRatio: item.expenseRatio,
-      profitMargin: item.profitMargin,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      userId: item.userId as string,
+      entryId: item.entryId as string,
+      date: item.date as string,
+      totalSales: item.totalSales as number,
+      totalExpense: item.totalExpense as number,
+      cashInHand: item.cashInHand as number | undefined,
+      notes: item.notes as string | undefined,
+      estimatedProfit: item.estimatedProfit as number,
+      expenseRatio: item.expenseRatio as number,
+      profitMargin: item.profitMargin as number,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
     };
   }
 
@@ -497,18 +489,18 @@ export class DailyEntryService {
     );
 
     let entries = items.map((item) => ({
-      userId: item.userId,
-      entryId: item.entryId,
-      date: item.date,
-      totalSales: item.totalSales,
-      totalExpense: item.totalExpense,
-      cashInHand: item.cashInHand,
-      notes: item.notes,
-      estimatedProfit: item.estimatedProfit,
-      expenseRatio: item.expenseRatio,
-      profitMargin: item.profitMargin,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      userId: item.userId as string,
+      entryId: item.entryId as string,
+      date: item.date as string,
+      totalSales: item.totalSales as number,
+      totalExpense: item.totalExpense as number,
+      cashInHand: item.cashInHand as number | undefined,
+      notes: item.notes as string | undefined,
+      estimatedProfit: item.estimatedProfit as number,
+      expenseRatio: item.expenseRatio as number,
+      profitMargin: item.profitMargin as number,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
     }));
 
     // Filter by date range if provided
@@ -552,13 +544,14 @@ export interface CreditEntry {
   userId: string;
   id: string; // credit_timestamp_random
   customerName: string;
+  phoneNumber?: string; // Optional, for WhatsApp reminders
   amount: number;
   dateGiven: string; // ISO date string
   dueDate: string; // ISO date string
   isPaid: boolean;
   createdAt: string;
   updatedAt: string;
-  paidAt?: string;
+  paidDate?: string; // ISO date string (renamed from paidAt for consistency with types.ts)
   lastReminderAt?: string; // ISO date string - when last WhatsApp reminder was sent
   ttl?: number; // For automatic expiration (30 days after paid)
 }
@@ -601,18 +594,18 @@ export class CreditEntryService {
     if (!item) return null;
 
     return {
-      userId: item.userId,
-      id: item.id,
-      customerName: item.customerName,
-      phoneNumber: item.phoneNumber,
-      amount: item.amount,
-      dateGiven: item.dateGiven,
-      dueDate: item.dueDate,
-      isPaid: item.isPaid,
-      paidDate: item.paidDate,
-      lastReminderAt: item.lastReminderAt,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      userId: item.userId as string,
+      id: item.id as string,
+      customerName: item.customerName as string,
+      phoneNumber: item.phoneNumber as string | undefined,
+      amount: item.amount as number,
+      dateGiven: item.dateGiven as string,
+      dueDate: item.dueDate as string,
+      isPaid: item.isPaid as boolean,
+      paidDate: item.paidDate as string | undefined,
+      lastReminderAt: item.lastReminderAt as string | undefined,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
     };
   }
 
@@ -626,18 +619,18 @@ export class CreditEntryService {
     );
 
     const entries = items.map((item) => ({
-      userId: item.userId,
-      id: item.id,
-      customerName: item.customerName,
-      phoneNumber: item.phoneNumber,
-      amount: item.amount,
-      dateGiven: item.dateGiven,
-      dueDate: item.dueDate,
-      isPaid: item.isPaid,
-      paidDate: item.paidDate,
-      lastReminderAt: item.lastReminderAt,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+      userId: item.userId as string,
+      id: item.id as string,
+      customerName: item.customerName as string,
+      phoneNumber: item.phoneNumber as string | undefined,
+      amount: item.amount as number,
+      dateGiven: item.dateGiven as string,
+      dueDate: item.dueDate as string,
+      isPaid: item.isPaid as boolean,
+      paidDate: item.paidDate as string | undefined,
+      lastReminderAt: item.lastReminderAt as string | undefined,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
     }));
 
     // Sort by createdAt descending (newest first)
@@ -701,13 +694,13 @@ export class UserService {
     if (!item) return null;
 
     return {
-      userId: item.userId,
-      username: item.username,
-      passwordHash: item.passwordHash,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      lastLoginAt: item.lastLoginAt,
-      loginCount: item.loginCount || 0,
+      userId: item.userId as string,
+      username: item.username as string,
+      passwordHash: item.passwordHash as string,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
+      lastLoginAt: item.lastLoginAt as string | undefined,
+      loginCount: (item.loginCount as number) || 0,
     };
   }
 
@@ -725,20 +718,20 @@ export class UserService {
     
     const item = items[0];
     return {
-      userId: item.userId,
-      username: item.username,
-      passwordHash: item.passwordHash,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      lastLoginAt: item.lastLoginAt,
-      loginCount: item.loginCount || 0,
+      userId: item.userId as string,
+      username: item.username as string,
+      passwordHash: item.passwordHash as string,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
+      lastLoginAt: item.lastLoginAt as string | undefined,
+      loginCount: (item.loginCount as number) || 0,
     };
   }
 
   /**
    * Update login statistics
    */
-  static async updateLoginStats(userId: string, username: string): Promise<void> {
+  static async updateLoginStats(_userId: string, username: string): Promise<void> {
     const user = await this.getUserByUsername(username);
     if (!user) return;
 

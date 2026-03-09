@@ -23,8 +23,15 @@ export class SegmentCacheManager {
    * 
    * Handles QuotaExceededError gracefully by logging warning
    * and continuing without caching
+   * 
+   * Skips caching on server-side (localStorage only available in browser)
    */
   saveToCache(segmentData: SegmentData): void {
+    // Skip if running on server-side
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     try {
       const parsed = parseSegmentKey(segmentData.segmentKey);
       if (!parsed) {
@@ -53,8 +60,14 @@ export class SegmentCacheManager {
    * Get segment data from cache
    * 
    * Returns null if cache miss or corrupted data
+   * Returns null on server-side (localStorage only available in browser)
    */
   getFromCache(cityTier: CityTier, businessType: BusinessType): CachedSegmentData | null {
+    // Return null if running on server-side
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    
     try {
       const cacheKey = this.getCacheKey(cityTier, businessType);
       const cached = localStorage.getItem(cacheKey);
@@ -106,8 +119,15 @@ export class SegmentCacheManager {
   
   /**
    * Clear all segment cache
+   * 
+   * Skips on server-side (localStorage only available in browser)
    */
   clearCache(): void {
+    // Skip if running on server-side
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     try {
       // Get all keys first to avoid modification during iteration
       const keysToRemove: string[] = [];

@@ -1,48 +1,49 @@
-# Bugfix Requirements Document: Language Switching Real-Time Fix
+# Bugfix Requirements Document
 
 ## Introduction
 
-The Vyapar AI application supports three languages (English, Hindi, Marathi) with a language selector component. However, there are two critical issues affecting the user experience:
+The application currently has inconsistent real-time language switching behavior. On the analysis page, headers and AI-generated texts update immediately when the user changes the language setting. However, this real-time behavior is not consistently implemented across all pages, components, and AI-generated responses throughout the application.
 
-1. The "Listen" feature (text-to-speech) in InsightsDisplay.tsx always plays audio in English, regardless of the selected language
-2. Some UI components may not be re-rendering in real-time when the language is switched
-
-This bugfix addresses both issues to ensure seamless, real-time language switching across all UI elements and audio features.
+This bugfix ensures that all UI elements, page headers, component labels, and AI-generated content update in real-time when the user changes the language preference, providing a consistent and seamless multilingual experience.
 
 ## Bug Analysis
 
 ### Current Behavior (Defect)
 
-1.1 WHEN user switches language to Hindi or Marathi THEN the Listen button in InsightsDisplay component sets `utterance.lang` to 'hi-IN' or 'mr-IN' but the speech synthesis still speaks in English
+1.1 WHEN the user changes language on the analysis page THEN headers and AI-generated texts update in real-time
 
-1.2 WHEN user switches language to Hindi or Marathi THEN the speech synthesis uses the default English voice instead of selecting a voice that supports the target language
+1.2 WHEN the user changes language on other pages (dashboard, entries, credit, pending, reports, chat, account) THEN some UI elements do not update until page refresh or re-render
 
-1.3 WHEN user switches language THEN some UI components may not immediately re-render with the new language text due to missing React state dependencies
+1.3 WHEN the user changes language THEN some AI-generated responses (from /api/explain, /api/ask, /api/indices/explain, /api/benchmark/explain) do not reflect the new language without manual re-triggering
+
+1.4 WHEN the user changes language THEN component labels in HealthScoreDisplay, CreditTracking, FollowUpPanel, and other components may not update immediately
+
+1.5 WHEN the user changes language THEN navigation labels in the sidebar may not update in real-time
 
 ### Expected Behavior (Correct)
 
-2.1 WHEN user switches language to Hindi THEN the Listen button SHALL select an available Hindi voice from `window.speechSynthesis.getVoices()` and speak the content in Hindi
+2.1 WHEN the user changes language on any page THEN all page headers SHALL update immediately to reflect the new language
 
-2.2 WHEN user switches language to Marathi THEN the Listen button SHALL select an available Marathi voice from `window.speechSynthesis.getVoices()` and speak the content in Marathi
+2.2 WHEN the user changes language THEN all UI element labels (buttons, form fields, tooltips, placeholders) SHALL update immediately across all components
 
-2.3 WHEN user switches language to English THEN the Listen button SHALL select an available English voice and speak the content in English
+2.3 WHEN the user changes language THEN all AI-generated content currently displayed SHALL be regenerated in the new language automatically
 
-2.4 WHEN no voice is available for the selected language THEN the system SHALL display a user-friendly message indicating that text-to-speech is not available for that language
+2.4 WHEN the user changes language THEN navigation labels in the sidebar SHALL update immediately
 
-2.5 WHEN user switches language THEN all UI components SHALL immediately re-render with the new language text without requiring page refresh
+2.5 WHEN the user changes language THEN all toast notifications and error messages SHALL use the new language for subsequent messages
+
+2.6 WHEN the user changes language THEN component-specific text (HealthScoreDisplay explanations, CreditTracking labels, FollowUpPanel messages) SHALL update immediately
 
 ### Unchanged Behavior (Regression Prevention)
 
-3.1 WHEN user switches language THEN the language preference SHALL CONTINUE TO be stored in localStorage as 'vyapar-lang'
+3.1 WHEN the user changes language THEN the language preference SHALL CONTINUE TO be persisted in localStorage
 
-3.2 WHEN user switches language THEN the LanguageSelector component SHALL CONTINUE TO highlight the currently selected language
+3.2 WHEN AI content is regenerated due to language change THEN the underlying data and calculations SHALL CONTINUE TO remain unchanged
 
-3.3 WHEN user clicks the Listen button while speech is playing THEN the system SHALL CONTINUE TO stop the current speech and toggle the speaking state
+3.3 WHEN the user changes language THEN the current user session and authentication state SHALL CONTINUE TO be preserved
 
-3.4 WHEN speech synthesis is not supported by the browser THEN the Listen button SHALL CONTINUE TO not be displayed
+3.4 WHEN the user changes language THEN all form input values and user-entered data SHALL CONTINUE TO be retained
 
-3.5 WHEN user switches language THEN all existing functionality (daily entries, credit tracking, health score, etc.) SHALL CONTINUE TO work correctly
+3.5 WHEN the user changes language THEN the active section/tab SHALL CONTINUE TO remain the same
 
-3.6 WHEN user switches language THEN the translation system SHALL CONTINUE TO use the t() function from lib/translations.ts
-
-3.7 WHEN components receive the language prop THEN they SHALL CONTINUE TO use it to display translated text via the t() function
+3.6 WHEN components receive the language prop THEN they SHALL CONTINUE TO use the translation function (t()) for all displayed text

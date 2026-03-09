@@ -32,9 +32,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    logError('expense-alert', error);
+    logError('expense-alert', error as Error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Alert check failed' },
+      { success: false, error: (error as Error).message || 'Alert check failed' },
       { status: 500 }
     );
   }

@@ -7,7 +7,7 @@ import {
   removePendingTransaction,
   updatePendingTransaction,
 } from '@/lib/pending-transaction-store';
-import { Receipt, FileText, Calendar, DollarSign, Tag, User, X, Check, Clock, Trash2, Edit2 } from 'lucide-react';
+import { Receipt, FileText, Calendar, DollarSign, Tag, User, X, Check, Clock, Trash2, Edit2, Mic } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -207,7 +207,7 @@ export default function PendingTransactionConfirmation({
   }
 
   // Source icon and label
-  const sourceConfig = {
+  const sourceConfig: Record<string, { icon: any; label: string; color: string }> = {
     receipt: {
       icon: Receipt,
       label: language === 'hi' ? 'रसीद' : language === 'mr' ? 'पावती' : 'Receipt',
@@ -218,9 +218,14 @@ export default function PendingTransactionConfirmation({
       label: 'CSV',
       color: 'bg-green-100 text-green-700',
     },
+    voice: {
+      icon: Mic,
+      label: language === 'hi' ? 'वॉइस' : language === 'mr' ? 'व्हॉइस' : 'Voice',
+      color: 'bg-purple-100 text-purple-700',
+    },
   };
 
-  const source = sourceConfig[currentTransaction.source];
+  const source = sourceConfig[currentTransaction.source] || sourceConfig.receipt;
   const SourceIcon = source.icon;
 
   return (
@@ -243,7 +248,11 @@ export default function PendingTransactionConfirmation({
             </span>
             
             {/* Source badge */}
-            <Badge variant={currentTransaction.source === 'receipt' ? 'info' : 'success'}>
+            <Badge variant={
+              currentTransaction.source === 'receipt' ? 'info' : 
+              currentTransaction.source === 'voice' ? 'warning' : 
+              'success'
+            }>
               <SourceIcon className="w-3 h-3 mr-1" />
               {source.label}
             </Badge>

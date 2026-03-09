@@ -82,19 +82,25 @@ export const CITY_TIER_CONTEXTS = {
 
 export const EXPLANATION_MODE_INSTRUCTIONS = {
   simple: {
-    en: "Provide 2-3 bullet points using simple language. Avoid jargon. Use short sentences.",
-    hi: "सरल भाषा का उपयोग करके 2-3 बुलेट पॉइंट प्रदान करें। जटिल शब्दों से बचें। छोटे वाक्यों का उपयोग करें।",
-    mr: "साध्या भाषेत 2-3 बुलेट पॉइंट द्या. कठीण शब्द टाळा. लहान वाक्ये वापरा."
+    en: "Provide 2-3 key insights using simple, conversational language. Avoid jargon. Use short sentences. Write in natural paragraph form, not as formatted bullet points or lists.",
+    hi: "सरल, संवादात्मक भाषा का उपयोग करके 2-3 मुख्य अंतर्दृष्टि प्रदान करें। जटिल शब्दों से बचें। छोटे वाक्यों का उपयोग करें। प्राकृतिक पैराग्राफ रूप में लिखें, स्वरूपित बुलेट पॉइंट या सूचियों के रूप में नहीं।",
+    mr: "साध्या, संवादात्मक भाषेत 2-3 मुख्य अंतर्दृष्टी द्या. कठीण शब्द टाळा. लहान वाक्ये वापरा. नैसर्गिक परिच्छेद स्वरूपात लिहा, स्वरूपित बुलेट पॉइंट किंवा याद्या म्हणून नाही."
   },
   detailed: {
-    en: "Provide 5-7 bullet points with detailed explanations. Explain financial concepts clearly.",
-    hi: "विस्तृत स्पष्टीकरण के साथ 5-7 बुलेट पॉइंट प्रदान करें। वित्तीय अवधारणाओं को स्पष्ट रूप से समझाएं।",
-    mr: "तपशीलवार स्पष्टीकरणासह 5-7 बुलेट पॉइंट द्या. आर्थिक संकल्पना स्पष्टपणे समजावून सांगा."
+    en: "Provide 5-7 key insights with detailed explanations. Explain financial concepts clearly. Write in natural paragraph form, not as formatted bullet points or lists.",
+    hi: "विस्तृत स्पष्टीकरण के साथ 5-7 मुख्य अंतर्दृष्टि प्रदान करें। वित्तीय अवधारणाओं को स्पष्ट रूप से समझाएं। प्राकृतिक पैराग्राफ रूप में लिखें, स्वरूपित बुलेट पॉइंट या सूचियों के रूप में नहीं।",
+    mr: "तपशीलवार स्पष्टीकरणासह 5-7 मुख्य अंतर्दृष्टी द्या. आर्थिक संकल्पना स्पष्टपणे समजावून सांगा. नैसर्गिक परिच्छेद स्वरूपात लिहा, स्वरूपित बुलेट पॉइंट किंवा याद्या म्हणून नाही."
   }
 };
 
 export const AI_INTERPRETATION_INSTRUCTIONS = {
-  en: "CRITICAL: You are explaining PRE-CALCULATED financial metrics. DO NOT perform any calculations. Your role is to INTERPRET and EXPLAIN the numbers provided.",
-  hi: "महत्वपूर्ण: आप पूर्व-गणना किए गए वित्तीय मेट्रिक्स की व्याख्या कर रहे हैं। कोई गणना न करें। आपकी भूमिका प्रदान की गई संख्याओं की व्याख्या और स्पष्टीकरण करना है।",
-  mr: "महत्त्वाचे: तुम्ही पूर्व-गणना केलेल्या आर्थिक मेट्रिक्सचे स्पष्टीकरण देत आहात. कोणतीही गणना करू नका. तुमची भूमिका प्रदान केलेल्या संख्यांचे स्पष्टीकरण आणि विश्लेषण करणे आहे."
+  en: "CRITICAL: You are explaining PRE-CALCULATED financial metrics and AI-GENERATED predictions. DO NOT perform any calculations or recalculate predictions. Your role is to INTERPRET and EXPLAIN the numbers and patterns provided.\n\nIMPORTANT: DO NOT use generic templates or placeholder text like '### Understanding the HealthScore' or '### Explanation of'. Instead, provide SPECIFIC, PERSONALIZED insights based on the actual business data and persona context. Reference specific numbers, business type, and provide actionable advice.\n\nFORMATTING RULES: Write in natural, conversational paragraphs. DO NOT use markdown formatting like **bold text**, bullet points (- or *), numbered lists, or headings (###). Write as if you're speaking directly to the shop owner in a friendly, helpful conversation.",
+  hi: "महत्वपूर्ण: आप पूर्व-गणना किए गए वित्तीय मेट्रिक्स और AI-जनित पूर्वानुमानों की व्याख्या कर रहे हैं। कोई गणना या पुनर्गणना न करें। आपकी भूमिका प्रदान की गई संख्याओं और पैटर्न की व्याख्या और स्पष्टीकरण करना है।\n\nमहत्वपूर्ण: '### HealthScore को समझना' या '### व्याख्या' जैसे सामान्य टेम्पलेट या प्लेसहोल्डर टेक्स्ट का उपयोग न करें। इसके बजाय, वास्तविक व्यवसाय डेटा और व्यक्तित्व संदर्भ के आधार पर विशिष्ट, व्यक्तिगत अंतर्दृष्टि प्रदान करें। विशिष्ट संख्याओं, व्यवसाय प्रकार का संदर्भ दें और कार्रवाई योग्य सलाह दें।\n\nस्वरूपण नियम: प्राकृतिक, संवादात्मक पैराग्राफ में लिखें। **बोल्ड टेक्स्ट**, बुलेट पॉइंट (- या *), क्रमांकित सूचियों, या शीर्षकों (###) जैसे मार्कडाउन स्वरूपण का उपयोग न करें। ऐसे लिखें जैसे आप दुकान के मालिक से सीधे मित्रवत, सहायक बातचीत में बात कर रहे हैं।",
+  mr: "महत्त्वाचे: तुम्ही पूर्व-गणना केलेल्या आर्थिक मेट्रिक्स आणि AI-निर्मित अंदाजांचे स्पष्टीकरण देत आहात. कोणतीही गणना किंवा पुनर्गणना करू नका. तुमची भूमिका प्रदान केलेल्या संख्या आणि पॅटर्नचे स्पष्टीकरण आणि विश्लेषण करणे आहे.\n\nमहत्त्वाचे: '### HealthScore समजून घेणे' किंवा '### स्पष्टीकरण' सारखे सामान्य टेम्पलेट किंवा प्लेसहोल्डर मजकूर वापरू नका. त्याऐवजी, वास्तविक व्यवसाय डेटा आणि व्यक्तिमत्व संदर्भावर आधारित विशिष्ट, वैयक्तिकृत अंतर्दृष्टी प्रदान करा. विशिष्ट संख्या, व्यवसाय प्रकाराचा संदर्भ द्या आणि कृती करण्यायोग्य सल्ला द्या.\n\nस्वरूपन नियम: नैसर्गिक, संवादात्मक परिच्छेदांमध्ये लिहा. **बोल्ड मजकूर**, बुलेट पॉइंट (- किंवा *), क्रमांकित याद्या, किंवा शीर्षके (###) सारखे मार्कडाउन स्वरूपन वापरू नका. असे लिहा जसे तुम्ही दुकान मालकाशी थेट मैत्रीपूर्ण, उपयुक्त संभाषणात बोलत आहात."
+};
+
+export const LANGUAGE_INSTRUCTIONS = {
+  en: "IMPORTANT: You MUST respond in English. All your responses must be in English language only.",
+  hi: "अत्यंत महत्वपूर्ण: आपको केवल हिंदी में जवाब देना है। आपके सभी उत्तर केवल हिंदी भाषा में होने चाहिए। अंग्रेजी का उपयोग बिल्कुल न करें।",
+  mr: "अत्यंत महत्त्वाचे: तुम्ही फक्त मराठीत उत्तर द्यावे. तुमची सर्व उत्तरे फक्त मराठी भाषेत असावीत. इंग्रजीचा वापर अजिबात करू नका."
 };

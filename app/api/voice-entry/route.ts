@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Upload to S3
     const uploadCommand = new PutObjectCommand({
       Bucket: S3_BUCKETS.VOICE,
-      Key: filename,
+      Key: `uploads/${filename}`,
       Body: buffer,
       ContentType: audioFile.type,
     });
@@ -107,7 +107,9 @@ export async function POST(request: NextRequest) {
 }
 
 async function pollForResult(filename: string, maxAttempts = 30): Promise<any> {
-  const resultKey = filename.replace(/\.[^.]+$/, '.json');
+  // filename is already "voice-1772986104733-voice-1772986104656.webm"
+  // Lambda saves to: results/uploads/voice-1772986104733-voice-1772986104656.json
+  const resultKey = `uploads/${filename.replace(/\.[^.]+$/, '.json')}`;
 
   for (let i = 0; i < maxAttempts; i++) {
     try {

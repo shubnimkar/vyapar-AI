@@ -1,0 +1,91 @@
+# Implementation Plan
+
+- [ ] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - Benchmark Translation Keys Displayed as Raw Strings
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate translation keys are not being resolved
+  - **Scoped PBT Approach**: Scope the property to concrete failing cases: benchmark translation keys in all three languages
+  - Test that BenchmarkDisplay renders translated text (not raw keys) for 'benchmark.title', 'benchmark.yourBusiness', 'benchmark.segmentAverage' in English, Hindi, and Marathi
+  - Test that nested keys like 'benchmark.category.above_average' are properly translated
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found (e.g., "benchmark.title" appears as raw text instead of "How You Compare")
+  - Investigate root cause: check import resolution, translations object availability, build configuration
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3_
+
+- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Non-Benchmark Translation Behavior Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-benchmark translation keys (daily entry, health score, credit tracking, error messages)
+  - Verify that t('daily.title', 'hi') returns proper Hindi translation on unfixed code
+  - Verify that t('health.score', 'mr') returns proper Marathi translation on unfixed code
+  - Verify that t('credit.overdue', 'en') returns proper English translation on unfixed code
+  - Write property-based tests capturing observed behavior patterns: for all non-benchmark translation keys, the translation function returns the correct translated text
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+
+- [x] 3. Fix benchmark translation keys rendering
+
+  - [x] 3.1 Investigate and confirm root cause
+    - Check if translations object is properly exported from lib/translations.ts
+    - Verify import statement in BenchmarkDisplay.tsx is correct
+    - Test in production build mode to see if issue is build-specific
+    - Check browser console for import errors or warnings
+    - Verify translations object structure: console.log(translations['benchmark.title'])
+    - Check if Next.js is tree-shaking the translations object
+    - Document findings in task comments
+    - _Bug_Condition: isBugCondition(input) where input.renderedText = input.translationKey AND input.translationKey STARTS_WITH 'benchmark.'_
+    - _Expected_Behavior: result ≠ input.translationKey AND result = getTranslation(input.translationKey, input.language)_
+    - _Preservation: Non-benchmark translations must continue to work correctly_
+    - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4_
+
+  - [x] 3.2 Implement the fix based on root cause findings
+    - Add runtime validation to t() function to ensure translations object is defined
+    - Add defensive checks before translation lookup
+    - Ensure proper fallback chain (requested language → English → key)
+    - Add development-mode console warning if translation is missing
+    - Verify translations object export is correct with explicit type annotations
+    - Fix import statement in BenchmarkDisplay.tsx if needed
+    - Add runtime translation check in development mode
+    - Update next.config.js if build configuration changes are needed
+    - _Bug_Condition: isBugCondition(input) from design_
+    - _Expected_Behavior: expectedBehavior(result) from design_
+    - _Preservation: Preservation Requirements from design_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 3.5_
+
+  - [x] 3.3 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Benchmark Translation Keys Properly Translated
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify all benchmark translation keys render as translated text in all three languages
+    - Verify nested keys like 'benchmark.category.above_average' are properly translated
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+  - [x] 3.4 Verify preservation tests still pass
+    - **Property 2: Preservation** - Non-Benchmark Translation Behavior Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all non-benchmark translations still work correctly
+    - Confirm language switching functionality is preserved
+    - Confirm fallback behavior is unchanged
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+
+- [ ] 4. Checkpoint - Ensure all tests pass
+  - Run all unit tests for translations
+  - Run all property-based tests for benchmark translations
+  - Run all preservation tests for non-benchmark translations
+  - Test in production build mode (npm run build && npm run start)
+  - Verify BenchmarkDisplay shows translated text on Dashboard
+  - Verify BenchmarkDisplay shows translated text on Analysis page
+  - Test language switching with BenchmarkDisplay
+  - Ensure all tests pass, ask the user if questions arise

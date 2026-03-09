@@ -2,6 +2,33 @@
 // Provides AI-powered explanations of pre-calculated index values
 // CRITICAL: AI only explains, never calculates
 
+/**
+ * Strip markdown formatting from AI responses
+ * Removes bold (**text**), bullet points, and other markdown syntax
+ */
+function stripMarkdownFormatting(text: string): string {
+  if (!text) return text;
+  
+  let cleaned = text;
+  
+  // Remove bold formatting: **text** -> text
+  cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
+  
+  // Remove bullet points at start of lines: - text or * text -> text
+  cleaned = cleaned.replace(/^[\s]*[-*]\s+/gm, '');
+  
+  // Remove numbered lists: 1. text -> text
+  cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm, '');
+  
+  // Remove markdown headings: ### text -> text
+  cleaned = cleaned.replace(/^[\s]*#{1,6}\s+/gm, '');
+  
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+  
+  return cleaned;
+}
+
 import { NextRequest, NextResponse } from 'next/server';
 import { buildIndexExplanationPrompt } from '@/lib/ai/prompt-builder';
 import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
@@ -60,9 +87,9 @@ export async function POST(request: NextRequest) {
 
     // Build persona context
     const personaContext: PersonaContext = {
-      business_type: userProfile.business_type || 'other',
-      city_tier: userProfile.city_tier || null,
-      explanation_mode: userProfile.explanation_mode || 'simple',
+      business_type: (userProfile.business_type || 'other') as 'kirana' | 'salon' | 'pharmacy' | 'restaurant' | 'other',
+      city_tier: (userProfile.city_tier || null) as 'tier-1' | 'tier-2' | 'tier-3' | 'rural' | null,
+      explanation_mode: (userProfile.explanation_mode || 'simple') as 'simple' | 'detailed',
       language: language as 'en' | 'hi' | 'mr',
     };
 
@@ -110,10 +137,13 @@ export async function POST(request: NextRequest) {
 
     logger.info('AI explanation generated successfully');
 
+    // Strip markdown formatting from AI response
+    const cleanedExplanation = stripMarkdownFormatting(aiResponse.content || '');
+
     // Return successful response with original index data
     return NextResponse.json({
       success: true,
-      explanation: aiResponse.content,
+      explanation: cleanedExplanation,
       stressIndex,
       affordabilityIndex,
     });

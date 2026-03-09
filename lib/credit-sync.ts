@@ -198,29 +198,64 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
  */
 export async function pullEntriesFromCloud(userId: string): Promise<void> {
   try {
-    logger.info('Pulling entries from cloud');
+    console.log('[pullEntriesFromCloud] Starting pull for userId:', userId);
+    logger.info('Pulling entries from cloud', { userId });
     
     // Get all entries from server API (which reads DynamoDB)
     const response = await fetch(`/api/credit?userId=${encodeURIComponent(userId)}`);
+    
+    console.log('[pullEntriesFromCloud] Response status:', response.status, 'ok:', response.ok);
+    logger.debug('Pull response received', { 
+      status: response.status, 
+      ok: response.ok 
+    });
+    
     const result = await response.json();
+    
+    console.log('[pullEntriesFromCloud] Result:', {
+      success: result.success,
+      dataType: typeof result.data,
+      dataIsArray: Array.isArray(result.data),
+      dataLength: result.data?.length,
+      hasData: !!result.data,
+      dataKeys: result.data ? Object.keys(result.data).slice(0, 5) : [],
+      firstEntry: result.data?.[0]
+    });
+    
+    logger.debug('Pull response parsed', { 
+      success: result.success, 
+      dataLength: result.data?.length,
+      hasData: !!result.data
+    });
     
     // Handle authentication errors gracefully
     if (response.status === 401 || response.status === 403) {
+      console.log('[pullEntriesFromCloud] Not authenticated, skipping');
       logger.warn('Not authenticated, skipping cloud pull');
       return;
     }
     
     if (!response.ok || !result.success) {
+      console.log('[pullEntriesFromCloud] Failed to pull entries:', result.error);
       logger.warn('Failed to pull entries', { error: result.error });
       throw new Error(result.error || 'Failed to pull credit entries');
     }
     const cloudEntries: CreditEntry[] = result.data || [];
     
+    console.log('[pullEntriesFromCloud] Cloud entries count:', cloudEntries.length);
+    logger.info('Cloud entries retrieved', { count: cloudEntries.length });
+    
     // Get local entries
     const localEntries = getLocalEntries();
     const localMap = new Map(localEntries.map(e => [e.id, e]));
     
+    console.log('[pullEntriesFromCloud] Local entries count:', localEntries.length);
+    logger.debug('Local entries loaded', { count: localEntries.length });
+    
     // Merge cloud entries with local
+    let addedCount = 0;
+    let updatedCount = 0;
+    
     for (const cloudEntry of cloudEntries) {
       const localEntry = localMap.get(cloudEntry.id);
       
@@ -229,22 +264,37 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
         const newLocalEntry: LocalCreditEntry = {
           ...cloudEntry,
           syncStatus: 'synced',
+          paidAt: cloudEntry.paidDate, // Alias for backward compatibility
         };
         saveLocalEntry(newLocalEntry);
+        addedCount++;
       } else if (localEntry.syncStatus === 'synced') {
         // Both synced, use cloud version (source of truth)
         const updatedLocalEntry: LocalCreditEntry = {
           ...cloudEntry,
           syncStatus: 'synced',
+          paidAt: cloudEntry.paidDate, // Alias for backward compatibility
         };
         saveLocalEntry(updatedLocalEntry);
+        updatedCount++;
       }
       // If local is pending/error, keep local version (will sync later)
     }
     
-    logger.info('Pull complete, merged cloud entries', { count: cloudEntries.length });
+    console.log('[pullEntriesFromCloud] Merge complete:', {
+      total: cloudEntries.length,
+      added: addedCount,
+      updated: updatedCount
+    });
+    
+    logger.info('Pull complete, merged cloud entries', { 
+      total: cloudEntries.length,
+      added: addedCount,
+      updated: updatedCount
+    });
   } catch (error) {
-    logger.warn('Failed to pull entries from cloud', { error });
+    console.error('[pullEntriesFromCloud] Error:', error);
+    logger.error('Failed to pull entries from cloud', { error });
     // Don't throw - allow offline operation
   }
 }

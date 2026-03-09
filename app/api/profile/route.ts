@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ProfileService, type UserProfile as DynamoProfile } from '@/lib/dynamodb-client';
-import { APIResponse, UserProfile, ValidationError } from '@/lib/types';
+import { APIResponse, UserProfile, ValidationError, BusinessType, CityTier } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
@@ -30,23 +30,26 @@ export async function GET(request: NextRequest) {
 
       if (!profile) {
         // Return demo profile for demo users
-        if (userId.startsWith('demo-user-')) {
-          logger.debug('Returning demo profile', { userId });
+        if (userId.startsWith('demo-user-') || userId.startsWith('demo_user_')) {
+          logger.debug('Returning hardcoded demo profile', { userId });
           const demoProfile: UserProfile = {
             id: userId,
-            phoneNumber: userId.replace('demo-user-', '+91'),
-            shopName: 'राम किराना स्टोर',
-            userName: 'राम शर्मा',
-            language: 'hi',
-            businessType: 'retail',
+            phoneNumber: userId.replace('demo-user-', '+91').replace('demo_user_', '+91'),
+            shopName: 'Sharma Kirana Store',
+            userName: 'Rajesh Sharma',
+            language: 'en',
+            businessType: 'kirana',
             city: 'Mumbai',
+            business_type: 'kirana',
+            city_tier: 'tier1',
+            explanation_mode: 'simple',
             createdAt: new Date().toISOString(),
             lastActiveAt: new Date().toISOString(),
             isActive: true,
             subscriptionTier: 'free',
             preferences: {
-              dataRetentionDays: 90,
-              autoArchive: true,
+              dataRetentionDays: 365,
+              autoArchive: false,
               notificationsEnabled: true,
               currency: 'INR',
             },
@@ -77,9 +80,9 @@ export async function GET(request: NextRequest) {
         language: profile.language as 'en' | 'hi' | 'mr',
         businessType: profile.businessType,
         city: profile.city,
-        business_type: profile.business_type,
-        city_tier: profile.city_tier,
-        explanation_mode: profile.explanation_mode,
+        business_type: (profile.business_type || 'other') as BusinessType,
+        city_tier: profile.city_tier as CityTier | undefined,
+        explanation_mode: (profile.explanation_mode || 'simple') as 'simple' | 'detailed',
         createdAt: profile.createdAt,
         lastActiveAt: profile.updatedAt,
         isActive: true,
@@ -161,12 +164,15 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    if (city_tier !== undefined && !ProfileService.validateCityTier(city_tier)) {
-      errors.push({
-        field: 'city_tier',
-        message: 'Must be one of: tier-1, tier-2, tier-3, rural, or null',
-        code: 'invalid_enum',
-      });
+    if (city_tier !== undefined && city_tier !== null) {
+      const validTiers = ['tier1', 'tier2', 'tier3', 'rural'];
+      if (!validTiers.includes(city_tier)) {
+        errors.push({
+          field: 'city_tier',
+          message: 'Must be one of: tier1, tier2, tier3, rural, or null',
+          code: 'invalid_enum',
+        });
+      }
     }
 
     if (explanation_mode !== undefined && !ProfileService.validateExplanationMode(explanation_mode)) {
@@ -244,9 +250,9 @@ export async function PUT(request: NextRequest) {
         language: dynamoProfile.language as 'en' | 'hi' | 'mr',
         businessType: dynamoProfile.businessType,
         city: dynamoProfile.city,
-        business_type: dynamoProfile.business_type,
-        city_tier: dynamoProfile.city_tier,
-        explanation_mode: dynamoProfile.explanation_mode,
+        business_type: (dynamoProfile.business_type || 'other') as BusinessType,
+        city_tier: dynamoProfile.city_tier as CityTier | undefined,
+        explanation_mode: (dynamoProfile.explanation_mode || 'simple') as 'simple' | 'detailed',
         createdAt: dynamoProfile.createdAt,
         lastActiveAt: dynamoProfile.updatedAt,
         isActive: true,

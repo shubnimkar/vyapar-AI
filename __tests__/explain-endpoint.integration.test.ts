@@ -242,6 +242,69 @@ describe('/api/explain endpoint integration tests', () => {
     });
   });
 
+  describe('Cashflow prediction explanation', () => {
+    it('should explain cashflow predictions without requiring sessionId or value', async () => {
+      const mockResponse: AIProviderResponse = {
+        success: true,
+        content: 'Your cash flow shows a weekly pattern with higher sales on weekends. Days 3 and 5 show negative balances due to supplier payments.',
+        provider: 'bedrock',
+      };
+      
+      mockOrchestrator.generateResponse.mockResolvedValue(mockResponse);
+      
+      const predictions = [
+        { date: '2024-03-10', predictedBalance: 5000, trend: 'up', confidence: 0.85, isNegative: false },
+        { date: '2024-03-11', predictedBalance: 3000, trend: 'down', confidence: 0.80, isNegative: false },
+        { date: '2024-03-12', predictedBalance: -1000, trend: 'down', confidence: 0.75, isNegative: true },
+        { date: '2024-03-13', predictedBalance: 2000, trend: 'up', confidence: 0.78, isNegative: false },
+        { date: '2024-03-14', predictedBalance: -500, trend: 'down', confidence: 0.72, isNegative: true },
+        { date: '2024-03-15', predictedBalance: 4000, trend: 'up', confidence: 0.82, isNegative: false },
+        { date: '2024-03-16', predictedBalance: 6000, trend: 'up', confidence: 0.88, isNegative: false },
+      ];
+      
+      const request = new NextRequest('http://localhost:3000/api/explain', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: 'user-123',
+          metric: 'cashflowPrediction',
+          predictions,
+          language: 'en',
+        }),
+      });
+      
+      const response = await POST(request);
+      const data = await response.json();
+      
+      expect(response.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.explanation.success).toBe(true);
+      expect(data.explanation.content).toBe(mockResponse.content);
+      
+      // Verify orchestrator was called with cashflow prediction prompt
+      const promptCall = mockOrchestrator.generateResponse.mock.calls[0][0];
+      expect(promptCall).toContain('cash flow');
+      expect(promptCall).toContain('prediction');
+    });
+
+    it('should return 400 when predictions are missing for cashflowPrediction', async () => {
+      const request = new NextRequest('http://localhost:3000/api/explain', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: 'user-123',
+          metric: 'cashflowPrediction',
+          language: 'en',
+          // Missing predictions
+        }),
+      });
+      
+      const response = await POST(request);
+      const data = await response.json();
+      
+      expect(response.status).toBe(400);
+      expect(data.success).toBe(false);
+    });
+  });
+
   describe('Error handling', () => {
     it('should return 400 for missing required fields', async () => {
       const request = new NextRequest('http://localhost:3000/api/explain', {

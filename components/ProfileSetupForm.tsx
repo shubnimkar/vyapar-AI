@@ -27,9 +27,12 @@ export default function ProfileSetupForm({
     initialData || {
       shopName: '',
       userName: '',
-      language: language,
-      businessType: '',
-      city: '',
+      language,
+      businessType: undefined,
+      business_type: undefined,
+      city: undefined,
+      city_tier: null,
+      explanation_mode: 'simple',
     }
   );
   const [phoneNumberValue, setPhoneNumberValue] = useState(phoneNumber || '');
@@ -82,7 +85,7 @@ export default function ProfileSetupForm({
   };
 
   const handleSubmit = async (skipOptional: boolean = false) => {
-    if (!validateForm(skipOptional)) {
+    if (!validateForm()) {
       return;
     }
 
@@ -101,13 +104,19 @@ export default function ProfileSetupForm({
           userId,
           phoneNumber: phoneNumberValue || undefined,
           businessType: skipOptional ? undefined : formData.businessType,
+          business_type: skipOptional ? formData.business_type ?? 'other' : formData.businessType ?? 'other',
           city: skipOptional ? undefined : formData.city,
+          city_tier: skipOptional ? formData.city_tier ?? null : (formData.city_tier ?? null),
+          explanation_mode: formData.explanation_mode ?? 'simple',
         }),
       });
 
       const result = await response.json();
 
       if (result.success) {
+        if (formData.language) {
+          localStorage.setItem('vyapar-lang', formData.language);
+        }
         onComplete();
       } else {
         if (result.errors) {
@@ -139,331 +148,310 @@ export default function ProfileSetupForm({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-16">
-            <h1 className="text-xl font-bold text-gray-900">
-              {isEditMode 
-                ? (language === 'hi' ? 'प्रोफ़ाइल संपादित करें' : language === 'mr' ? 'प्रोफाइल संपादित करा' : 'Edit Profile')
-                : t('profile.setup.title', language)
-              }
-            </h1>
-          </div>
-        </div>
+    <div className="w-full h-full flex flex-col">
+      {/* Header Section */}
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-slate-900">
+          {isEditMode 
+            ? (language === 'hi' ? 'प्रोफ़ाइल संपादित करें' : language === 'mr' ? 'प्रोफाइल संपादित करा' : 'Edit Profile')
+            : t('profile.setup.title', language)
+          }
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
+          {language === 'hi' 
+            ? 'बेहतर AI इनसाइट्स पाने के लिए अपनी दुकान की जानकारी और व्यवसाय की प्राथमिकताएं अपडेट करें।'
+            : language === 'mr'
+            ? 'चांगले AI इनसाइट्स मिळवण्यासाठी तुमच्या दुकानाची माहिती आणि व्यवसाय प्राधान्ये अपडेट करा.'
+            : 'Update your shop details and business preferences to get better AI insights.'}
+        </p>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Progress Indicator */}
-          {!isEditMode && (
-            <div className="h-1 bg-gray-100">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 w-2/3 transition-all"></div>
+      {/* Main Form Card */}
+      <div className="bg-white rounded-lg shadow-sm border border-slate-200 flex-1 overflow-auto">
+        <div className="p-6">
+          {errors.general && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+              <svg className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs text-red-800">{errors.general}</p>
             </div>
           )}
 
-          <div className="p-8">
-            {/* Header Text */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(false); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+
+            {/* Shop Name */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700" htmlFor="shop_name">
+                {t('profile.setup.shopName', language)} <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
+                <input
+                  ref={shopNameRef}
+                  type="text"
+                  id="shop_name"
+                  value={formData.shopName}
+                  onChange={(e) => {
+                    setFormData({ ...formData, shopName: e.target.value });
+                    if (errors.shopName) setErrors({ ...errors, shopName: '' });
+                  }}
+                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                    errors.shopName ? 'border-red-500 bg-red-50' : 'border-slate-300'
+                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  placeholder={language === 'hi' ? 'दुकान का नाम दर्ज करें' : language === 'mr' ? 'दुकानाचे नाव प्रविष्ट करा' : 'Enter shop name'}
+                  required
+                />
               </div>
-              <p className="text-gray-600 text-sm">
-                {language === 'hi' 
-                  ? 'अपने व्यवसाय की जानकारी दर्ज करें'
-                  : language === 'mr'
-                  ? 'तुमच्या व्यवसायाची माहिती प्रविष्ट करा'
-                  : 'Enter your business information'}
-              </p>
+              {errors.shopName && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {errors.shopName}
+                </p>
+              )}
             </div>
 
-            {errors.general && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {/* Owner Name */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700" htmlFor="owner_name">
+                {t('profile.setup.userName', language)} <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <p className="text-sm text-red-800">{errors.general}</p>
+                <input
+                  type="text"
+                  id="owner_name"
+                  value={formData.userName}
+                  onChange={(e) => {
+                    setFormData({ ...formData, userName: e.target.value });
+                    if (errors.userName) setErrors({ ...errors, userName: '' });
+                  }}
+                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                    errors.userName ? 'border-red-500 bg-red-50' : 'border-slate-300'
+                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  placeholder={language === 'hi' ? 'मालिक का नाम दर्ज करें' : language === 'mr' ? 'मालकाचे नाव प्रविष्ट करा' : 'Enter owner name'}
+                  required
+                />
               </div>
-            )}
-
-            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(false); }} className="space-y-6">
-              {/* Required Fields Section */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              {errors.userName && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                    {language === 'hi' ? 'आवश्यक जानकारी' : language === 'mr' ? 'आवश्यक माहिती' : 'Required Information'}
-                  </h3>
-                </div>
+                  {errors.userName}
+                </p>
+              )}
+            </div>
 
-                {/* Shop Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('profile.setup.shopName', language)} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    ref={shopNameRef}
-                    type="text"
-                    value={formData.shopName}
-                    onChange={(e) => {
-                      setFormData({ ...formData, shopName: e.target.value });
-                      if (errors.shopName) setErrors({ ...errors, shopName: '' });
-                    }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.shopName ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                    placeholder={language === 'hi' ? 'दुकान का नाम' : language === 'mr' ? 'दुकानाचे नाव' : 'Shop name'}
-                  />
-                  {errors.shopName && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {errors.shopName}
-                    </p>
-                  )}
-                </div>
-
-                {/* User Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('profile.setup.userName', language)} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.userName}
-                    onChange={(e) => {
-                      setFormData({ ...formData, userName: e.target.value });
-                      if (errors.userName) setErrors({ ...errors, userName: '' });
-                    }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.userName ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                    placeholder={language === 'hi' ? 'आपका नाम' : language === 'mr' ? 'तुमचे नाव' : 'Your name'}
-                  />
-                  {errors.userName && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {errors.userName}
-                    </p>
-                  )}
-                </div>
-
-                {/* Language */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('profile.setup.language', language)} <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.language}
-                    onChange={(e) => {
-                      setFormData({ ...formData, language: e.target.value as Language });
-                      if (errors.language) setErrors({ ...errors, language: '' });
-                    }}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.language ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                    }`}
-                  >
-                    <option value="en">English</option>
-                    <option value="hi">हिंदी (Hindi)</option>
-                    <option value="mr">मराठी (Marathi)</option>
-                  </select>
-                  {errors.language && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {errors.language}
-                    </p>
-                  )}
-                </div>
+            {/* Phone Number */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700" htmlFor="phone">
+                {t('phoneNumber', language)} ({language === 'hi' ? 'भारतीय प्रारूप' : language === 'mr' ? 'भारतीय स्वरूप' : 'Indian Format'})
+              </label>
+              <div className="flex">
+                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-xs font-medium">
+                  +91
+                </span>
+                <input
+                  type="tel"
+                  id="phone"
+                  value={phoneNumberValue}
+                  onChange={(e) => {
+                    setPhoneNumberValue(e.target.value);
+                    if (errors.phoneNumber) {
+                      setErrors({ ...errors, phoneNumber: '' });
+                    }
+                  }}
+                  pattern="[6-9][0-9]{9}"
+                  className={`flex-1 px-3 py-2 text-sm rounded-r-lg border ${
+                    errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-slate-300'
+                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  placeholder="9876543210"
+                />
               </div>
-
-              {/* Optional Fields Section */}
-              <div className="space-y-6 pt-6">
-                <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              {errors.phoneNumber && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
-                    {language === 'hi' ? 'अतिरिक्त जानकारी' : language === 'mr' ? 'अतिरिक्त माहिती' : 'Additional Information'}
-                  </h3>
-                  <span className="text-xs text-gray-500">
-                    ({language === 'hi' ? 'वैकल्पिक' : language === 'mr' ? 'ऐच्छिक' : 'Optional'})
-                  </span>
-                </div>
+                  {errors.phoneNumber}
+                </p>
+              )}
+            </div>
 
-                {/* Phone Number */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('phoneNumber', language)}
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                      </svg>
-                    </div>
-                    <input
-                      type="tel"
-                      value={phoneNumberValue}
-                      onChange={(e) => {
-                        setPhoneNumberValue(e.target.value);
-                        if (errors.phoneNumber) {
-                          setErrors({ ...errors, phoneNumber: '' });
-                        }
-                      }}
-                      className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                      placeholder="+91 9876543210"
-                    />
-                  </div>
-                  {errors.phoneNumber ? (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {errors.phoneNumber}
-                    </p>
-                  ) : (
-                    <p className="mt-2 text-xs text-gray-500">
-                      {language === 'hi' 
-                        ? 'वैकल्पिक - भारतीय मोबाइल नंबर (+91 से शुरू)'
-                        : language === 'mr'
-                        ? 'ऐच्छिक - भारतीय मोबाइल नंबर (+91 पासून सुरू)'
-                        : 'Optional - Indian mobile number (starts with +91)'}
-                    </p>
-                  )}
-                </div>
-
-                {/* Business Type - for segment benchmark */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('profile.setup.businessType', language)}
-                  </label>
-                  <select
-                    value={formData.businessType}
-                    onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-all"
-                  >
-                    <option value="">
-                      {language === 'hi' ? 'चुनें' : language === 'mr' ? 'निवडा' : 'Select'}
-                    </option>
-                    <option value="kirana">
-                      {language === 'hi' ? 'किराना' : language === 'mr' ? 'किराणा' : 'Kirana (Grocery)'}
-                    </option>
-                    <option value="salon">
-                      {language === 'hi' ? 'सैलून' : language === 'mr' ? 'सलून' : 'Salon'}
-                    </option>
-                    <option value="pharmacy">
-                      {language === 'hi' ? 'फार्मेसी' : language === 'mr' ? 'फार्मसी' : 'Pharmacy'}
-                    </option>
-                    <option value="restaurant">
-                      {language === 'hi' ? 'रेस्तरां' : language === 'mr' ? 'रेस्टॉरंट' : 'Restaurant'}
-                    </option>
-                    <option value="other">
-                      {language === 'hi' ? 'अन्य' : language === 'mr' ? 'इतर' : 'Other'}
-                    </option>
-                  </select>
-                  <p className="mt-2 text-xs text-gray-500">
-                    {language === 'hi' 
-                      ? 'बेंचमार्क तुलना के लिए उपयोग किया जाता है'
-                      : language === 'mr'
-                      ? 'बेंचमार्क तुलनेसाठी वापरले जाते'
-                      : 'Used for benchmark comparison'}
-                  </p>
-                </div>
-
-                {/* City Tier - for segment benchmark */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {language === 'hi' ? 'शहर का स्तर' : language === 'mr' ? 'शहर स्तर' : 'City Tier'}
-                  </label>
-                  <select
-                    value={formData.city || ''}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-400 transition-all"
-                  >
-                    <option value="">
-                      {language === 'hi' ? 'चुनें' : language === 'mr' ? 'निवडा' : 'Select'}
-                    </option>
-                    <option value="tier1">
-                      {language === 'hi' ? 'टियर 1 (मुंबई, दिल्ली, बेंगलुरु)' : language === 'mr' ? 'टियर 1 (मुंबई, दिल्ली, बेंगलुरु)' : 'Tier 1 (Mumbai, Delhi, Bangalore)'}
-                    </option>
-                    <option value="tier2">
-                      {language === 'hi' ? 'टियर 2 (पुणे, जयपुर, लखनऊ)' : language === 'mr' ? 'टियर 2 (पुणे, जयपूर, लखनौ)' : 'Tier 2 (Pune, Jaipur, Lucknow)'}
-                    </option>
-                    <option value="tier3">
-                      {language === 'hi' ? 'टियर 3 (छोटे शहर)' : language === 'mr' ? 'टियर 3 (लहान शहरे)' : 'Tier 3 (Smaller cities)'}
-                    </option>
-                  </select>
-                  <p className="mt-2 text-xs text-gray-500">
-                    {language === 'hi' 
-                      ? 'बेंचमार्क तुलना के लिए उपयोग किया जाता है'
-                      : language === 'mr'
-                      ? 'बेंचमार्क तुलनेसाठी वापरले जाते'
-                      : 'Used for benchmark comparison'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-3 pt-6">
-                {!isEditMode && (
-                  <button
-                    type="button"
-                    onClick={handleSkip}
-                    disabled={isSubmitting}
-                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
-                  >
-                    {t('profile.setup.skip', language)}
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`${isEditMode ? 'w-full' : 'flex-1'} px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium shadow-lg hover:shadow-xl flex items-center justify-center gap-2`}
+            {/* Language Dropdown */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700" htmlFor="language">
+                {t('profile.setup.language', language)} <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                </svg>
+                <select
+                  id="language"
+                  value={formData.language}
+                  onChange={(e) => {
+                    setFormData({ ...formData, language: e.target.value as Language });
+                    if (errors.language) setErrors({ ...errors, language: '' });
+                  }}
+                  className={`w-full pl-9 pr-8 py-2 text-sm rounded-lg border ${
+                    errors.language ? 'border-red-500 bg-red-50' : 'border-slate-300'
+                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all`}
+                  required
                 >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
-                      {language === 'hi' ? 'सहेज रहा है...' : language === 'mr' ? 'जतन करत आहे...' : 'Saving...'}
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {isEditMode 
-                        ? (language === 'hi' ? 'अपडेट करें' : language === 'mr' ? 'अपडेट करा' : 'Update Profile')
-                        : t('profile.setup.complete', language)
-                      }
-                    </>
-                  )}
-                </button>
+                  <option value="en">English</option>
+                  <option value="hi">हिंदी (Hindi)</option>
+                  <option value="mr">मराठी (Marathi)</option>
+                </select>
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-            </form>
-          </div>
-        </div>
+              {errors.language && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {errors.language}
+                </p>
+              )}
+            </div>
 
-        {/* Help Text */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            {language === 'hi' 
-              ? 'आपकी जानकारी सुरक्षित और निजी है'
-              : language === 'mr'
-              ? 'तुमची माहिती सुरक्षित आणि खाजगी आहे'
-              : 'Your information is secure and private'}
-          </p>
+            {/* Business Type Dropdown */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700" htmlFor="business_type">
+                {t('profile.setup.businessType', language)}
+              </label>
+              <div className="relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <select
+                  id="business_type"
+                  value={formData.businessType ?? ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      businessType: e.target.value as BusinessType,
+                      business_type: e.target.value as BusinessType,
+                    })
+                  }
+                  className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
+                >
+                  <option value="">
+                    {language === 'hi' ? 'प्रकार चुनें' : language === 'mr' ? 'प्रकार निवडा' : 'Select type'}
+                  </option>
+                  <option value="kirana">
+                    {language === 'hi' ? 'किराना' : language === 'mr' ? 'किराणा' : 'Kirana'}
+                  </option>
+                  <option value="salon">
+                    {language === 'hi' ? 'सैलून' : language === 'mr' ? 'सलून' : 'Salon'}
+                  </option>
+                  <option value="pharmacy">
+                    {language === 'hi' ? 'फार्मेसी' : language === 'mr' ? 'फार्मसी' : 'Pharmacy'}
+                  </option>
+                  <option value="restaurant">
+                    {language === 'hi' ? 'रेस्तरां' : language === 'mr' ? 'रेस्टॉरंट' : 'Restaurant'}
+                  </option>
+                  <option value="other">
+                    {language === 'hi' ? 'अन्य' : language === 'mr' ? 'इतर' : 'Other'}
+                  </option>
+                </select>
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* City Tier Dropdown */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700" htmlFor="city_tier">
+                {language === 'hi' ? 'शहर का स्तर' : language === 'mr' ? 'शहर स्तर' : 'City Tier'}
+              </label>
+              <div className="relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <select
+                  id="city_tier"
+                  value={formData.city_tier || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      city_tier: (e.target.value || null) as CityTier | null,
+                      city: e.target.value as CityTier | undefined,
+                    })
+                  }
+                  className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
+                >
+                  <option value="">
+                    {language === 'hi' ? 'स्तर चुनें' : language === 'mr' ? 'स्तर निवडा' : 'Select tier'}
+                  </option>
+                  <option value="tier1">
+                    {language === 'hi' ? 'टियर 1 (मेट्रो)' : language === 'mr' ? 'टियर 1 (मेट्रो)' : 'Tier 1 (Metro)'}
+                  </option>
+                  <option value="tier2">
+                    {language === 'hi' ? 'टियर 2' : language === 'mr' ? 'टियर 2' : 'Tier 2'}
+                  </option>
+                  <option value="tier3">
+                    {language === 'hi' ? 'टियर 3' : language === 'mr' ? 'टियर 3' : 'Tier 3'}
+                  </option>
+                  <option value="rural">
+                    {language === 'hi' ? 'ग्रामीण' : language === 'mr' ? 'ग्रामीण' : 'Rural'}
+                  </option>
+                </select>
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-4 border-t border-slate-100 pt-4">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 bg-blue-600 text-white font-semibold text-sm py-2.5 px-4 rounded-lg hover:bg-blue-700 shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    {language === 'hi' ? 'सहेज रहा है...' : language === 'mr' ? 'जतन करत आहे...' : 'Saving...'}
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {isEditMode 
+                      ? (language === 'hi' ? 'परिवर्तन सहेजें' : language === 'mr' ? 'बदल जतन करा' : 'Save Changes')
+                      : t('profile.setup.complete', language)
+                    }
+                  </>
+                )}
+              </button>
+              {!isEditMode && (
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-slate-100 text-slate-700 font-semibold text-sm py-2.5 px-4 rounded-lg hover:bg-slate-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  {t('profile.setup.skip', language)}
+                </button>
+              )}
+            </div>
+          </form>
         </div>
       </div>
     </div>

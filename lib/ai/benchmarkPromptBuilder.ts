@@ -9,6 +9,7 @@ import {
   CITY_TIER_CONTEXTS,
   EXPLANATION_MODE_INSTRUCTIONS,
   AI_INTERPRETATION_INSTRUCTIONS,
+  LANGUAGE_INSTRUCTIONS,
 } from './templates';
 import { logger } from '@/lib/logger';
 import type { BenchmarkComparison } from '@/lib/types';
@@ -49,6 +50,9 @@ export function buildBenchmarkExplanationPrompt(
 
   // Build system prompt with persona context
   let systemPrompt = '';
+
+  // 0. LANGUAGE INSTRUCTION (MUST BE FIRST AND MOST PROMINENT)
+  systemPrompt += LANGUAGE_INSTRUCTIONS[context.language] + '\n\n';
 
   // 1. Persona identity
   systemPrompt += PERSONA_IDENTITIES[context.business_type][context.language] + '\n\n';
@@ -179,36 +183,45 @@ function buildGuidancePrompt(
     
     if (isBelowAverage) {
       guidance += 'कृपया 2-3 व्यावहारिक सुझाव दें जो मेरे प्रदर्शन को बेहतर बनाने में मदद करें। ';
-      guidance += 'सुझाव सरल और तुरंत लागू करने योग्य होने चाहिए।';
+      guidance += 'सुझाव सरल और तुरंत लागू करने योग्य होने चाहिए।\n\n';
+      guidance += 'महत्वपूर्ण: सामान्य टेम्पलेट या शीर्षक का उपयोग न करें। सीधे सुझावों से शुरू करें।';
     } else if (isAboveAverage) {
       guidance += 'कृपया प्रोत्साहन दें और बताएं कि मैं इस अच्छे प्रदर्शन को कैसे बनाए रख सकता हूं। ';
-      guidance += '2-3 टिप्स दें जो मुझे इस स्तर पर बनाए रखने में मदद करें।';
+      guidance += '2-3 टिप्स दें जो मुझे इस स्तर पर बनाए रखने में मदद करें।\n\n';
+      guidance += 'महत्वपूर्ण: सामान्य टेम्पलेट या शीर्षक का उपयोग न करें। सीधे सलाह से शुरू करें।';
     } else {
-      guidance += 'कृपया 2-3 अनुकूलन अवसर सुझाएं जो मुझे औसत से ऊपर जाने में मदद कर सकें।';
+      guidance += 'कृपया 2-3 अनुकूलन अवसर सुझाएं जो मुझे औसत से ऊपर जाने में मदद कर सकें।\n\n';
+      guidance += 'महत्वपूर्ण: सामान्य टेम्पलेट या शीर्षक का उपयोग न करें। सीधे सुझावों से शुरू करें।';
     }
   } else if (language === 'mr') {
     guidance += '**तुमच्यासाठी सूचना:**\n\n';
     
     if (isBelowAverage) {
       guidance += 'कृपया 2-3 व्यावहारिक सूचना द्या ज्या माझ्या कामगिरीत सुधारणा करण्यास मदत करतील। ';
-      guidance += 'सूचना सोप्या आणि लगेच लागू करण्यायोग्य असाव्यात।';
+      guidance += 'सूचना सोप्या आणि लगेच लागू करण्यायोग्य असाव्यात।\n\n';
+      guidance += 'महत्त्वाचे: सामान्य टेम्पलेट किंवा शीर्षक वापरू नका. थेट सूचनांपासून सुरुवात करा.';
     } else if (isAboveAverage) {
       guidance += 'कृपया प्रोत्साहन द्या आणि सांगा की मी ही चांगली कामगिरी कशी टिकवू शकतो। ';
-      guidance += '2-3 टिप्स द्या ज्या मला या पातळीवर राहण्यास मदत करतील।';
+      guidance += '2-3 टिप्स द्या ज्या मला या पातळीवर राहण्यास मदत करतील।\n\n';
+      guidance += 'महत्त्वाचे: सामान्य टेम्पलेट किंवा शीर्षक वापरू नका. थेट सल्ल्यापासून सुरुवात करा.';
     } else {
-      guidance += 'कृपया 2-3 अनुकूलन संधी सुचवा ज्या मला सरासरीपेक्षा वर जाण्यास मदत करू शकतात।';
+      guidance += 'कृपया 2-3 अनुकूलन संधी सुचवा ज्या मला सरासरीपेक्षा वर जाण्यास मदत करू शकतात।\n\n';
+      guidance += 'महत्त्वाचे: सामान्य टेम्पलेट किंवा शीर्षक वापरू नका. थेट सूचनांपासून सुरुवात करा.';
     }
   } else {
     guidance += '**Guidance for You:**\n\n';
     
     if (isBelowAverage) {
       guidance += 'Please provide 2-3 actionable suggestions to help improve my performance. ';
-      guidance += 'Suggestions should be simple and immediately implementable.';
+      guidance += 'Suggestions should be simple and immediately implementable.\n\n';
+      guidance += 'Important: Do not use generic templates or headings. Start directly with suggestions.';
     } else if (isAboveAverage) {
       guidance += 'Please provide encouragement and explain how I can sustain this good performance. ';
-      guidance += 'Give 2-3 tips to help me maintain this level.';
+      guidance += 'Give 2-3 tips to help me maintain this level.\n\n';
+      guidance += 'Important: Do not use generic templates or headings. Start directly with advice.';
     } else {
-      guidance += 'Please suggest 2-3 optimization opportunities that could help me move above average.';
+      guidance += 'Please suggest 2-3 optimization opportunities that could help me move above average.\n\n';
+      guidance += 'Important: Do not use generic templates or headings. Start directly with suggestions.';
     }
   }
 
