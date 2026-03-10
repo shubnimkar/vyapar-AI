@@ -179,10 +179,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             {t('appTitle', language)}
           </h1>
           <p className="text-gray-600">
@@ -191,7 +191,7 @@ export default function LoginPage() {
         </div>
 
         {/* Language Selector */}
-        <div className="mb-6 flex justify-center space-x-2">
+        <div className="mb-6 flex justify-center gap-2 flex-wrap">
           <button
             onClick={() => handleLanguageChange('en')}
             className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${

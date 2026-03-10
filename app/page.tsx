@@ -990,7 +990,7 @@ export default function Home() {
         />
       )}
 
-      <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+      <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row overflow-hidden">
         {/* Sidebar */}
         <aside className="hidden lg:flex w-64 border-r border-gray-200 bg-white flex-col h-screen sticky top-0">
           {/* Logo/Brand */}
@@ -1043,7 +1043,7 @@ export default function Home() {
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
           {/* Header */}
-          <header className="sticky top-0 z-30 flex items-center justify-between px-8 py-4 bg-white/95 backdrop-blur-md border-b border-gray-200">
+          <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8 bg-white/95 backdrop-blur-md border-b border-gray-200">
             <div>
               <h2 className="text-xl font-bold text-gray-900">
                 {getSectionLabel(activeSection)}
@@ -1056,12 +1056,12 @@ export default function Home() {
           </header>
 
           {/* Scrollable Dashboard Content */}
-          <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-50">
             <div
               className={
                 activeSection === 'health'
                   ? 'space-y-6 w-full'
-                  : 'space-y-6 max-w-7xl mx-auto'
+                  : 'space-y-6 w-full max-w-7xl mx-auto'
               }
             >
               {activeSection === 'dashboard' && (
