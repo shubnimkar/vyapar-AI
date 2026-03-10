@@ -8,24 +8,24 @@
  */
 function stripMarkdownFormatting(text: string): string {
   if (!text) return text;
-  
+
   let cleaned = text;
-  
+
   // Remove bold formatting: **text** -> text
   cleaned = cleaned.replace(/\*\*([^*]+)\*\*/g, '$1');
-  
+
   // Remove bullet points at start of lines: - text or * text -> text
   cleaned = cleaned.replace(/^[\s]*[-*]\s+/gm, '');
-  
+
   // Remove numbered lists: 1. text -> text
   cleaned = cleaned.replace(/^[\s]*\d+\.\s+/gm, '');
-  
+
   // Remove markdown headings: ### text -> text
   cleaned = cleaned.replace(/^[\s]*#{1,6}\s+/gm, '');
-  
+
   // Clean up extra whitespace
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
-  
+
   return cleaned;
 }
 
@@ -47,7 +47,7 @@ import {
 
 export async function POST(request: NextRequest) {
   let language: Language = 'en'; // Default language for error handling
-  
+
   try {
     logger.info('Explain request received', {
       path: '/api/explain'
@@ -61,15 +61,15 @@ export async function POST(request: NextRequest) {
 
     const body = JSON.parse(bodyCheck.bodyText);
     const { sessionId, userId, metric, value, context, predictions, language: requestLanguage } = body;
-    
+
     // Set language from request
     if (requestLanguage) {
       language = requestLanguage;
     }
-    
+
     // Validate inputs - cashflowPrediction doesn't need sessionId or value
     const isCashflowPrediction = metric === 'cashflowPrediction';
-    
+
     if (!metric) {
       logger.warn('Missing metric in explain request');
       return NextResponse.json(
@@ -77,19 +77,19 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     if (!isCashflowPrediction && (!sessionId || value === undefined)) {
-      logger.warn('Missing required fields in explain request', { 
-        sessionId: !!sessionId, 
-        metric: !!metric, 
-        value: value !== undefined 
+      logger.warn('Missing required fields in explain request', {
+        sessionId: !!sessionId,
+        metric: !!metric,
+        value: value !== undefined
       });
       return NextResponse.json(
         createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
         { status: 400 }
       );
     }
-    
+
     if (isCashflowPrediction && !predictions) {
       logger.warn('Missing predictions for cashflow explanation');
       return NextResponse.json(
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     // Require userId for persona-aware prompts
     if (!userId) {
       logger.warn('Missing userId in explain request', { sessionId });
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-    
+
     // Get session (not required for cashflow predictions)
     if (!isCashflowPrediction) {
       const session = await getSession(sessionId);
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-    
+
     // Retrieve profile for persona context
     const profile = await ProfileService.getProfile(userId);
     if (!profile || !profile.business_type || !profile.explanation_mode) {
@@ -128,30 +128,32 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     // Build persona context
+    // IMPORTANT: use the language from the request body (current UI language),
+    // NOT profile.language which may be stale or different from the user's selected language
     const personaContext: PersonaContext = {
       business_type: profile.business_type as 'kirana' | 'salon' | 'pharmacy' | 'restaurant' | 'other',
       city_tier: profile.city_tier as 'tier-1' | 'tier-2' | 'tier-3' | 'rural' | undefined,
       explanation_mode: profile.explanation_mode as 'simple' | 'detailed',
-      language: profile.language as Language,
+      language: (language || profile.language) as Language,
     };
-    
+
     // Build persona-aware prompt
-    const promptData = isCashflowPrediction 
+    const promptData = isCashflowPrediction
       ? {
-          metric,
-          predictions,
-          historicalDays: predictions?.length || 0,
-        }
+        metric,
+        predictions,
+        historicalDays: predictions?.length || 0,
+      }
       : {
-          metric,
-          value,
-          calculatedMetrics: context?.breakdown || {},
-        };
-    
+        metric,
+        value,
+        calculatedMetrics: context?.breakdown ?? context ?? {},
+      };
+
     const promptStructure = buildPersonaPrompt(personaContext, 'explain', promptData);
-    
+
     // Log persona context
     logger.info('Building persona-aware explanation', {
       userId,
@@ -163,7 +165,7 @@ export async function POST(request: NextRequest) {
         explanation_mode: personaContext.explanation_mode,
       },
     });
-    
+
     // Call AI for explanation only (graceful degradation if AI unavailable)
     const orchestrator = getFallbackOrchestrator();
     const aiResponse = await orchestrator.generateResponse(
@@ -171,7 +173,7 @@ export async function POST(request: NextRequest) {
       { language },
       { endpoint: '/api/explain', userId }
     );
-    
+
     if (!aiResponse.success) {
       // Graceful degradation: return deterministic value without AI explanation
       logger.warn('AI unavailable, returning deterministic value only', {
@@ -187,12 +189,12 @@ export async function POST(request: NextRequest) {
         value: value || null,
       });
     }
-    
+
     logger.info('Explanation completed successfully', { userId, sessionId: sessionId || 'N/A', metric });
-    
+
     // Strip markdown formatting from AI response
     const cleanedExplanation = stripMarkdownFormatting(aiResponse.content || '');
-    
+
     // Return flat structure for consistency with other endpoints
     return NextResponse.json({
       success: true,
@@ -200,7 +202,7 @@ export async function POST(request: NextRequest) {
       metric,
       value,
     });
-    
+
   } catch (error) {
     return NextResponse.json(
       logAndReturnError(

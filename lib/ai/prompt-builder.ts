@@ -101,6 +101,11 @@ export function buildExplainPrompt(data: any, language: string): string {
     return buildCashflowPredictionPrompt(predictions, language);
   }
 
+  // Handle healthScore with a specific, grounded prompt
+  if (metric === 'healthScore') {
+    return buildHealthScoreExplainPrompt(value, calculatedMetrics, language);
+  }
+
   let prompt = '';
 
   if (language === 'hi') {
@@ -134,6 +139,74 @@ export function buildExplainPrompt(data: any, language: string): string {
 
   return prompt;
 }
+
+/**
+ * Build a specific, grounded prompt for Business Health Score explanations.
+ * The health score is made of 4 sub-scores — the AI must explain each one
+ * using the ACTUAL values, not hallucinate generic industry advice.
+ */
+export function buildHealthScoreExplainPrompt(
+  score: number,
+  breakdown: Record<string, number> | undefined,
+  language: string
+): string {
+  const marginScore = breakdown?.marginScore ?? 0;
+  const expenseScore = breakdown?.expenseScore ?? 0;
+  const cashScore = breakdown?.cashScore ?? 0;
+  const creditScore = breakdown?.creditScore ?? 0;
+
+  const total = marginScore + expenseScore + cashScore + creditScore;
+
+  if (language === 'hi') {
+    return `व्यापार स्वास्थ्य स्कोर की व्याख्या करें:
+
+यह स्कोर 4 मेट्रिक्स पर आधारित है:
+
+स्कोर विवरण:
+- मार्जिन स्कोर: ${marginScore}/30 — यह लाभ मार्जिन को मापता है (>20% = 30, >10% = 20, >0% = 10)
+- खर्च स्कोर: ${expenseScore}/30 — यह बिक्री के अनुपात में खर्च को मापता है (<60% = 30, <75% = 20, <90% = 10)
+- नकद स्कोर: ${cashScore}/20 — यह हाथ में नकदी के आधार पर है (नकदी है = 20, अज्ञात = 10, शून्य = 5)
+- क्रेडिट स्कोर: ${creditScore}/20 — यह बकाया उधार राशि के अनुपात पर आधारित है (0% बकाया = 20, 1-20% = 15, 21-50% = 10, 51-80% = 5, >80% = 0)
+
+कुल स्कोर: ${total}/100
+
+कृपया इन वास्तविक आंकड़ों के आधार पर व्यापारी को व्यावहारिक सलाह दें। सामान्य जानकारी न दें। केवल उन क्षेत्रों पर ध्यान दें जहां सुधार की जरूरत है।`;
+  } else if (language === 'mr') {
+    return `व्यवसाय आरोग्य स्कोअरचे स्पष्टीकरण द्या:
+
+हा स्कोअर 4 मेट्रिक्सवर आधारित आहे:
+
+स्कोअर तपशील:
+- मार्जिन स्कोअर: ${marginScore}/30 — नफा मार्जिन मोजतो (>20% = 30, >10% = 20, >0% = 10)
+- खर्च स्कोअर: ${expenseScore}/30 — विक्रीच्या प्रमाणात खर्च मोजतो (<60% = 30, <75% = 20, <90% = 10)
+- रोख स्कोअर: ${cashScore}/20 — हातात रोख रकमेवर आधारित (रोख आहे = 20, अज्ञात = 10, शून्य = 5)
+- क्रेडिट स्कोअर: ${creditScore}/20 — थकीत उधार रकमेच्या प्रमाणावर आधारित (0% थकीत = 20, 1-20% = 15, 21-50% = 10, 51-80% = 5, >80% = 0)
+
+एकूण स्कोअर: ${total}/100
+
+या वास्तविक आकड्यांच्या आधारे व्यापाऱ्याला व्यावहारिक सल्ला द्या. सामान्य माहिती देऊ नका. फक्त ज्या क्षेत्रांमध्ये सुधारणा आवश्यक आहे त्यावर लक्ष केंद्रित करा.`;
+  } else {
+    return `Explain the Business Health Score for this business:
+
+The score is calculated from 4 sub-scores:
+
+Score Breakdown:
+- Margin Score: ${marginScore}/30 — measures profit margin (>20% sales → 30pts, >10% → 20pts, >0% → 10pts, 0% → 0pts)
+- Expense Score: ${expenseScore}/30 — measures expense ratio vs sales (<60% expenses → 30pts, <75% → 20pts, <90% → 10pts, 90%+ → 0pts)
+- Cash Score: ${cashScore}/20 — based on cash in hand (cash > 0 → 20pts, not tracked → 10pts neutral, cash = 0 → 5pts)
+- Credit Score: ${creditScore}/20 — based on % of outstanding credit that is overdue (0% overdue → 20pts, 1-20% → 15pts, 21-50% → 10pts, 51-80% → 5pts, >80% → 0pts)
+
+Total Score: ${total}/100
+
+IMPORTANT RULES:
+1. Explain ONLY based on the actual numbers above — do NOT invent food cost, staffing, or wastage advice
+2. Focus on the sub-scores that are low and explain exactly why and how to improve them
+3. If a score is already maxed (e.g. 30/30), briefly acknowledge it and move on
+4. Do not mention "restaurant" — address it as a general business
+5. Do not start with a greeting or repeat the score — go straight to the insight`;
+  }
+}
+
 
 /**
  * Build prompt for analyzing business data
@@ -358,7 +431,7 @@ export function buildIndexExplanationPrompt(
   // Add stress index data (Financial Health Meter)
   if (data.stressIndex) {
     const { score, breakdown, inputParameters } = data.stressIndex;
-    
+
     if (context.language === 'hi') {
       userPrompt += `**आर्थिक सेहत (Financial Health Meter)**: ${score}/100\n`;
       userPrompt += `घटक विवरण:\n`;
@@ -383,7 +456,7 @@ export function buildIndexExplanationPrompt(
   // Add affordability index data (Purchase Planner)
   if (data.affordabilityIndex) {
     const { score, breakdown, inputParameters } = data.affordabilityIndex;
-    
+
     if (context.language === 'hi') {
       userPrompt += `**खरीदारी योजना (Purchase Planner)**: ${score}/100\n`;
       userPrompt += `श्रेणी: ${breakdown.affordabilityCategory}\n`;

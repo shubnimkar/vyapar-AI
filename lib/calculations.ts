@@ -67,7 +67,7 @@ export function calculateHealthScore(
   profitMargin: number,
   expenseRatio: number,
   cashInHand: number | undefined,
-  creditSummary: { overdueCount: number }
+  creditSummary: { overdueCount: number; totalOutstanding: number; totalOverdue: number }
 ): HealthScoreResult {
   const breakdown: HealthScoreBreakdown = {
     marginScore: 0,
@@ -75,7 +75,7 @@ export function calculateHealthScore(
     cashScore: 0,
     creditScore: 0,
   };
-  
+
   // Margin score (0-30 points)
   // >20% margin = excellent (30 points)
   // >10% margin = good (20 points)
@@ -87,7 +87,7 @@ export function calculateHealthScore(
   } else if (profitMargin > 0) {
     breakdown.marginScore = 10;
   }
-  
+
   // Expense score (0-30 points)
   // <60% expenses = excellent (30 points)
   // <75% expenses = good (20 points)
@@ -99,37 +99,56 @@ export function calculateHealthScore(
   } else if (expenseRatio < 0.90) {
     breakdown.expenseScore = 10;
   }
-  
+
   // Cash score (0-20 points)
-  // Only scored if cash in hand is provided
-  if (cashInHand !== undefined) {
-    if (cashInHand > 0) {
-      breakdown.cashScore = 20;
-    } else if (cashInHand >= 0) {
-      breakdown.cashScore = 10;
-    }
+  // If cashInHand is tracked and > 0: full 20 points (healthy cash balance)
+  // If cashInHand is tracked and = 0: 5 points (tracked but depleted)
+  // If cashInHand is not tracked (undefined): 10 points neutral default
+  //   (don't penalize users for not filling in an optional field)
+  if (cashInHand === undefined) {
+    breakdown.cashScore = 10; // Neutral default: data not available
+  } else if (cashInHand > 0) {
+    breakdown.cashScore = 20;
+  } else {
+    // cashInHand === 0: tracked but zero balance
+    breakdown.cashScore = 5;
   }
-  
+
   // Credit score (0-20 points)
-  // No overdue = excellent (20 points)
-  // 1-2 overdue = acceptable (10 points)
-  // 3+ overdue = poor (0 points)
-  if (creditSummary.overdueCount === 0) {
+  // Based on the % of total outstanding credit that is overdue (by amount, not count)
+  // This is fair when a business has many customers — a few overdue shouldn't tank the score
+  //   0% overdue amount   → 20 points (excellent)
+  //   1-20% overdue       → 15 points (good)
+  //   21-50% overdue      → 10 points (acceptable)
+  //   51-80% overdue      → 5 points  (concerning)
+  //   >80% overdue (or no data) → 0 points (poor)
+  if (creditSummary.totalOutstanding === 0) {
+    // No credit given at all → full marks (no overdue risk)
     breakdown.creditScore = 20;
-  } else if (creditSummary.overdueCount <= 2) {
-    breakdown.creditScore = 10;
+  } else {
+    const overdueRatio = creditSummary.totalOverdue / creditSummary.totalOutstanding;
+    if (overdueRatio === 0) {
+      breakdown.creditScore = 20;
+    } else if (overdueRatio <= 0.20) {
+      breakdown.creditScore = 15;
+    } else if (overdueRatio <= 0.50) {
+      breakdown.creditScore = 10;
+    } else if (overdueRatio <= 0.80) {
+      breakdown.creditScore = 5;
+    }
+    // > 80% overdue → 0 points
   }
-  
+
   // Calculate total score
-  const totalScore = 
-    breakdown.marginScore + 
-    breakdown.expenseScore + 
-    breakdown.cashScore + 
+  const totalScore =
+    breakdown.marginScore +
+    breakdown.expenseScore +
+    breakdown.cashScore +
     breakdown.creditScore;
-  
+
   // Ensure score is between 0 and 100
   const score = Math.min(100, Math.max(0, totalScore));
-  
+
   return { score, breakdown };
 }
 
@@ -161,25 +180,25 @@ export function calculateCreditSummary(
   entries: CreditEntryForCalculation[]
 ): CreditSummary {
   const now = new Date();
-  
+
   // Filter unpaid entries
   const unpaidEntries = entries.filter(e => !e.isPaid);
-  
+
   // Calculate total outstanding (all unpaid)
   const totalOutstanding = unpaidEntries.reduce((sum, e) => sum + e.amount, 0);
-  
+
   // Filter overdue entries (unpaid and past due date)
   const overdueEntries = unpaidEntries.filter(e => {
     const dueDate = new Date(e.dueDate);
     return dueDate < now;
   });
-  
+
   // Calculate total overdue
   const totalOverdue = overdueEntries.reduce((sum, e) => sum + e.amount, 0);
-  
+
   // Count overdue customers
   const overdueCount = overdueEntries.length;
-  
+
   return {
     totalOutstanding,
     totalOverdue,
@@ -236,7 +255,7 @@ export function calculateDailyMetrics(
   const estimatedProfit = calculateProfit(totalSales, totalExpense);
   const expenseRatio = calculateExpenseRatio(totalExpense, totalSales);
   const profitMargin = calculateProfitMargin(estimatedProfit, totalSales);
-  
+
   return {
     estimatedProfit,
     expenseRatio,

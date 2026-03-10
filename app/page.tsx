@@ -69,13 +69,13 @@ function isValidHealthBreakdown(value: unknown): value is HealthBreakdown {
     return false;
   }
   const breakdown = value as Record<string, unknown>;
-  
+
   // Check if it's an error object
   if ('success' in breakdown || 'error' in breakdown || 'errorType' in breakdown) {
     logger.debug('healthBreakdown is an error object', { breakdown });
     return false;
   }
-  
+
   const isValid = (
     typeof breakdown.marginScore === 'number' &&
     Number.isFinite(breakdown.marginScore) &&
@@ -86,11 +86,11 @@ function isValidHealthBreakdown(value: unknown): value is HealthBreakdown {
     typeof breakdown.creditScore === 'number' &&
     Number.isFinite(breakdown.creditScore)
   );
-  
+
   if (!isValid) {
     logger.debug('healthBreakdown has invalid structure', { breakdown });
   }
-  
+
   return isValid;
 }
 
@@ -108,18 +108,18 @@ export default function Home() {
   const [user, setUser] = useState<{ userId: string; username: string } | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [activeSection, setActiveSection] = useState<AppSection>('dashboard');
-  
+
   // Segment Benchmark state
   const [benchmarkComparison, setBenchmarkComparison] = useState<BenchmarkComparison | null>(null);
   const [benchmarkLoading, setBenchmarkLoading] = useState(false);
   const [benchmarkError, setBenchmarkError] = useState<string | null>(null);
-  
+
   // Expense Alert state
   const [expenseAlert, setExpenseAlert] = useState<ExpenseAlert | null>(null);
-  
+
   // Toast notification state
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
-  
+
   // Get pending transaction count for badge
   const pendingCount = usePendingTransactionCount();
 
@@ -184,7 +184,7 @@ export default function Home() {
     if (savedLang && ['en', 'hi', 'mr'].includes(savedLang)) {
       setLanguage(savedLang);
     }
-    
+
     // Load demo segment data to cache on first load (for offline benchmark)
     if (typeof window !== 'undefined') {
       const { loadDemoDataToCache } = require('@/lib/demoSegmentData');
@@ -217,7 +217,7 @@ export default function Home() {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
@@ -245,7 +245,7 @@ export default function Home() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
@@ -264,7 +264,7 @@ export default function Home() {
     };
 
     window.addEventListener('vyapar-daily-entries-changed', handleDailyEntriesChanged);
-    
+
     return () => {
       window.removeEventListener('vyapar-daily-entries-changed', handleDailyEntriesChanged);
     };
@@ -272,11 +272,11 @@ export default function Home() {
 
   const loadUserProfile = async () => {
     if (!user) return;
-    
+
     try {
       const response = await fetch(`/api/profile?userId=${user.userId}`);
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setUserProfile(result.data);
       } else {
@@ -291,14 +291,14 @@ export default function Home() {
 
   const fetchBenchmarkData = async () => {
     if (!user) return;
-    
+
     setBenchmarkLoading(true);
     setBenchmarkError(null);
-    
+
     try {
       const response = await fetch(`/api/benchmark?userId=${user.userId}`);
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setBenchmarkComparison(result.data);
       } else {
@@ -325,10 +325,10 @@ export default function Home() {
 
   const recalculateIndices = async () => {
     if (!user) return;
-    
+
     try {
       logger.debug('Triggering index recalculation', { userId: user.userId });
-      
+
       const response = await fetch('/api/indices/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -336,7 +336,7 @@ export default function Home() {
       });
 
       const result = await response.json();
-      
+
       if (result.success) {
         logger.info('Indices recalculated successfully', { userId: user.userId });
       } else {
@@ -350,7 +350,7 @@ export default function Home() {
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('vyapar-lang', lang);
-    
+
     // Re-generate AI content (recommendations and alerts) in the new language
     if (insights) {
       regenerateAIContent(lang);
@@ -360,17 +360,17 @@ export default function Home() {
   const regenerateAIContent = async (lang: Language) => {
     try {
       const { generateMockRecommendations, generateMockAlerts } = await import('@/lib/bedrock-client-mock');
-      
+
       setInsights(prev => {
         if (!prev) return prev;
-        
+
         return {
           ...prev,
           recommendations: generateMockRecommendations(lang),
           alerts: generateMockAlerts(lang),
         };
       });
-      
+
       logger.debug('AI content regenerated for language', { language: lang });
     } catch (error) {
       logger.warn('Failed to regenerate AI content', { error });
@@ -428,7 +428,7 @@ export default function Home() {
           }
         } catch (alertError) {
           // Log error but don't block entry submission
-          logger.error('Expense alert check failed', { 
+          logger.error('Expense alert check failed', {
             error: alertError,
             userId: user.userId,
             date: latestEntry.date,
@@ -452,11 +452,11 @@ export default function Home() {
     if (!user) {
       logger.error('No user found when adding transaction');
       setToast({
-        message: language === 'hi' 
+        message: language === 'hi'
           ? 'कृपया पहले लॉगिन करें'
           : language === 'mr'
-          ? 'कृपया प्रथम लॉगिन करा'
-          : 'Please login first',
+            ? 'कृपया प्रथम लॉगिन करा'
+            : 'Please login first',
         type: 'error'
       });
       return;
@@ -465,26 +465,26 @@ export default function Home() {
     try {
       // Use the proper utility function to add transaction
       const result = await addTransactionToDailyEntry(transaction, user.userId);
-      
+
       if (result.success) {
-        logger.info('Transaction successfully added', { 
+        logger.info('Transaction successfully added', {
           transactionId: transaction.id,
           date: transaction.date,
           totalSales: result.dailyEntry?.totalSales,
           totalExpense: result.dailyEntry?.totalExpense
         });
-        
+
         // Show success toast with transaction details
-        const typeLabel = transaction.type === 'sale' 
+        const typeLabel = transaction.type === 'sale'
           ? (language === 'hi' ? 'बिक्री' : language === 'mr' ? 'विक्री' : 'Sale')
           : (language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense');
-        
-        const successMessage = language === 'hi' 
+
+        const successMessage = language === 'hi'
           ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोड़ा गया!`
           : language === 'mr'
-          ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोडला!`
-          : `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} added!`;
-        
+            ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोडला!`
+            : `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} added!`;
+
         setToast({
           message: successMessage,
           type: 'success'
@@ -499,14 +499,14 @@ export default function Home() {
       }
     } catch (error) {
       logger.error('Failed to add transaction', { error, transactionId: transaction.id });
-      
+
       // Show error toast
       const errorMessage = language === 'hi'
         ? 'लेनदेन जोड़ने में विफल'
         : language === 'mr'
-        ? 'व्यवहार जोडण्यात अयशस्वी'
-        : 'Failed to add transaction';
-      
+          ? 'व्यवहार जोडण्यात अयशस्वी'
+          : 'Failed to add transaction';
+
       setToast({
         message: errorMessage,
         type: 'error'
@@ -518,11 +518,11 @@ export default function Home() {
     if (!user) {
       logger.error('No user found when processing voice data');
       setToast({
-        message: language === 'hi' 
+        message: language === 'hi'
           ? 'कृपया पहले लॉगिन करें'
           : language === 'mr'
-          ? 'कृपया प्रथम लॉगिन करा'
-          : 'Please login first',
+            ? 'कृपया प्रथम लॉगिन करा'
+            : 'Please login first',
         type: 'error'
       });
       return;
@@ -532,18 +532,18 @@ export default function Home() {
       // Import pending transaction utilities
       const { savePendingTransaction } = await import('@/lib/pending-transaction-store');
       const { isDuplicate } = await import('@/lib/duplicate-detector');
-      
+
       // Determine transaction type based on which field has data
       const type: 'expense' | 'sale' = data.expenses && data.expenses > 0 ? 'expense' : 'sale';
       const amount = type === 'expense' ? (data.expenses || 0) : (data.sales || 0);
-      
+
       // Generate deterministic ID based on voice data
       const idString = `voice-${data.date}-${amount}-${type}-${data.confidence}`;
       const encoder = new TextEncoder();
       const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(idString));
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const id = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
-      
+
       // Create InferredTransaction object
       const inferredTransaction: InferredTransaction = {
         id,
@@ -555,7 +555,7 @@ export default function Home() {
         created_at: new Date().toISOString(),
         raw_data: data,
       };
-      
+
       // Check for duplicates
       const duplicate = isDuplicate({
         date: inferredTransaction.date,
@@ -564,43 +564,43 @@ export default function Home() {
         category: inferredTransaction.category,
         source: inferredTransaction.source
       });
-      
+
       if (duplicate) {
         logger.info('Duplicate voice transaction detected', { transactionId: inferredTransaction.id });
         setToast({
           message: language === 'hi'
             ? 'यह लेनदेन पहले से जोड़ा जा चुका है'
             : language === 'mr'
-            ? 'हा व्यवहार आधीच जोडला गेला आहे'
-            : 'This transaction has already been added',
+              ? 'हा व्यवहार आधीच जोडला गेला आहे'
+              : 'This transaction has already been added',
           type: 'error'
         });
         return;
       }
-      
+
       // Save to pending store
       const saved = savePendingTransaction(inferredTransaction);
-      
+
       if (saved) {
-        logger.info('Voice transaction saved to pending', { 
+        logger.info('Voice transaction saved to pending', {
           transactionId: inferredTransaction.id,
           type,
           amount,
           confidence: data.confidence
         });
-        
+
         // Show success toast with confidence level
-        const successMessage = language === 'hi' 
+        const successMessage = language === 'hi'
           ? `वॉइस डेटा निकाला गया! (विश्वास: ${Math.round(data.confidence * 100)}%) लंबित टैब में जाएं।`
           : language === 'mr'
-          ? `व्हॉइस डेटा काढला! (विश्वास: ${Math.round(data.confidence * 100)}%) प्रलंबित टॅबमध्ये जा.`
-          : `Voice data extracted! (Confidence: ${Math.round(data.confidence * 100)}%) Go to Pending tab.`;
-        
+            ? `व्हॉइस डेटा काढला! (विश्वास: ${Math.round(data.confidence * 100)}%) प्रलंबित टॅबमध्ये जा.`
+            : `Voice data extracted! (Confidence: ${Math.round(data.confidence * 100)}%) Go to Pending tab.`;
+
         setToast({
           message: successMessage,
           type: 'success'
         });
-        
+
         // Switch to pending section to show the transaction
         setActiveSection('pending');
       } else {
@@ -608,14 +608,14 @@ export default function Home() {
       }
     } catch (error) {
       logger.error('Failed to process voice data', { error });
-      
+
       // Show error toast
       const errorMessage = language === 'hi'
         ? 'वॉइस डेटा प्रोसेस करने में विफल'
         : language === 'mr'
-        ? 'व्हॉइस डेटा प्रक्रिया करण्यात अयशस्वी'
-        : 'Failed to process voice data';
-      
+          ? 'व्हॉइस डेटा प्रक्रिया करण्यात अयशस्वी'
+          : 'Failed to process voice data';
+
       setToast({
         message: errorMessage,
         type: 'error'
@@ -632,34 +632,50 @@ export default function Home() {
         return;
       }
 
-      // daily-entry-sync returns newest-first
-      const latestEntry = dailyEntries[0];
+      // Aggregate across last 30 days of entries for a stable, meaningful score
+      // Using only the latest entry causes 0 scores on expense-only days
+      const recentEntries = dailyEntries.slice(0, 30);
 
-      const profitMargin =
-        typeof latestEntry.profitMargin === 'number'
-          ? latestEntry.profitMargin
-          : latestEntry.totalSales > 0
-          ? (latestEntry.totalSales - latestEntry.totalExpense) / latestEntry.totalSales
-          : 0;
+      const totalSalesAgg = recentEntries.reduce((sum, e) => sum + (e.totalSales || 0), 0);
+      const totalExpenseAgg = recentEntries.reduce((sum, e) => sum + (e.totalExpense || 0), 0);
 
-      const expenseRatio =
-        typeof latestEntry.expenseRatio === 'number'
-          ? latestEntry.expenseRatio
-          : latestEntry.totalSales > 0
-          ? latestEntry.totalExpense / latestEntry.totalSales
-          : 0;
+      // Aggregate profit margin and expense ratio across all recent entries
+      const profitMargin = totalSalesAgg > 0
+        ? (totalSalesAgg - totalExpenseAgg) / totalSalesAgg
+        : 0;
+
+      const expenseRatio = totalSalesAgg > 0
+        ? totalExpenseAgg / totalSalesAgg
+        : 0;
+
+      // Use most recent entry that has cashInHand recorded
+      // (users may only fill it occasionally, don't always use the very latest entry)
+      const entryWithCash = dailyEntries.find(
+        (e) => typeof e.cashInHand === 'number' && !isNaN(e.cashInHand)
+      );
+      const cashInHand = entryWithCash ? entryWithCash.cashInHand : undefined;
 
       const creditEntries = getLocalCreditEntries();
+      // Only include credit entries whose dueDate is within the last 90 days
+      // Older stale/demo entries should not permanently damage the score
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+      const recentCreditEntries = creditEntries.filter((entry) => {
+        const due = new Date(entry.dueDate);
+        return due >= ninetyDaysAgo;
+      });
       const creditSummary = calculateCreditSummary(
-        creditEntries.map((entry) => ({
+        recentCreditEntries.map((entry) => ({
           amount: entry.amount,
           dueDate: entry.dueDate,
           isPaid: entry.isPaid,
         }))
       );
 
-      const result = calculateHealthScore(profitMargin, expenseRatio, latestEntry.cashInHand, {
+      const result = calculateHealthScore(profitMargin, expenseRatio, cashInHand, {
         overdueCount: creditSummary.overdueCount,
+        totalOutstanding: creditSummary.totalOutstanding,
+        totalOverdue: creditSummary.totalOverdue,
       });
 
       if (typeof result.score === 'number' && Number.isFinite(result.score) && isValidHealthBreakdown(result.breakdown)) {
@@ -755,7 +771,7 @@ export default function Home() {
 
   const handleReceiptDataExtracted = async (data: { date: string; amount: number; items: string[]; vendor: string }) => {
     const itemsList = data.items.join(', ');
-    
+
     // Automatically add to daily entries
     try {
       const entry = {
@@ -780,8 +796,8 @@ export default function Home() {
         language === 'hi'
           ? `रसीद प्रोसेस हो गई!\n\nतारीख: ${data.date}\nराशि: ₹${data.amount}\nदुकान: ${data.vendor}\nवस्तुएं: ${itemsList}\n\nयह खर्च आपके दैनिक प्रविष्टियों में जोड़ दिया गया है।`
           : language === 'mr'
-          ? `पावती प्रक्रिया झाली!\n\nतारीख: ${data.date}\nरक्कम: ₹${data.amount}\nदुकान: ${data.vendor}\nवस्तू: ${itemsList}\n\nहा खर्च तुमच्या दैनिक नोंदींमध्ये जोडला गेला आहे।`
-          : `Receipt processed!\n\nDate: ${data.date}\nAmount: ₹${data.amount}\nVendor: ${data.vendor}\nItems: ${itemsList}\n\nThis expense has been added to your daily entries.`;
+            ? `पावती प्रक्रिया झाली!\n\nतारीख: ${data.date}\nरक्कम: ₹${data.amount}\nदुकान: ${data.vendor}\nवस्तू: ${itemsList}\n\nहा खर्च तुमच्या दैनिक नोंदींमध्ये जोडला गेला आहे।`
+            : `Receipt processed!\n\nDate: ${data.date}\nAmount: ₹${data.amount}\nVendor: ${data.vendor}\nItems: ${itemsList}\n\nThis expense has been added to your daily entries.`;
 
       alert(message);
     } catch (error) {
@@ -790,8 +806,8 @@ export default function Home() {
         language === 'hi'
           ? 'खर्च जोड़ने में विफल। कृपया मैन्युअल रूप से जोड़ें।'
           : language === 'mr'
-          ? 'खर्च जोडण्यात अयशस्वी. कृपया मॅन्युअली जोडा.'
-          : 'Failed to add expense. Please add manually.';
+            ? 'खर्च जोडण्यात अयशस्वी. कृपया मॅन्युअली जोडा.'
+            : 'Failed to add expense. Please add manually.';
       alert(errorMessage);
     }
   };
@@ -945,7 +961,7 @@ export default function Home() {
           onClose={() => setToast(null)}
         />
       )}
-      
+
       <div className="min-h-screen bg-gray-50 flex overflow-hidden">
         {/* Sidebar */}
         <aside className="hidden lg:flex w-64 border-r border-gray-200 bg-white flex-col h-screen sticky top-0">
@@ -968,16 +984,15 @@ export default function Home() {
               const Icon = section.icon;
               const active = activeSection === section.id;
               const showBadge = section.id === 'pending' && pendingCount.badge > 0;
-              
+
               return (
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    active
-                      ? 'bg-blue-50 text-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${active
+                    ? 'bg-blue-50 text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left">{getSectionLabel(section.id)}</span>
@@ -1019,7 +1034,7 @@ export default function Home() {
                 <>
                   {/* Top Banners */}
                   <TrustBanner language={language} />
-                  
+
                   {expenseAlert && (
                     <ExpenseAlertBanner
                       alert={expenseAlert}
@@ -1032,12 +1047,12 @@ export default function Home() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
 
-                    {typeof healthScore === 'number' && 
-                     Number.isFinite(healthScore) && 
-                     healthBreakdown && 
-                     isValidHealthBreakdown(healthBreakdown) && 
-                     !('success' in healthBreakdown) && 
-                     !('error' in healthBreakdown) ? (
+                    {typeof healthScore === 'number' &&
+                      Number.isFinite(healthScore) &&
+                      healthBreakdown &&
+                      isValidHealthBreakdown(healthBreakdown) &&
+                      !('success' in healthBreakdown) &&
+                      !('error' in healthBreakdown) ? (
                       <HealthScoreDisplay
                         score={healthScore}
                         breakdown={healthBreakdown}
@@ -1054,8 +1069,8 @@ export default function Home() {
                           {language === 'hi'
                             ? 'दैनिक एंट्री के बाद स्कोर दिखेगा।'
                             : language === 'mr'
-                            ? 'दैनिक नोंदीनंतर स्कोअर दिसेल.'
-                            : 'Score will appear after daily entries are added.'}
+                              ? 'दैनिक नोंदीनंतर स्कोअर दिसेल.'
+                              : 'Score will appear after daily entries are added.'}
                         </p>
                       </div>
                     )}
@@ -1124,15 +1139,15 @@ export default function Home() {
                     {language === 'hi'
                       ? 'चैट शुरू करने से पहले डेटा अपलोड करें।'
                       : language === 'mr'
-                      ? 'चॅट सुरू करण्यापूर्वी डेटा अपलोड करा.'
-                      : 'Upload data first to start Q&A chat.'}
+                        ? 'चॅट सुरू करण्यापूर्वी डेटा अपलोड करा.'
+                        : 'Upload data first to start Q&A chat.'}
                   </div>
                 ))}
 
               {activeSection === 'pending' && (
                 <div className="space-y-6">
-                  <PendingTransactionConfirmation 
-                    language={language} 
+                  <PendingTransactionConfirmation
+                    language={language}
                     onAdd={handleAddTransaction}
                   />
                   <CSVUpload language={language} />
@@ -1140,7 +1155,7 @@ export default function Home() {
               )}
 
               {activeSection === 'reports' && user && (
-                <ReportViewer 
+                <ReportViewer
                   userId={user.userId}
                   language={language === 'mr' ? 'hi' : language}
                 />

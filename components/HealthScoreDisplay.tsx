@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { Heart, Info, TrendingUp } from 'lucide-react';
@@ -19,19 +19,27 @@ interface HealthScoreDisplayProps {
   userId?: string;
 }
 
-export default function HealthScoreDisplay({ 
-  score, 
-  breakdown, 
+export default function HealthScoreDisplay({
+  score,
+  breakdown,
   language,
   sessionId,
   userId
 }: HealthScoreDisplayProps) {
   const [explaining, setExplaining] = useState(false);
-  const [explanation, setExplanation] = useState('');
+  // Cache explanations per language — switching language is instant (0 AI credits)
+  // if that language has already been fetched
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+
+  // Only clear the cache when the score itself changes (new data),
+  // NOT when language changes — language switch uses the cache
+  useEffect(() => {
+    setExplanations({});
+  }, [score]);
 
   // Safety check: ensure breakdown is valid
-  if (!breakdown || typeof breakdown !== 'object' || 
-      'success' in breakdown || 'error' in breakdown || 'errorType' in breakdown) {
+  if (!breakdown || typeof breakdown !== 'object' ||
+    'success' in breakdown || 'error' in breakdown || 'errorType' in breakdown) {
     logger.error('[HealthScoreDisplay] Invalid breakdown received', { breakdown });
     return null;
   }
@@ -48,41 +56,56 @@ export default function HealthScoreDisplay({
     return '#ef4444';
   };
 
+  const fetchForLanguage = async (lang: string): Promise<string> => {
+    const response = await fetch('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        userId,
+        metric: 'healthScore',
+        value: score,
+        context: breakdown,
+        language: lang,
+      }),
+    });
+    const data = await response.json();
+    if (data.success && data.explanation) {
+      return typeof data.explanation === 'string'
+        ? data.explanation
+        : data.explanation?.content ?? 'Unable to generate explanation.';
+    }
+    throw new Error(data.error || 'Explain failed');
+  };
+
   const handleExplain = async () => {
     if (!sessionId || !userId) return;
-    
+
+    const allLanguages: string[] = ['en', 'hi', 'mr'];
+
+    // If all 3 are already cached, nothing to do
+    if (allLanguages.every((l) => explanations[l])) return;
+
     setExplaining(true);
     try {
-      const response = await fetch('/api/explain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId,
-          userId,
-          metric: 'healthScore',
-          value: score,
-          context: breakdown,
-          language,
-        }),
-      });
+      // Fetch all 3 languages in parallel — pay once, instant switching forever
+      const results = await Promise.allSettled(
+        allLanguages.map((lang) => fetchForLanguage(lang))
+      );
 
-      const data = await response.json();
-      if (data.success && data.explanation) {
-        // Handle both flat string and nested object formats for backward compatibility
-        if (typeof data.explanation === 'string') {
-          setExplanation(data.explanation);
-        } else if (typeof data.explanation === 'object' && data.explanation.content) {
-          setExplanation(data.explanation.content);
+      const newCache: Record<string, string> = { ...explanations };
+      results.forEach((result, i) => {
+        const lang = allLanguages[i];
+        if (result.status === 'fulfilled') {
+          newCache[lang] = result.value;
         } else {
-          setExplanation('Unable to generate explanation at this time.');
+          logger.warn(`[HealthScore] Explain failed for ${lang}`, { error: result.reason });
+          newCache[lang] = explanations[lang] || 'Unable to generate explanation.';
         }
-      } else {
-        logger.warn('[HealthScore] Explain failed', { error: data.error });
-        setExplanation('Unable to generate explanation at this time.');
-      }
+      });
+      setExplanations(newCache);
     } catch (err) {
-      logger.error('Failed to get explanation', { error: err });
-      setExplanation('Unable to generate explanation at this time.');
+      logger.error('Failed to get explanations', { error: err });
     } finally {
       setExplaining(false);
     }
@@ -206,11 +229,51 @@ export default function HealthScoreDisplay({
         </div>
       </div>
 
-      {explanation && (
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{explanation}</p>
+      {explaining && (
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-pulse">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+            <span className="text-xs text-blue-500 ml-1">
+              {language === 'hi' ? 'AI विश्लेषण तैयार हो रहा है…' :
+                language === 'mr' ? 'AI विश्लेषण तयार होत आहे…' :
+                  'Generating AI explanation in all languages…'}
+            </span>
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 bg-blue-200 rounded w-full" />
+            <div className="h-3 bg-blue-200 rounded w-5/6" />
+            <div className="h-3 bg-blue-200 rounded w-4/6" />
+            <div className="h-3 bg-blue-200 rounded w-full mt-3" />
+            <div className="h-3 bg-blue-200 rounded w-3/4" />
+          </div>
         </div>
       )}
+
+      {!explaining && (() => {
+        const currentText = explanations[language];
+        const anyText = currentText || Object.values(explanations)[0];
+        const isFallback = !currentText && !!anyText;
+
+        const translateHint: Record<string, string> = {
+          hi: 'हिंदी में देखने के लिए "स्कोर समझाएं" दबाएं',
+          mr: 'मराठीत पाहण्यासाठी "स्कोअर समजावून सांगा" दाबा',
+          en: 'Click "Explain Score" to get explanation in English',
+        };
+
+        if (!anyText) return null;
+        return (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{anyText}</p>
+            {isFallback && (
+              <p className="mt-2 text-xs text-blue-500 italic">
+                {translateHint[language] || translateHint['en']}
+              </p>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

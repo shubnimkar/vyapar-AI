@@ -23,14 +23,14 @@ export const translations: Translations = {
     hi: 'आपका व्यापार स्वास्थ्य सहायक',
     mr: 'तुमचा व्यवसाय आरोग्य सहाय्यक',
   },
-  
+
   // NEW: Trust banner
   trustBanner: {
     en: 'Your data is private. Not connected to GST or any government system.',
     hi: 'आपका डेटा निजी है। GST या किसी सरकारी सिस्टम से जुड़ा नहीं है।',
     mr: 'तुमचा डेटा खाजगी आहे। GST किंवा कोणत्याही सरकारी प्रणालीशी जोडलेला नाही.',
   },
-  
+
   // NEW: Daily entry
   dailyEntry: {
     en: 'Daily Entry',
@@ -67,7 +67,7 @@ export const translations: Translations = {
     hi: 'प्रविष्टि जमा करें',
     mr: 'नोंद सबमिट करा',
   },
-  
+
   // NEW: Results
   estimatedProfit: {
     en: 'Estimated Profit',
@@ -84,7 +84,7 @@ export const translations: Translations = {
     hi: 'लाभ मार्जिन',
     mr: 'नफा मार्जिन',
   },
-  
+
   // NEW: Health score
   healthScore: {
     en: 'Business Health Score',
@@ -121,7 +121,7 @@ export const translations: Translations = {
     hi: 'उधार स्कोर',
     mr: 'उधार स्कोअर',
   },
-  
+
   // NEW: Credit tracking
   creditTracking: {
     en: 'Credit Tracking (Udhaar)',
@@ -228,7 +228,7 @@ export const translations: Translations = {
     hi: 'त्वरित सारांश',
     mr: 'द्रुत सारांश',
   },
-  
+
   // NEW: Advanced mode
   advancedMode: {
     en: 'Advanced Analysis (CSV Upload)',
@@ -245,14 +245,14 @@ export const translations: Translations = {
     hi: 'उन्नत मोड संक्षिप्त करें',
     mr: 'प्रगत मोड संकुचित करा',
   },
-  
+
   // Language selector
   selectLanguage: {
     en: 'Select Language',
     hi: 'भाषा चुनें',
     mr: 'भाषा निवडा',
   },
-  
+
   // Navigation
   'nav.dashboard': {
     en: 'Dashboard',
@@ -294,7 +294,7 @@ export const translations: Translations = {
     hi: 'खाता',
     mr: 'खाते',
   },
-  
+
   // File upload section
   uploadCSV: {
     en: 'Upload CSV File',
@@ -336,7 +336,7 @@ export const translations: Translations = {
     hi: 'सत्यापित कर रहा है...',
     mr: 'सत्यापित करत आहे...',
   },
-  
+
   // Analysis section
   analyzeButton: {
     en: 'Analyze My Business',
@@ -348,7 +348,7 @@ export const translations: Translations = {
     hi: 'विश्लेषण हो रहा है...',
     mr: 'विश्लेषण होत आहे...',
   },
-  
+
   // Insights section
   insights: {
     en: 'Business Insights',
@@ -390,7 +390,7 @@ export const translations: Translations = {
     hi: 'रोकें',
     mr: 'थांबवा',
   },
-  
+
   // Q&A section
   askQuestion: {
     en: 'Ask a Question',
@@ -412,7 +412,7 @@ export const translations: Translations = {
     hi: 'आवाज इनपुट',
     mr: 'आवाज इनपुट',
   },
-  
+
   // Phone Authentication
   phoneNumber: {
     en: 'Phone Number',
@@ -474,7 +474,7 @@ export const translations: Translations = {
     hi: 'खाता बनाया गया',
     mr: 'खाते तयार केले',
   },
-  
+
   // Error messages
   uploadDataFirst: {
     en: 'Please upload your business data first',
@@ -501,7 +501,7 @@ export const translations: Translations = {
     hi: 'सत्र समाप्त हो गया। कृपया डेटा फिर से अपलोड करें।',
     mr: 'सत्र संपले. कृपया डेटा पुन्हा अपलोड करा.',
   },
-  
+
   // Phone validation errors
   phoneInvalidFormat: {
     en: 'Please enter a valid 10-digit mobile number',
@@ -523,7 +523,7 @@ export const translations: Translations = {
     hi: 'फ़ोन नंबर में केवल अंक होने चाहिए',
     mr: 'फोन नंबरमध्ये फक्त अंक असावेत',
   },
-  
+
   // OTP errors
   otpInvalid: {
     en: 'Invalid OTP. Please check and try again.',
@@ -555,7 +555,7 @@ export const translations: Translations = {
     hi: 'नेटवर्क त्रुटि। कृपया अपना कनेक्शन जांचें।',
     mr: 'नेटवर्क त्रुटी. कृपया तुमचे कनेक्शन तपासा.',
   },
-  
+
   // Auth success messages
   otpSentSuccess: {
     en: 'OTP sent successfully',
@@ -572,7 +572,7 @@ export const translations: Translations = {
     hi: 'सफलतापूर्वक लॉगआउट किया गया',
     mr: 'यशस्वीरित्या लॉगआउट केले',
   },
-  
+
   // Migration messages
   migratingData: {
     en: 'Migrating your data...',
@@ -589,7 +589,7 @@ export const translations: Translations = {
     hi: 'डेटा माइग्रेशन विफल। आपका डेटा सुरक्षित है, हम अगली बार पुनः प्रयास करेंगे।',
     mr: 'डेटा माइग्रेशन अयशस्वी. तुमचा डेटा सुरक्षित आहे, आम्ही पुढच्या वेळी पुन्हा प्रयत्न करू.',
   },
-  
+
   // Resend countdown
   resendIn: {
     en: 'Resend in',
@@ -601,7 +601,7 @@ export const translations: Translations = {
     hi: 'सेकंड',
     mr: 'सेकंद',
   },
-  
+
   // Preview
   preview: {
     en: 'Preview',
@@ -613,7 +613,7 @@ export const translations: Translations = {
     hi: 'पंक्तियाँ अपलोड की गईं',
     mr: 'ओळी अपलोड केल्या',
   },
-  
+
   // Profile setup
   'profile.setup.title': {
     en: 'Complete Your Profile',
@@ -655,7 +655,7 @@ export const translations: Translations = {
     hi: 'प्रोफ़ाइल पूरी करें',
     mr: 'प्रोफाइल पूर्ण करा',
   },
-  
+
   // Settings
   'settings.title': {
     en: 'Settings',
@@ -717,7 +717,7 @@ export const translations: Translations = {
     hi: 'अंतिम सक्रिय',
     mr: 'शेवटचे सक्रिय',
   },
-  
+
   // Account deletion
   'deletion.title': {
     en: 'Delete Account',
@@ -749,7 +749,7 @@ export const translations: Translations = {
     hi: 'हटाना पुष्टि करें',
     mr: 'हटवणे पुष्टी करा',
   },
-  
+
   // Daily Entry - New UI
   'daily.title': {
     en: 'Daily Entries',
@@ -928,7 +928,7 @@ export const translations: Translations = {
     hi: 'अन्य',
     mr: 'इतर',
   },
-  
+
   // Error messages
   'error.required': {
     en: 'This field is required',
@@ -950,7 +950,7 @@ export const translations: Translations = {
     hi: 'प्रोफ़ाइल अपडेट करने में विफल। कृपया पुनः प्रयास करें।',
     mr: 'प्रोफाइल अपडेट करण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
   },
-  
+
   // Success messages
   'success.profileUpdated': {
     en: 'Profile updated successfully',
@@ -962,14 +962,14 @@ export const translations: Translations = {
     hi: 'खाता हटाना सफलतापूर्वक रद्द किया गया',
     mr: 'खाते हटवणे यशस्वीरित्या रद्द केले',
   },
-  
+
   // Phone already registered
   phoneAlreadyRegistered: {
     en: 'This phone number is already registered. Please sign in instead.',
     hi: 'यह फ़ोन नंबर पहले से पंजीकृत है। कृपया साइन इन करें।',
     mr: 'हा फोन नंबर आधीच नोंदणीकृत आहे. कृपया साइन इन करा.',
   },
-  
+
   // Authentication and Registration
   usernameLabel: {
     en: 'Username',
@@ -1051,7 +1051,7 @@ export const translations: Translations = {
     hi: 'कनेक्शन त्रुटि, कृपया पुनः प्रयास करें',
     mr: 'कनेक्शन त्रुटी, कृपया पुन्हा प्रयत्न करा',
   },
-  
+
   // Daily Health Coach - Suggestion translations
   'suggestions.high_credit.title': {
     en: 'Too Much Money in Credit',
@@ -1118,7 +1118,7 @@ export const translations: Translations = {
     hi: 'खारिज करें',
     mr: 'डिसमिस करा'
   },
-  
+
   // Follow-Up Panel (Udhaar Follow-up Helper)
   'followUp.title': {
     en: 'Follow-up & Collections',
@@ -1170,7 +1170,7 @@ export const translations: Translations = {
     hi: 'सबसे पुराना उधार',
     mr: 'सर्वात जुने उधार'
   },
-  
+
   // WhatsApp message templates (Udhaar Follow-up Helper)
   'whatsapp.reminder.en': {
     en: 'Hello {name}, this is a friendly reminder that ₹{amount} is due since {date}. Please pay at your earliest convenience. Thank you!',
@@ -1187,7 +1187,7 @@ export const translations: Translations = {
     hi: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!',
     mr: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!'
   },
-  
+
   // Error messages for Follow-Up Panel
   'error.networkUnavailable': {
     en: 'Network unavailable. Changes will sync when online.',
@@ -2084,6 +2084,137 @@ export const translations: Translations = {
     hi: 'कृपया एक मान्य सकारात्मक राशि दर्ज करें',
     mr: 'कृपया वैध सकारात्मक रक्कम प्रविष्ट करा'
   },
+
+  // Segment Benchmark translations
+  'benchmark.title': {
+    en: 'How You Compare',
+    hi: 'आप कैसे तुलना करते हैं',
+    mr: 'तुमची तुलना कशी आहे'
+  },
+  'benchmark.healthScore': {
+    en: 'Health Score',
+    hi: 'स्वास्थ्य स्कोर',
+    mr: 'आरोग्य स्कोअर'
+  },
+  'benchmark.profitMargin': {
+    en: 'Profit Margin',
+    hi: 'लाभ मार्जिन',
+    mr: 'नफा मार्जिन'
+  },
+  'benchmark.yourBusiness': {
+    en: 'Your Business',
+    hi: 'आपका व्यापार',
+    mr: 'तुमचा व्यवसाय'
+  },
+  'benchmark.segmentAverage': {
+    en: 'Similar Businesses',
+    hi: 'समान व्यापार',
+    mr: 'समान व्यवसाय'
+  },
+  'benchmark.category.above_average': {
+    en: 'Above Average',
+    hi: 'औसत से ऊपर',
+    mr: 'सरासरीपेक्षा जास्त'
+  },
+  'benchmark.category.at_average': {
+    en: 'At Average',
+    hi: 'औसत पर',
+    mr: 'सरासरी'
+  },
+  'benchmark.category.below_average': {
+    en: 'Below Average',
+    hi: 'औसत से नीचे',
+    mr: 'सरासरीपेक्षा कमी'
+  },
+  'benchmark.sampleSize': {
+    en: 'Based on {count} businesses',
+    hi: '{count} व्यापारों के आधार पर',
+    mr: '{count} व्यवसायांवर आधारित'
+  },
+  'benchmark.limitedData': {
+    en: 'Limited data - comparison may not be representative',
+    hi: 'सीमित डेटा - तुलना प्रतिनिधि नहीं हो सकती',
+    mr: 'मर्यादित डेटा - तुलना प्रतिनिधी नसू शकते'
+  },
+  'benchmark.staleData': {
+    en: 'Data is {days} days old',
+    hi: 'डेटा {days} दिन पुराना है',
+    mr: 'डेटा {days} दिवस जुना आहे'
+  },
+  'benchmark.noData': {
+    en: 'No comparison data available. Complete your profile to see benchmarks.',
+    hi: 'कोई तुलना डेटा उपलब्ध नहीं है। बेंचमार्क देखने के लिए अपनी प्रोफ़ाइल पूरी करें।',
+    mr: 'तुलना डेटा उपलब्ध नाही. बेंचमार्क पाहण्यासाठी तुमची प्रोफाइल पूर्ण करा.'
+  },
+  'benchmark.profileIncomplete': {
+    en: 'Complete your profile (city tier and business type) to see benchmarks',
+    hi: 'बेंचमार्क देखने के लिए अपनी प्रोफ़ाइल (शहर स्तर और व्यवसाय प्रकार) पूरी करें',
+    mr: 'बेंचमार्क पाहण्यासाठी तुमची प्रोफाइल (शहर स्तर आणि व्यवसाय प्रकार) पूर्ण करा'
+  },
+  'benchmark.noDailyEntries': {
+    en: 'Add daily entries to see your benchmark comparison',
+    hi: 'अपनी बेंचमार्क तुलना देखने के लिए दैनिक प्रविष्टियाँ जोड़ें',
+    mr: 'तुमची बेंचमार्क तुलना पाहण्यासाठी दैनिक नोंदी जोडा'
+  },
+  'benchmark.segmentUnavailable': {
+    en: 'Benchmark data not available for your segment',
+    hi: 'आपके खंड के लिए बेंचमार्क डेटा उपलब्ध नहीं है',
+    mr: 'तुमच्या विभागासाठी बेंचमार्क डेटा उपलब्ध नाही'
+  },
+  'benchmark.getAiExplanation': {
+    en: 'Get AI Explanation',
+    hi: 'AI व्याख्या प्राप्त करें',
+    mr: 'AI स्पष्टीकरण मिळवा'
+  },
+  'benchmark.aiExplanation': {
+    en: 'AI Explanation',
+    hi: 'AI व्याख्या',
+    mr: 'AI स्पष्टीकरण'
+  },
+  'benchmark.hide': {
+    en: 'Hide',
+    hi: 'छुपाएं',
+    mr: 'लपवा'
+  },
+
+  // Benchmark component error messages
+  'error.loginRequired': {
+    en: 'Please log in to get AI explanation',
+    hi: 'AI व्याख्या प्राप्त करने के लिए कृपया लॉग इन करें',
+    mr: 'AI स्पष्टीकरण मिळवण्यासाठी कृपया लॉग इन करा'
+  },
+  'error.aiExplanationUnavailable': {
+    en: 'AI explanation temporarily unavailable',
+    hi: 'AI व्याख्या अस्थायी रूप से अनुपलब्ध है',
+    mr: 'AI स्पष्टीकरण तात्पुरते अनुपलब्ध आहे'
+  },
+
+  // Offline Page translations
+  'offline.viewCachedEntries': {
+    en: 'View cached daily entries',
+    hi: 'कैश की गई दैनिक प्रविष्टियाँ देखें',
+    mr: 'कॅश केलेल्या दैनिक नोंदी पहा'
+  },
+  'offline.addNewEntries': {
+    en: 'Add new entries (will sync when online)',
+    hi: 'नई प्रविष्टियाँ जोड़ें (ऑनलाइन होने पर सिंक होंगी)',
+    mr: 'नवीन नोंदी जोडा (ऑनलाइन असताना सिंक होतील)'
+  },
+  'offline.viewHealthScore': {
+    en: 'View health score and indices',
+    hi: 'स्वास्थ्य स्कोर और सूचकांक देखें',
+    mr: 'आरोग्य स्कोअर आणि निर्देशांक पहा'
+  },
+  'offline.manageCredit': {
+    en: 'Manage credit entries',
+    hi: 'उधार प्रविष्टियाँ प्रबंधित करें',
+    mr: 'उधार नोंदी व्यवस्थापित करा'
+  },
+  'offline.autoSyncMessage': {
+    en: "Your data will automatically sync when you're back online",
+    hi: 'ऑनलाइन होने पर आपका डेटा स्वचालित रूप से सिंक हो जाएगा',
+    mr: 'तुम्ही ऑनलाइन परत आल्यावर तुमचा डेटा आपोआप सिंक होईल'
+  },
 };
 
 /**
@@ -2107,7 +2238,7 @@ export function t(key: string, language: Language): string {
   }
 
   const translationEntry = translations[key];
-  
+
   // Validate translation entry structure
   if (!translationEntry || typeof translationEntry !== 'object') {
     if (process.env.NODE_ENV === 'development' && key.startsWith('benchmark.')) {
@@ -2118,14 +2249,14 @@ export function t(key: string, language: Language): string {
 
   // Try requested language first with explicit property check
   let translatedText: string | undefined;
-  
+
   if (Object.prototype.hasOwnProperty.call(translationEntry, language)) {
     translatedText = translationEntry[language];
   } else if (Object.prototype.hasOwnProperty.call(translationEntry, 'en')) {
     // Fallback to English
     translatedText = translationEntry['en'];
   }
-  
+
   // Additional validation: ensure we got a non-empty string
   if (typeof translatedText !== 'string' || translatedText.length === 0) {
     if (process.env.NODE_ENV === 'development') {
@@ -2142,11 +2273,11 @@ export function t(key: string, language: Language): string {
  */
 export function getLanguageTranslations(language: Language): Record<string, string> {
   const result: Record<string, string> = {};
-  
+
   for (const [key, value] of Object.entries(translations)) {
     result[key] = value[language];
   }
-  
+
   return result;
 }
 
@@ -2249,7 +2380,7 @@ export const errorTranslations: Translations = {
     hi: 'प्रोफ़ाइल नहीं मिली। कृपया अपनी प्रोफ़ाइल पूरी करें।',
     mr: 'प्रोफाइल सापडली नाही. कृपया तुमची प्रोफाइल पूर्ण करा.'
   },
-  
+
   // AI Provider Fallback Error Messages
   'errors.aiUnavailable': {
     en: 'AI service temporarily unavailable. Please try again later.',
@@ -2438,139 +2569,6 @@ export const errorTranslations: Translations = {
     hi: 'कृपया एक मान्य सकारात्मक राशि दर्ज करें',
     mr: 'कृपया वैध सकारात्मक रक्कम प्रविष्ट करा'
   },
-
-  // Segment Benchmark translations
-  'benchmark.title': {
-    en: 'How You Compare',
-    hi: 'आप कैसे तुलना करते हैं',
-    mr: 'तुमची तुलना कशी आहे'
-  },
-  'benchmark.healthScore': {
-    en: 'Health Score',
-    hi: 'स्वास्थ्य स्कोर',
-    mr: 'आरोग्य स्कोअर'
-  },
-  'benchmark.profitMargin': {
-    en: 'Profit Margin',
-    hi: 'लाभ मार्जिन',
-    mr: 'नफा मार्जिन'
-  },
-  'benchmark.yourBusiness': {
-    en: 'Your Business',
-    hi: 'आपका व्यापार',
-    mr: 'तुमचा व्यवसाय'
-  },
-  'benchmark.segmentAverage': {
-    en: 'Similar Businesses',
-    hi: 'समान व्यापार',
-    mr: 'समान व्यवसाय'
-  },
-  'benchmark.category.above_average': {
-    en: 'Above Average',
-    hi: 'औसत से ऊपर',
-    mr: 'सरासरीपेक्षा जास्त'
-  },
-  'benchmark.category.at_average': {
-    en: 'At Average',
-    hi: 'औसत पर',
-    mr: 'सरासरी'
-  },
-  'benchmark.category.below_average': {
-    en: 'Below Average',
-    hi: 'औसत से नीचे',
-    mr: 'सरासरीपेक्षा कमी'
-  },
-  'benchmark.sampleSize': {
-    en: 'Based on {count} businesses',
-    hi: '{count} व्यापारों के आधार पर',
-    mr: '{count} व्यवसायांवर आधारित'
-  },
-  'benchmark.limitedData': {
-    en: 'Limited data - comparison may not be representative',
-    hi: 'सीमित डेटा - तुलना प्रतिनिधि नहीं हो सकती',
-    mr: 'मर्यादित डेटा - तुलना प्रतिनिधी नसू शकते'
-  },
-  'benchmark.staleData': {
-    en: 'Data is {days} days old',
-    hi: 'डेटा {days} दिन पुराना है',
-    mr: 'डेटा {days} दिवस जुना आहे'
-  },
-  'benchmark.noData': {
-    en: 'No comparison data available. Complete your profile to see benchmarks.',
-    hi: 'कोई तुलना डेटा उपलब्ध नहीं है। बेंचमार्क देखने के लिए अपनी प्रोफ़ाइल पूरी करें।',
-    mr: 'तुलना डेटा उपलब्ध नाही. बेंचमार्क पाहण्यासाठी तुमची प्रोफाइल पूर्ण करा.'
-  },
-  'benchmark.profileIncomplete': {
-    en: 'Complete your profile (city tier and business type) to see benchmarks',
-    hi: 'बेंचमार्क देखने के लिए अपनी प्रोफ़ाइल (शहर स्तर और व्यवसाय प्रकार) पूरी करें',
-    mr: 'बेंचमार्क पाहण्यासाठी तुमची प्रोफाइल (शहर स्तर आणि व्यवसाय प्रकार) पूर्ण करा'
-  },
-  'benchmark.noDailyEntries': {
-    en: 'Add daily entries to see your benchmark comparison',
-    hi: 'अपनी बेंचमार्क तुलना देखने के लिए दैनिक प्रविष्टियाँ जोड़ें',
-    mr: 'तुमची बेंचमार्क तुलना पाहण्यासाठी दैनिक नोंदी जोडा'
-  },
-  'benchmark.segmentUnavailable': {
-    en: 'Benchmark data not available for your segment',
-    hi: 'आपके खंड के लिए बेंचमार्क डेटा उपलब्ध नहीं है',
-    mr: 'तुमच्या विभागासाठी बेंचमार्क डेटा उपलब्ध नाही'
-  },
-  
-  // Benchmark AI Explanation
-  'benchmark.getAiExplanation': {
-    en: 'Get AI Explanation',
-    hi: 'AI व्याख्या प्राप्त करें',
-    mr: 'AI स्पष्टीकरण मिळवा'
-  },
-  'benchmark.aiExplanation': {
-    en: 'AI Explanation',
-    hi: 'AI व्याख्या',
-    mr: 'AI स्पष्टीकरण'
-  },
-  'benchmark.hide': {
-    en: 'Hide',
-    hi: 'छुपाएं',
-    mr: 'लपवा'
-  },
-  
-  // Benchmark Error Messages
-  'error.loginRequired': {
-    en: 'Please log in to get AI explanation',
-    hi: 'AI व्याख्या प्राप्त करने के लिए कृपया लॉग इन करें',
-    mr: 'AI स्पष्टीकरण मिळवण्यासाठी कृपया लॉग इन करा'
-  },
-  'error.aiExplanationUnavailable': {
-    en: 'AI explanation temporarily unavailable',
-    hi: 'AI व्याख्या अस्थायी रूप से अनुपलब्ध है',
-    mr: 'AI स्पष्टीकरण तात्पुरते अनुपलब्ध आहे'
-  },
-  
-  // Offline Page translations
-  'offline.viewCachedEntries': {
-    en: 'View cached daily entries',
-    hi: 'कैश की गई दैनिक प्रविष्टियाँ देखें',
-    mr: 'कॅश केलेल्या दैनिक नोंदी पहा'
-  },
-  'offline.addNewEntries': {
-    en: 'Add new entries (will sync when online)',
-    hi: 'नई प्रविष्टियाँ जोड़ें (ऑनलाइन होने पर सिंक होंगी)',
-    mr: 'नवीन नोंदी जोडा (ऑनलाइन असताना सिंक होतील)'
-  },
-  'offline.viewHealthScore': {
-    en: 'View health score and indices',
-    hi: 'स्वास्थ्य स्कोर और सूचकांक देखें',
-    mr: 'आरोग्य स्कोअर आणि निर्देशांक पहा'
-  },
-  'offline.manageCredit': {
-    en: 'Manage credit entries',
-    hi: 'उधार प्रविष्टियाँ प्रबंधित करें',
-    mr: 'उधार नोंदी व्यवस्थापित करा'
-  },
-  'offline.autoSyncMessage': {
-    en: 'Your data will automatically sync when you\'re back online',
-    hi: 'ऑनलाइन होने पर आपका डेटा स्वचालित रूप से सिंक हो जाएगा',
-    mr: 'तुम्ही ऑनलाइन परत आल्यावर तुमचा डेटा आपोआप सिंक होईल'
-  }
 };
 
 /**
@@ -2582,10 +2580,10 @@ export const errorTranslations: Translations = {
  */
 export function getErrorMessage(key: string, language: Language): string {
   const translations = errorTranslations[key];
-  
+
   if (!translations) {
     return 'An error occurred';
   }
-  
+
   return translations[language] || translations.en;
 }
