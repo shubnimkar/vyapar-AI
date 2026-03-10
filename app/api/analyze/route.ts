@@ -97,8 +97,8 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // STEP 3: Call AI for EXPLANATION only (not calculation)
     // STEP 2: Build analysis prompt with PRE-CALCULATED metrics
+    // STEP 3: Call AI for EXPLANATION only (not calculation)
     const prompt = buildAnalysisPrompt(
       session.salesData,
       session.expensesData,

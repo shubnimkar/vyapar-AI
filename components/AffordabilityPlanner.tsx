@@ -130,13 +130,14 @@ export default function AffordabilityPlanner({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-200">
-      {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">
-          {t('indices.affordabilityIndex', language)}
-        </h3>
-      </div>
+    <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-200 h-full flex flex-col justify-between">
+      <div>
+        {/* Header */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">
+            {t('indices.affordabilityIndex', language)}
+          </h3>
+        </div>
 
       {/* Input Section */}
       <div className="mb-4">
@@ -259,6 +260,7 @@ export default function AffordabilityPlanner({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

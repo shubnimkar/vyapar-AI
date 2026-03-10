@@ -80,21 +80,23 @@ export default function StressIndexDisplay({
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">
-          {t('indices.stressIndex', language)}
-        </h3>
-      </div>
+    <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-200 h-full flex flex-col justify-between">
+      <div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">
+            {t('indices.stressIndex', language)}
+          </h3>
+        </div>
 
-      {/* Score Display */}
-      <div className="flex items-center justify-center mb-4">
-        <div
-          className={`${colorClasses.bg} ${colorClasses.text} ${colorClasses.border} border-4 rounded-full w-32 h-32 flex flex-col items-center justify-center`}
-        >
-          <div className="text-4xl font-bold">{Math.round(stressIndex.score)}</div>
-          <div className="text-sm font-medium">{t('indices.score', language)}</div>
+        {/* Score Display */}
+        <div className="flex items-center justify-center mb-4">
+          <div
+            className={`${colorClasses.bg} ${colorClasses.text} ${colorClasses.border} border-4 rounded-full w-32 h-32 flex flex-col items-center justify-center`}
+          >
+            <div className="text-4xl font-bold">{Math.round(stressIndex.score)}</div>
+            <div className="text-sm font-medium">{t('indices.score', language)}</div>
+          </div>
         </div>
       </div>
 

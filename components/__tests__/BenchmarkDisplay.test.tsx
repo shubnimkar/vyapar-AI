@@ -12,9 +12,9 @@ jest.mock('@/lib/translations', () => ({
   t: (key: string, language: string) => {
     const translations: Record<string, Record<string, string>> = {
       'benchmark.title': {
-        en: 'How You Compare',
-        hi: 'आप कैसे तुलना करते हैं',
-        mr: 'तुमची तुलना कशी आहे'
+        en: 'Business Benchmark',
+        hi: 'व्यापार तुलना',
+        mr: 'व्यवसाय तुलना'
       },
       'benchmark.healthScore': {
         en: 'Health Score',
@@ -157,7 +157,7 @@ describe('BenchmarkDisplay', () => {
       expect(screen.getByText('Health Score')).toBeInTheDocument();
       expect(screen.getByText('75')).toBeInTheDocument();
       expect(screen.getByText('65')).toBeInTheDocument();
-      expect(screen.getAllByText('Above Average').length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Above Average/).length).toBeGreaterThan(0);
     });
 
     it('should render profit margin comparison', () => {
@@ -279,7 +279,7 @@ describe('BenchmarkDisplay', () => {
         />
       );
 
-      const indicators = screen.getAllByText('📈');
+      const indicators = screen.getAllByText(/📈/);
       expect(indicators.length).toBeGreaterThan(0);
     });
 
@@ -304,7 +304,7 @@ describe('BenchmarkDisplay', () => {
         />
       );
 
-      const indicators = screen.getAllByText('➡️');
+      const indicators = screen.getAllByText(/➡️/);
       expect(indicators.length).toBeGreaterThan(0);
     });
 
@@ -329,7 +329,7 @@ describe('BenchmarkDisplay', () => {
         />
       );
 
-      const indicators = screen.getAllByText('📉');
+      const indicators = screen.getAllByText(/📉/);
       expect(indicators.length).toBeGreaterThan(0);
     });
   });
@@ -344,7 +344,7 @@ describe('BenchmarkDisplay', () => {
         />
       );
 
-      expect(screen.getByText('आप कैसे तुलना करते हैं')).toBeInTheDocument();
+      expect(screen.getByText('व्यापार तुलना')).toBeInTheDocument();
       expect(screen.getByText('स्वास्थ्य स्कोर')).toBeInTheDocument();
     });
 
@@ -357,7 +357,7 @@ describe('BenchmarkDisplay', () => {
         />
       );
 
-      expect(screen.getByText('तुमची तुलना कशी आहे')).toBeInTheDocument();
+      expect(screen.getByText('व्यवसाय तुलना')).toBeInTheDocument();
       expect(screen.getByText('आरोग्य स्कोअर')).toBeInTheDocument();
     });
   });

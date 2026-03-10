@@ -330,13 +330,14 @@ export default function IndicesDashboard({
       </div>
 
       {/* Explain Button */}
-      <div className="text-center">
+      <div className="flex justify-center mt-6">
         <Button
           onClick={handleExplain}
           disabled={isExplaining}
           loading={isExplaining}
           variant="primary"
           size="lg"
+          className="w-full lg:w-auto min-w-[200px]"
         >
           {isExplaining
             ? t('indices.explaining', language)

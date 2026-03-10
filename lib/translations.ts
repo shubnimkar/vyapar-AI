@@ -2087,9 +2087,9 @@ export const translations: Translations = {
 
   // Segment Benchmark translations
   'benchmark.title': {
-    en: 'How You Compare',
-    hi: 'आप कैसे तुलना करते हैं',
-    mr: 'तुमची तुलना कशी आहे'
+    en: 'Business Benchmark',
+    hi: 'व्यापार तुलना',
+    mr: 'व्यवसाय तुलना'
   },
   'benchmark.healthScore': {
     en: 'Health Score',
@@ -2162,9 +2162,9 @@ export const translations: Translations = {
     mr: 'तुमच्या विभागासाठी बेंचमार्क डेटा उपलब्ध नाही'
   },
   'benchmark.getAiExplanation': {
-    en: 'Get AI Explanation',
-    hi: 'AI व्याख्या प्राप्त करें',
-    mr: 'AI स्पष्टीकरण मिळवा'
+    en: 'Get AI Insights',
+    hi: 'AI विश्लेषण देखें',
+    mr: 'AI विश्लेषण पहा'
   },
   'benchmark.aiExplanation': {
     en: 'AI Explanation',
