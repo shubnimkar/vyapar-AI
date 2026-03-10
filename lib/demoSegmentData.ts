@@ -22,7 +22,8 @@ export function generateDemoSegmentData(): SegmentData[] {
   const healthScoreRanges: Record<CityTier, [number, number]> = {
     tier1: [60, 80],
     tier2: [50, 70],
-    tier3: [40, 60]
+    tier3: [40, 60],
+    rural: [35, 55]
   };
   
   // Margin ranges by business type
@@ -38,7 +39,8 @@ export function generateDemoSegmentData(): SegmentData[] {
   const sampleSizeRanges: Record<CityTier, [number, number]> = {
     tier1: [200, 500],
     tier2: [100, 300],
-    tier3: [50, 150]
+    tier3: [50, 150],
+    rural: [30, 100]
   };
   
   for (const tier of cityTiers) {

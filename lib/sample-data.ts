@@ -69,6 +69,7 @@ export const demoHighCreditScenario = {
     date: '2024-03-01',
     totalSales: 10000,
     totalExpense: 6000,
+    estimatedProfit: 4000,
     profitMargin: 0.4,
     expenseRatio: 0.6,
     cashInHand: 15000,
@@ -76,9 +77,39 @@ export const demoHighCreditScenario = {
   } as DailyEntry,
   
   creditEntries: [
-    { id: 'c1', customerName: 'Ramesh Store', amount: 2000, dueDate: '2024-03-15', isPaid: false, date: '2024-02-20' },
-    { id: 'c2', customerName: 'Suresh Shop', amount: 1500, dueDate: '2024-03-10', isPaid: false, date: '2024-02-25' },
-    { id: 'c3', customerName: 'Mahesh Traders', amount: 1500, dueDate: '2024-03-20', isPaid: false, date: '2024-02-28' }
+    { 
+      id: 'c1', 
+      userId: 'demo-user',
+      customerName: 'Ramesh Store', 
+      amount: 2000, 
+      dateGiven: '2024-02-20',
+      dueDate: '2024-03-15', 
+      isPaid: false,
+      createdAt: '2024-02-20T00:00:00Z',
+      updatedAt: '2024-02-20T00:00:00Z'
+    },
+    { 
+      id: 'c2', 
+      userId: 'demo-user',
+      customerName: 'Suresh Shop', 
+      amount: 1500, 
+      dateGiven: '2024-02-25',
+      dueDate: '2024-03-10', 
+      isPaid: false,
+      createdAt: '2024-02-25T00:00:00Z',
+      updatedAt: '2024-02-25T00:00:00Z'
+    },
+    { 
+      id: 'c3', 
+      userId: 'demo-user',
+      customerName: 'Mahesh Traders', 
+      amount: 1500, 
+      dateGiven: '2024-02-28',
+      dueDate: '2024-03-20', 
+      isPaid: false,
+      createdAt: '2024-02-28T00:00:00Z',
+      updatedAt: '2024-02-28T00:00:00Z'
+    }
   ] as CreditEntry[],
   
   historicalEntries: generateHistoricalEntries('2024-03-01', 30, {
@@ -101,6 +132,7 @@ export const demoMarginDropScenario = {
     date: '2024-03-01',
     totalSales: 10000,
     totalExpense: 8000,
+    estimatedProfit: 2000,
     profitMargin: 0.2,
     expenseRatio: 0.8,
     cashInHand: 12000,
@@ -108,7 +140,17 @@ export const demoMarginDropScenario = {
   } as DailyEntry,
   
   creditEntries: [
-    { id: 'c1', customerName: 'Regular Customer', amount: 1000, dueDate: '2024-03-15', isPaid: false, date: '2024-02-20' }
+    { 
+      id: 'c1', 
+      userId: 'demo-user',
+      customerName: 'Regular Customer', 
+      amount: 1000, 
+      dateGiven: '2024-02-20',
+      dueDate: '2024-03-15', 
+      isPaid: false,
+      createdAt: '2024-02-20T00:00:00Z',
+      updatedAt: '2024-02-20T00:00:00Z'
+    }
   ] as CreditEntry[],
   
   historicalEntries: generateHistoricalEntries('2024-03-01', 30, {
@@ -131,6 +173,7 @@ export const demoLowCashScenario = {
     date: '2024-03-01',
     totalSales: 8000,
     totalExpense: 5000,
+    estimatedProfit: 3000,
     profitMargin: 0.375,
     expenseRatio: 0.625,
     cashInHand: 25000, // Only 5 days buffer at 5000/day expenses
@@ -138,7 +181,17 @@ export const demoLowCashScenario = {
   } as DailyEntry,
   
   creditEntries: [
-    { id: 'c1', customerName: 'Customer A', amount: 1500, dueDate: '2024-03-15', isPaid: false, date: '2024-02-20' }
+    { 
+      id: 'c1', 
+      userId: 'demo-user',
+      customerName: 'Customer A', 
+      amount: 1500, 
+      dateGiven: '2024-02-20',
+      dueDate: '2024-03-15', 
+      isPaid: false,
+      createdAt: '2024-02-20T00:00:00Z',
+      updatedAt: '2024-02-20T00:00:00Z'
+    }
   ] as CreditEntry[],
   
   historicalEntries: generateHistoricalEntries('2024-03-01', 30, {
@@ -161,6 +214,7 @@ export const demoHealthyStateScenario = {
     date: '2024-03-01',
     totalSales: 12000,
     totalExpense: 6000,
+    estimatedProfit: 6000,
     profitMargin: 0.5,
     expenseRatio: 0.5,
     cashInHand: 50000, // 10 days buffer
@@ -168,8 +222,29 @@ export const demoHealthyStateScenario = {
   } as DailyEntry,
   
   creditEntries: [
-    { id: 'c1', customerName: 'Customer A', amount: 1000, dueDate: '2024-03-15', isPaid: false, date: '2024-02-20' },
-    { id: 'c2', customerName: 'Customer B', amount: 500, dueDate: '2024-03-10', isPaid: true, date: '2024-02-25' }
+    { 
+      id: 'c1', 
+      userId: 'demo-user',
+      customerName: 'Customer A', 
+      amount: 1000, 
+      dateGiven: '2024-02-20',
+      dueDate: '2024-03-15', 
+      isPaid: false,
+      createdAt: '2024-02-20T00:00:00Z',
+      updatedAt: '2024-02-20T00:00:00Z'
+    },
+    { 
+      id: 'c2', 
+      userId: 'demo-user',
+      customerName: 'Customer B', 
+      amount: 500, 
+      dateGiven: '2024-02-25',
+      dueDate: '2024-03-10', 
+      isPaid: true,
+      paidDate: '2024-03-08',
+      createdAt: '2024-02-25T00:00:00Z',
+      updatedAt: '2024-03-08T00:00:00Z'
+    }
   ] as CreditEntry[],
   
   historicalEntries: generateHistoricalEntries('2024-03-01', 30, {
@@ -192,6 +267,7 @@ export const demoMultipleIssuesScenario = {
     date: '2024-03-01',
     totalSales: 10000,
     totalExpense: 8000,
+    estimatedProfit: 2000,
     profitMargin: 0.2,
     expenseRatio: 0.8,
     cashInHand: 20000, // Only 2.5 days buffer
@@ -199,8 +275,28 @@ export const demoMultipleIssuesScenario = {
   } as DailyEntry,
   
   creditEntries: [
-    { id: 'c1', customerName: 'Customer A', amount: 2500, dueDate: '2024-03-15', isPaid: false, date: '2024-02-20' },
-    { id: 'c2', customerName: 'Customer B', amount: 2000, dueDate: '2024-03-10', isPaid: false, date: '2024-02-25' }
+    { 
+      id: 'c1', 
+      userId: 'demo-user',
+      customerName: 'Customer A', 
+      amount: 2500, 
+      dateGiven: '2024-02-20',
+      dueDate: '2024-03-15', 
+      isPaid: false,
+      createdAt: '2024-02-20T00:00:00Z',
+      updatedAt: '2024-02-20T00:00:00Z'
+    },
+    { 
+      id: 'c2', 
+      userId: 'demo-user',
+      customerName: 'Customer B', 
+      amount: 2000, 
+      dateGiven: '2024-02-25',
+      dueDate: '2024-03-10', 
+      isPaid: false,
+      createdAt: '2024-02-25T00:00:00Z',
+      updatedAt: '2024-02-25T00:00:00Z'
+    }
   ] as CreditEntry[],
   
   historicalEntries: generateHistoricalEntries('2024-03-01', 30, {
@@ -239,13 +335,15 @@ function generateHistoricalEntries(
     
     const sales = Math.round(params.avgSales * salesVariance);
     const expenses = Math.round(params.avgExpenses * expenseVariance);
-    const margin = (sales - expenses) / sales;
+    const profit = sales - expenses;
+    const margin = profit / sales;
     
     entries.push({
       id: `hist-${i}`,
       date: dateStr,
       totalSales: sales,
       totalExpense: expenses,
+      estimatedProfit: profit,
       profitMargin: margin,
       expenseRatio: expenses / sales,
       cashInHand: params.avgCash,

@@ -32,9 +32,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    logError('predict-cashflow', error);
+    logError('predict-cashflow', error as Error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Prediction failed' },
+      { success: false, error: (error as Error).message || 'Prediction failed' },
       { status: 500 }
     );
   }

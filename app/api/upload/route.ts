@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     // Create parsed CSV object
     const parsedCSV: ParsedCSV = {
       headers,
-      rows,
+      rows: rows as Record<string, string | number>[],
     };
     
     // Get or create session

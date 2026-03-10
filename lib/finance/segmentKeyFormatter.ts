@@ -11,7 +11,7 @@
 /**
  * Valid city tier values
  */
-export type CityTier = 'tier1' | 'tier2' | 'tier3';
+export type CityTier = 'tier1' | 'tier2' | 'tier3' | 'rural';
 
 /**
  * Valid business type values
@@ -81,7 +81,7 @@ export function parseSegmentKey(
  * isValidCityTier('tier4') // Returns: false
  */
 export function isValidCityTier(value: string): value is CityTier {
-  return ['tier1', 'tier2', 'tier3'].includes(value);
+  return ['tier1', 'tier2', 'tier3', 'rural'].includes(value);
 }
 
 /**

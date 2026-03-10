@@ -26,7 +26,7 @@ export interface ValidationResult {
  */
 export interface AffordabilityComponentBreakdown {
   costToProfitRatio: number;      // The ratio used for calculation
-  affordabilityCategory: string;  // Category label
+  affordabilityCategory: 'Easily Affordable' | 'Affordable' | 'Stretch' | 'Risky' | 'Not Recommended';  // Category label
 }
 
 /**
@@ -175,7 +175,7 @@ export function calculateAffordabilityIndex(
   }
   
   // Assign affordability category based on score
-  let affordabilityCategory: string;
+  let affordabilityCategory: 'Easily Affordable' | 'Affordable' | 'Stretch' | 'Risky' | 'Not Recommended';
   
   if (score >= 90) {
     affordabilityCategory = 'Easily Affordable';

@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     const aiResponse = await orchestrator.generateResponse(
       prompt,
       { language },
-      { endpoint: '/api/ask', userId: session.userId }
+      { endpoint: '/api/ask' }
     );
     
     if (!aiResponse.success) {

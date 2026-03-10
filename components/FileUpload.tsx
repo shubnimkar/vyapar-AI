@@ -55,7 +55,7 @@ export default function FileUpload({
       complete: (results) => {
         setPreview({
           headers: results.meta.fields || [],
-          rows: results.data.slice(0, 5),
+          rows: results.data.slice(0, 5) as Record<string, unknown>[],
           totalRows: results.data.length,
         });
       },
@@ -143,7 +143,7 @@ export default function FileUpload({
                     <tr key={idx} className="border-b">
                       {preview.headers.map((header, colIdx) => (
                         <td key={colIdx} className="px-2 py-1 text-gray-600">
-                          {row[header]}
+                          {String(row[header] ?? '')}
                         </td>
                       ))}
                     </tr>

@@ -1,8 +1,21 @@
 // Authentication Session Store
 // Manages session persistence in localStorage for phone auth
 
-import type { AuthSession } from './supabase-auth';
 import { logger } from './logger';
+
+// ============================================
+// Type Definitions
+// ============================================
+
+export interface AuthSession {
+  user: {
+    id: string;
+    phone?: string;
+  };
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt: number; // Unix timestamp in seconds
+}
 
 // ============================================
 // LocalStorage Keys
