@@ -198,6 +198,13 @@ function stripMarkdownFormatting(text: string): string {
   // Remove markdown headings: ### text -> text
   cleaned = cleaned.replace(/^[\s]*#{1,6}\s+/gm, '');
   
+  // Remove any remaining stray ** markers (e.g. **Label: text where closing ** is missing)
+  cleaned = cleaned.replace(/\*\*/g, '');
+  
+  // Remove italic/single asterisk markers: *text* -> text, or stray *
+  cleaned = cleaned.replace(/\*([^*]+)\*/g, '$1');
+  cleaned = cleaned.replace(/\*/g, '');
+  
   // Clean up extra whitespace
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
   
