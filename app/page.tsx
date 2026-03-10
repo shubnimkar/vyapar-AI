@@ -1127,15 +1127,8 @@ export default function Home() {
                     />
                   )}
 
-                  {/* Daily Entry Form & Credit Tracking */}
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 pb-8">
-                    <div className="xl:col-span-2">
-                      {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
-                    </div>
-                    <div>
-                      {user && <CreditTracking userId={user.userId} language={language} onCreditChange={handleCreditChange} />}
-                    </div>
-                  </div>
+                  {/* Note: Daily Entry and Credit Tracking are available in their dedicated sections.
+                      We intentionally keep the dashboard focused on summary/insights only. */}
                 </>
               )}
 
