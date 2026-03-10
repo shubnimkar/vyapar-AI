@@ -1,0 +1,11 @@
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Health">
+  <defs>
+    <linearGradient id="grad-health" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="1" />
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="1" />
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="16" fill="url(#grad-health)"/>
+  <path d="M20 52h14l6-18 10 34 8-22h18" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
