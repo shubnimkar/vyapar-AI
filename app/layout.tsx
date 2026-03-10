@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import PWAUpdateNotification from "@/components/PWAUpdateNotification";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import { PWAServiceWorkerRegistration } from "@/components/PWAServiceWorkerRegistration";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -18,7 +19,8 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Vyapar AI - Smart Business Assistant",
   description: "AI-powered financial health tracking for small businesses. Track daily entries, manage credit, and get personalized insights.",
-  manifest: "/manifest.json",
+  // Point metadata to the generated web manifest used for PWA install
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -51,12 +53,15 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
         <meta name="theme-color" content="#2563eb" />
         <link rel="icon" href="/favicon.ico" />
+        {/* Explicit manifest link so Chrome can detect the PWA manifest */}
+        <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <PWAServiceWorkerRegistration />
         <PWAUpdateNotification />
         <PWAInstallPrompt />
       </body>
