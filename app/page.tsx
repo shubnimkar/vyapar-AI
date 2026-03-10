@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, type ComponentType } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthGuard from '@/components/auth/AuthGuard';
 import UserProfile from '@/components/auth/UserProfile';
 import ProfileContent from '@/components/ProfileContent';
@@ -104,6 +105,7 @@ function isValidHealthBreakdown(value: unknown): value is HealthBreakdown {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [language, setLanguage] = useState<Language>('en');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<Set<FileType>>(new Set());
@@ -979,6 +981,11 @@ export default function Home() {
     </section>
   );
 
+  const handleLogoutClick = () => {
+    SessionManager.clearSession();
+    router.push('/login');
+  };
+
   return (
     <AuthGuard>
       {/* Toast notification */}
@@ -1043,15 +1050,64 @@ export default function Home() {
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
           {/* Header */}
-          <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8 bg-white/95 backdrop-blur-md border-b border-gray-200">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {getSectionLabel(activeSection)}
-              </h2>
-              <div className="flex items-center gap-4 mt-1">
-                <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
-                <SyncStatus language={language} />
+          <header className="sticky top-0 z-30 px-4 py-3 sm:px-6 lg:px-8 bg-white/95 backdrop-blur-md border-b border-gray-200">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                  {getSectionLabel(activeSection)}
+                </h2>
+                <div className="mt-1 hidden sm:flex items-center gap-4">
+                  <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
+                  <SyncStatus language={language} />
+                </div>
               </div>
+              {/* Compact actions for very small screens */}
+              <div className="flex items-center gap-2">
+                <div className="sm:hidden">
+                  <SyncStatus language={language} />
+                </div>
+                <button
+                  onClick={handleLogoutClick}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile top navigation pills */}
+            <div className="mt-3 lg:hidden overflow-x-auto">
+              <div className="flex gap-2 pb-1">
+                {sectionItems.map((section) => {
+                  const Icon = section.icon;
+                  const active = activeSection === section.id;
+                  const showBadge = section.id === 'pending' && pendingCount.badge > 0;
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all ${
+                        active
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{getSectionLabel(section.id)}</span>
+                      {showBadge && (
+                        <span className="ml-1 bg-white/20 text-[10px] px-1.5 py-0.5 rounded-full">
+                          {pendingCount.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Full language selector row below nav on small/medium screens */}
+            <div className="mt-3 sm:hidden">
+              <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
             </div>
           </header>
 
