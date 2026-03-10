@@ -130,137 +130,166 @@ export default function AffordabilityPlanner({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border-2 border-gray-200 h-full flex flex-col justify-between">
-      <div>
-        {/* Header */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">
-            {t('indices.affordabilityIndex', language)}
-          </h3>
-        </div>
+    <article className="bg-slate-50 border border-slate-200 rounded-2xl p-8 flex flex-col shadow-sm h-full">
+      <div className="mb-2">
+        <h3 className="text-lg font-semibold text-slate-700">
+          {t('indices.affordabilityIndex', language)}
+        </h3>
+      </div>
+      <p className="text-slate-500 text-sm mb-8">
+        {language === 'hi'
+          ? 'आपके नकदी प्रवाह और बचत लक्ष्यों के आधार पर बड़ी खरीद की क्षमता जांचें।'
+          : language === 'mr'
+            ? 'तुमच्या रोकड प्रवाह आणि बचत उद्दिष्टांवर आधारित मोठी खरेदी परवडते का ते तपासा.'
+            : 'Evaluate potential purchases against your current liquidity and savings goals.'}
+      </p>
 
-      {/* Input Section */}
-      <div className="mb-4">
-        <label
-          htmlFor="plannedCost"
-          className="block text-sm font-medium text-gray-700 mb-2"
-        >
-          {t('indices.plannedExpense', language)}
-        </label>
-        <div className="flex gap-2">
-          <input
-            id="plannedCost"
-            type="number"
-            value={plannedCost}
-            onChange={(e) => setPlannedCost(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={t('indices.enterAmount', language)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={isLoading}
-            min="0"
-            step="1"
-          />
-          <button
-            onClick={handleCheckAffordability}
-            disabled={isLoading || !plannedCost}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
+      <div className="space-y-6 flex-grow">
+        {/* Input Section */}
+        <div className="space-y-2">
+          <label
+            htmlFor="plannedCost"
+            className="block text-sm font-semibold text-slate-600"
           >
-            {isLoading
-              ? t('indices.checking', language)
-              : t('indices.checkAffordability', language)}
-          </button>
+            {t('indices.plannedExpense', language)}
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-slate-400 font-medium">₹</span>
+            </div>
+            <input
+              id="plannedCost"
+              type="number"
+              value={plannedCost}
+              onChange={(e) => setPlannedCost(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={t('indices.enterAmount', language)}
+              className="block w-full pl-9 pr-4 py-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-300 disabled:bg-slate-100"
+              disabled={isLoading}
+              min="0"
+              step="1"
+            />
+          </div>
         </div>
+
+        <button
+          onClick={handleCheckAffordability}
+          disabled={isLoading || !plannedCost}
+          className={`w-full py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-[0.98] ${
+            isLoading || !plannedCost
+              ? 'bg-slate-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
+          }`}
+        >
+          {isLoading
+            ? t('indices.checking', language)
+            : t('indices.checkAffordability', language)}
+        </button>
+
+        {/* Error Message */}
+        {error && (
+          <div className="p-3 bg-red-100 border border-red-300 text-red-800 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
+        {/* Result Display */}
+        {result && (
+          <div className="space-y-4">
+            {/* Score & Category */}
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-widest text-slate-400">
+                  {t('indices.score', language)}
+                </span>
+                <span className="text-3xl font-extrabold text-slate-800">
+                  {Math.round(result.score)}/100
+                </span>
+              </div>
+              <div
+                className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                  getColorClasses(getAffordabilityColor(result.score)).bg
+                } ${getColorClasses(getAffordabilityColor(result.score)).text}`}
+              >
+                {getCategoryLabel(result.breakdown.affordabilityCategory, language)}
+              </div>
+            </div>
+
+            {/* Breakdown */}
+            <div className="border-t border-slate-100 pt-4 space-y-3 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">
+                  {t('indices.costToProfitRatio', language)}
+                </span>
+                <span className="font-medium text-slate-800">
+                  {result.breakdown.costToProfitRatio.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">
+                  {t('indices.avgMonthlyProfit', language)}
+                </span>
+                <span className="font-medium text-slate-800">
+                  ₹{result.inputParameters.avgMonthlyProfit.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600">
+                  {t('indices.plannedExpense', language)}
+                </span>
+                <span className="font-medium text-slate-800">
+                  ₹{result.inputParameters.plannedCost.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="pt-2 text-xs text-slate-400 text-right">
+                {t('indices.calculatedAt', language)}:{' '}
+                {new Date(result.calculatedAt).toLocaleString(
+                  language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN',
+                  {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  }
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!result && (
+          <div className="mt-4 p-4 bg-white/60 rounded-xl border border-white flex items-center gap-4">
+            <div className="flex -space-x-2">
+              <div className="w-8 h-8 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-blue-600">
+                AI
+              </div>
+              <div className="w-8 h-8 rounded-full bg-slate-800 border-2 border-white flex items-center justify-center">
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                  />
+                </svg>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              {language === 'hi'
+                ? 'हमारा एल्गोरिदम आपके औसत मासिक लाभ और आने वाले दायित्वों को ध्यान में रखता है।'
+                : language === 'mr'
+                  ? 'आमचा अल्गोरिदम तुमचा सरासरी मासिक नफा आणि येणाऱ्या जबाबदाऱ्या लक्षात घेतो.'
+                  : 'Our algorithm considers your monthly recurring income and upcoming liabilities.'}
+            </p>
+          </div>
+        )}
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-800 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-
-      {/* Result Display */}
-      {result && (
-        <div className="space-y-4">
-          {/* Score Display */}
-          <div className="flex items-center justify-center">
-            <div
-              className={`${getColorClasses(getAffordabilityColor(result.score)).bg} ${
-                getColorClasses(getAffordabilityColor(result.score)).text
-              } ${
-                getColorClasses(getAffordabilityColor(result.score)).border
-              } border-4 rounded-full w-32 h-32 flex flex-col items-center justify-center`}
-            >
-              <div className="text-4xl font-bold">{Math.round(result.score)}</div>
-              <div className="text-sm font-medium">{t('indices.score', language)}</div>
-            </div>
-          </div>
-
-          {/* Category */}
-          <div className="text-center">
-            <div className="text-sm text-gray-600 mb-1">
-              {t('indices.category', language)}
-            </div>
-            <div
-              className={`inline-block px-4 py-2 rounded-lg font-semibold ${
-                getColorClasses(getAffordabilityColor(result.score)).bg
-              } ${getColorClasses(getAffordabilityColor(result.score)).text}`}
-            >
-              {getCategoryLabel(result.breakdown.affordabilityCategory, language)}
-            </div>
-          </div>
-
-          {/* Breakdown */}
-          <div className="border-t pt-4 space-y-3">
-            <h4 className="font-semibold text-gray-700 text-sm mb-3">
-              {t('indices.breakdown', language)}
-            </h4>
-
-            {/* Cost to Profit Ratio */}
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
-                {t('indices.costToProfitRatio', language)}
-              </span>
-              <span className="text-sm font-medium text-gray-800">
-                {result.breakdown.costToProfitRatio.toFixed(2)}
-              </span>
-            </div>
-
-            {/* Average Monthly Profit */}
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
-                {t('indices.avgMonthlyProfit', language)}
-              </span>
-              <span className="text-sm font-medium text-gray-800">
-                ₹{result.inputParameters.avgMonthlyProfit.toLocaleString('en-IN')}
-              </span>
-            </div>
-
-            {/* Planned Cost */}
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
-                {t('indices.plannedExpense', language)}
-              </span>
-              <span className="text-sm font-medium text-gray-800">
-                ₹{result.inputParameters.plannedCost.toLocaleString('en-IN')}
-              </span>
-            </div>
-          </div>
-
-          {/* Calculation Timestamp */}
-          <div className="pt-4 border-t text-xs text-gray-500 text-center">
-            {t('indices.calculatedAt', language)}:{' '}
-            {new Date(result.calculatedAt).toLocaleString(
-              language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN',
-              {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-              }
-            )}
-          </div>
-        </div>
-      )}
-      </div>
-    </div>
+    </article>
   );
 }

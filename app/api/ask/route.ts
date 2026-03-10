@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (!session) {
       logger.warn('Session not found', { sessionId });
       return NextResponse.json(
-        createErrorResponse(ErrorCode.NOT_FOUND, 'errors.notFound', language),
+        createErrorResponse(ErrorCode.NOT_FOUND, 'errors.sessionNotFound', language),
         { status: 404 }
       );
     }
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     if (!session.salesData && !session.expensesData && !session.inventoryData) {
       logger.warn('No data uploaded for Q&A', { sessionId });
       return NextResponse.json(
-        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.qaNoData', language),
         { status: 400 }
       );
     }

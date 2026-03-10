@@ -8,7 +8,6 @@ import LanguageSelector from '@/components/LanguageSelector';
 import SyncStatus from '@/components/SyncStatus';
 import TrustBanner from '@/components/TrustBanner';
 import ReceiptOCR from '@/components/ReceiptOCR';
-import { HybridSyncManager } from '@/lib/hybrid-sync-dynamodb';
 import DailyEntryForm from '@/components/DailyEntryForm';
 import HealthScoreDisplay from '@/components/HealthScoreDisplay';
 import CreditTracking from '@/components/CreditTracking';
@@ -43,10 +42,11 @@ import {
   UserCircle,
   Bell,
   FileText,
+  Heart,
 } from 'lucide-react';
 import { SessionManager } from '@/lib/session-manager';
-import { getLocalEntries as getLocalDailyEntries } from '@/lib/daily-entry-sync';
-import { getLocalEntries as getLocalCreditEntries } from '@/lib/credit-sync';
+import { getLocalEntries as getLocalDailyEntries, fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
+import { getLocalEntries as getLocalCreditEntries, fullSync as creditFullSync } from '@/lib/credit-sync';
 import { calculateCreditSummary, calculateHealthScore } from '@/lib/calculations';
 import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
 import IndicesDashboard from '@/components/IndicesDashboard';
@@ -54,7 +54,16 @@ import BenchmarkDisplay from '@/components/BenchmarkDisplay';
 import CashFlowPredictor from '@/components/CashFlowPredictor';
 import { BenchmarkComparison } from '@/lib/types';
 
-type AppSection = 'dashboard' | 'entries' | 'credit' | 'pending' | 'analysis' | 'chat' | 'account' | 'reports';
+type AppSection =
+  | 'dashboard'
+  | 'health'
+  | 'entries'
+  | 'credit'
+  | 'pending'
+  | 'analysis'
+  | 'chat'
+  | 'account'
+  | 'reports';
 
 type HealthBreakdown = {
   marginScore: number;
@@ -130,8 +139,23 @@ export default function Home() {
         setUser(currentUser);
 
         try {
-          await HybridSyncManager.syncToCloud(currentUser.userId);
-          logger.info('Initial sync completed');
+          // Perform a full hybrid sync to ensure local stores and cloud are consistent
+          const [dailyResult, creditResult] = await Promise.all([
+            dailyFullSync(currentUser.userId).catch((error) => {
+              logger.warn('Initial daily full sync failed', { error });
+              return { pulled: 0, pushed: 0, failed: 1 };
+            }),
+            creditFullSync(currentUser.userId).catch((error) => {
+              logger.warn('Initial credit full sync failed', { error });
+              return { pulled: 0, pushed: 0, failed: 1 };
+            }),
+          ]);
+
+          logger.info('Initial full sync completed', {
+            userId: currentUser.userId,
+            daily: dailyResult,
+            credit: creditResult,
+          });
         } catch (syncError) {
           logger.warn('Initial sync failed', { error: syncError });
         }
@@ -815,6 +839,7 @@ export default function Home() {
   const getSectionLabel = (section: AppSection): string => {
     const labelsEn: Record<AppSection, string> = {
       dashboard: 'Dashboard',
+      health: 'Health & Planning',
       entries: 'Daily Entry',
       credit: 'Credit',
       pending: 'Pending',
@@ -826,6 +851,7 @@ export default function Home() {
 
     const labelsHi: Record<AppSection, string> = {
       dashboard: 'डैशबोर्ड',
+      health: 'सेहत और योजना',
       entries: 'दैनिक एंट्री',
       credit: 'उधारी',
       pending: 'लंबित',
@@ -837,6 +863,7 @@ export default function Home() {
 
     const labelsMr: Record<AppSection, string> = {
       dashboard: 'डॅशबोर्ड',
+      health: 'आरोग्य आणि योजना',
       entries: 'दैनिक नोंद',
       credit: 'उधार',
       pending: 'प्रलंबित',
@@ -853,6 +880,7 @@ export default function Home() {
 
   const sectionItems: Array<{ id: AppSection; icon: ComponentType<{ className?: string }> }> = [
     { id: 'dashboard', icon: LayoutDashboard },
+    { id: 'health', icon: Heart },
     { id: 'entries', icon: ClipboardList },
     { id: 'credit', icon: CreditCard },
     { id: 'pending', icon: Bell },
@@ -1029,7 +1057,13 @@ export default function Home() {
 
           {/* Scrollable Dashboard Content */}
           <div className="flex-1 overflow-y-auto p-8 bg-gray-50">
-            <div className="space-y-6 max-w-7xl mx-auto">
+            <div
+              className={
+                activeSection === 'health'
+                  ? 'space-y-6 w-full'
+                  : 'space-y-6 max-w-7xl mx-auto'
+              }
+            >
               {activeSection === 'dashboard' && (
                 <>
                   {/* Top Banners */}
@@ -1093,15 +1127,6 @@ export default function Home() {
                     />
                   )}
 
-                  {/* Stress & Affordability Index Dashboard */}
-                  {user && userProfile && (
-                    <IndicesDashboard
-                      userId={user.userId}
-                      userProfile={userProfile}
-                      language={language}
-                    />
-                  )}
-
                   {/* Daily Entry Form & Credit Tracking */}
                   <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 pb-8">
                     <div className="xl:col-span-2">
@@ -1130,6 +1155,14 @@ export default function Home() {
               )}
 
               {activeSection === 'analysis' && renderAnalysisPanel()}
+
+              {activeSection === 'health' && user && userProfile && (
+                <IndicesDashboard
+                  userId={user.userId}
+                  userProfile={userProfile}
+                  language={language}
+                />
+              )}
 
               {activeSection === 'chat' &&
                 (sessionId ? (

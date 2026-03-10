@@ -417,6 +417,30 @@ export function buildIndexExplanationPrompt(
   // 5. Explanation mode instructions
   systemPrompt += EXPLANATION_MODE_INSTRUCTIONS[context.explanation_mode][context.language] + '\n\n';
 
+  // Deterministic interpretation helpers (must match calculateStressIndex.ts thresholds)
+  const labelCreditRatio = (creditRatio: number): string => {
+    if (creditRatio >= 0.7) return context.language === 'hi' ? 'बहुत उच्च (जोखिम)' : context.language === 'mr' ? 'खूप जास्त (जोखीम)' : 'Very high (risky)';
+    if (creditRatio >= 0.5) return context.language === 'hi' ? 'उच्च' : context.language === 'mr' ? 'जास्त' : 'High';
+    if (creditRatio >= 0.3) return context.language === 'hi' ? 'मध्यम' : context.language === 'mr' ? 'मध्यम' : 'Moderate';
+    if (creditRatio >= 0.1) return context.language === 'hi' ? 'कम' : context.language === 'mr' ? 'कमी' : 'Low';
+    return context.language === 'hi' ? 'बहुत कम (अच्छा)' : context.language === 'mr' ? 'खूप कमी (चांगले)' : 'Very low (good)';
+  };
+
+  const labelCashBuffer = (cashBuffer: number): string => {
+    if (cashBuffer < 0.5) return context.language === 'hi' ? 'बहुत कम (जोखिम)' : context.language === 'mr' ? 'खूप कमी (जोखीम)' : 'Very low (risky)';
+    if (cashBuffer < 1.0) return context.language === 'hi' ? 'कम' : context.language === 'mr' ? 'कमी' : 'Low';
+    if (cashBuffer < 2.0) return context.language === 'hi' ? 'मध्यम' : context.language === 'mr' ? 'मध्यम' : 'Moderate';
+    if (cashBuffer < 3.0) return context.language === 'hi' ? 'ठीक' : context.language === 'mr' ? 'ठीक' : 'Okay';
+    return context.language === 'hi' ? 'अच्छा (स्वस्थ)' : context.language === 'mr' ? 'चांगले (निरोगी)' : 'Good (healthy)';
+  };
+
+  const labelExpenseVolatility = (volatility: number): string => {
+    if (volatility >= 0.5) return context.language === 'hi' ? 'बहुत अधिक (अस्थिर)' : context.language === 'mr' ? 'खूप जास्त (अस्थिर)' : 'Very high (unstable)';
+    if (volatility >= 0.3) return context.language === 'hi' ? 'मध्यम (अस्थिर)' : context.language === 'mr' ? 'मध्यम (अस्थिर)' : 'Moderate (unstable)';
+    if (volatility >= 0.15) return context.language === 'hi' ? 'थोड़ा (हल्का उतार-चढ़ाव)' : context.language === 'mr' ? 'थोडे (हलका चढ-उतार)' : 'Slight (some variation)';
+    return context.language === 'hi' ? 'स्थिर (अच्छा)' : context.language === 'mr' ? 'स्थिर (चांगले)' : 'Stable (good)';
+  };
+
   // Build user prompt with index data
   let userPrompt = '';
 
@@ -428,49 +452,76 @@ export function buildIndexExplanationPrompt(
     userPrompt = 'Please explain the following financial health indicators:\n\n';
   }
 
-  // Add stress index data (Financial Health Meter)
+  // Grounding rules (avoid score-direction mistakes)
+  if (context.language === 'hi') {
+    userPrompt +=
+      'महत्वपूर्ण नियम:\n' +
+      'Stress/Financial Stress में स्कोर जितना ज्यादा होगा, तनाव/जोखिम उतना ज्यादा (यानी खराब)। कम स्कोर अच्छा है।\n' +
+      'Component scores (क्रेडिट अनुपात, नकद बफर, खर्च अस्थिरता) भी इसी दिशा में हैं: ज्यादा पॉइंट = ज्यादा तनाव।\n' +
+      'Affordability/Can I afford this? में स्कोर जितना ज्यादा होगा, खर्च उतना अधिक परवडणारा/सामर्थ्य (यानी अच्छा)।\n' +
+      'कृपया नीचे दिए गए वास्तविक ratios और scores के आधार पर ही बात करें; उल्टा अर्थ न निकालें।\n\n';
+  } else if (context.language === 'mr') {
+    userPrompt +=
+      'महत्त्वाचे नियम:\n' +
+      'Stress/Financial Stress मध्ये स्कोअर जितका जास्त, तणाव/जोखीम तितकी जास्त (म्हणजे वाईट). कमी स्कोअर चांगला.\n' +
+      'Component scores (क्रेडिट गुणोत्तर, रोख बफर, खर्च अस्थिरता) सुद्धा याच दिशेने आहेत: जास्त पॉइंट = जास्त तणाव.\n' +
+      'Affordability/Can I afford this? मध्ये स्कोअर जितका जास्त, खर्च तितका परवडणारा (म्हणजे चांगला).\n' +
+      'कृपया खालील वास्तविक ratios आणि scores वरूनच विश्लेषण करा; उलट अर्थ काढू नका.\n\n';
+  } else {
+    userPrompt +=
+      'IMPORTANT RULES:\n' +
+      'For Financial Stress (stress index), a higher score means MORE stress (worse). A lower score is good.\n' +
+      'Component scores are the same direction: higher points = more stress.\n' +
+      'For "Can I afford this?" (affordability), a higher score means MORE affordable (better).\n' +
+      'Explain only using the given ratios and scores. Do not invert meanings.\n\n';
+  }
+
+  // Add stress index data (Financial Stress)
   if (data.stressIndex) {
     const { score, breakdown, inputParameters } = data.stressIndex;
+    const creditLabel = labelCreditRatio(inputParameters.creditRatio);
+    const cashLabel = labelCashBuffer(inputParameters.cashBuffer);
+    const volatilityLabel = labelExpenseVolatility(inputParameters.expenseVolatility);
 
     if (context.language === 'hi') {
-      userPrompt += `**आर्थिक सेहत (Financial Health Meter)**: ${score}/100\n`;
-      userPrompt += `घटक विवरण:\n`;
-      userPrompt += `- क्रेडिट अनुपात स्कोर: ${breakdown.creditRatioScore}/40 (क्रेडिट अनुपात: ${inputParameters.creditRatio.toFixed(2)})\n`;
-      userPrompt += `- नकद बफर स्कोर: ${breakdown.cashBufferScore}/35 (नकद बफर: ${inputParameters.cashBuffer.toFixed(2)})\n`;
-      userPrompt += `- व्यय अस्थिरता स्कोर: ${breakdown.expenseVolatilityScore}/25 (अस्थिरता: ${inputParameters.expenseVolatility.toFixed(2)})\n\n`;
+      userPrompt += `Financial Stress स्कोर: ${score}/100\n`;
+      userPrompt += `घटक (याद रखें: ज्यादा पॉइंट = ज्यादा तनाव):\n`;
+      userPrompt += `क्रेडिट अनुपात स्कोर: ${breakdown.creditRatioScore}/40 (क्रेडिट अनुपात: ${inputParameters.creditRatio.toFixed(2)} — ${creditLabel})\n`;
+      userPrompt += `नकद बफर स्कोर: ${breakdown.cashBufferScore}/35 (नकद बफर: ${inputParameters.cashBuffer.toFixed(2)} — ${cashLabel})\n`;
+      userPrompt += `खर्च अस्थिरता स्कोर: ${breakdown.expenseVolatilityScore}/25 (अस्थिरता: ${inputParameters.expenseVolatility.toFixed(2)} — ${volatilityLabel})\n\n`;
     } else if (context.language === 'mr') {
-      userPrompt += `**आर्थिक आरोग्य (Financial Health Meter)**: ${score}/100\n`;
-      userPrompt += `घटक तपशील:\n`;
-      userPrompt += `- क्रेडिट गुणोत्तर स्कोअर: ${breakdown.creditRatioScore}/40 (क्रेडिट गुणोत्तर: ${inputParameters.creditRatio.toFixed(2)})\n`;
-      userPrompt += `- रोख बफर स्कोअर: ${breakdown.cashBufferScore}/35 (रोख बफर: ${inputParameters.cashBuffer.toFixed(2)})\n`;
-      userPrompt += `- खर्च अस्थिरता स्कोअर: ${breakdown.expenseVolatilityScore}/25 (अस्थिरता: ${inputParameters.expenseVolatility.toFixed(2)})\n\n`;
+      userPrompt += `Financial Stress स्कोअर: ${score}/100\n`;
+      userPrompt += `घटक (लक्षात ठेवा: जास्त पॉइंट = जास्त तणाव):\n`;
+      userPrompt += `क्रेडिट गुणोत्तर स्कोअर: ${breakdown.creditRatioScore}/40 (क्रेडिट गुणोत्तर: ${inputParameters.creditRatio.toFixed(2)} — ${creditLabel})\n`;
+      userPrompt += `रोख बफर स्कोअर: ${breakdown.cashBufferScore}/35 (रोख बफर: ${inputParameters.cashBuffer.toFixed(2)} — ${cashLabel})\n`;
+      userPrompt += `खर्च अस्थिरता स्कोअर: ${breakdown.expenseVolatilityScore}/25 (अस्थिरता: ${inputParameters.expenseVolatility.toFixed(2)} — ${volatilityLabel})\n\n`;
     } else {
-      userPrompt += `**Financial Health Meter**: ${score}/100\n`;
-      userPrompt += `Component Breakdown:\n`;
-      userPrompt += `- Credit Ratio Score: ${breakdown.creditRatioScore}/40 (Credit Ratio: ${inputParameters.creditRatio.toFixed(2)})\n`;
-      userPrompt += `- Cash Buffer Score: ${breakdown.cashBufferScore}/35 (Cash Buffer: ${inputParameters.cashBuffer.toFixed(2)})\n`;
-      userPrompt += `- Expense Volatility Score: ${breakdown.expenseVolatilityScore}/25 (Volatility: ${inputParameters.expenseVolatility.toFixed(2)})\n\n`;
+      userPrompt += `Financial Stress score: ${score}/100\n`;
+      userPrompt += `Components (remember: higher points = more stress):\n`;
+      userPrompt += `Credit Ratio Score: ${breakdown.creditRatioScore}/40 (Credit Ratio: ${inputParameters.creditRatio.toFixed(2)} — ${creditLabel})\n`;
+      userPrompt += `Cash Buffer Score: ${breakdown.cashBufferScore}/35 (Cash Buffer: ${inputParameters.cashBuffer.toFixed(2)} — ${cashLabel})\n`;
+      userPrompt += `Expense Volatility Score: ${breakdown.expenseVolatilityScore}/25 (Volatility: ${inputParameters.expenseVolatility.toFixed(2)} — ${volatilityLabel})\n\n`;
     }
   }
 
-  // Add affordability index data (Purchase Planner)
+  // Add affordability index data (Can I afford this?)
   if (data.affordabilityIndex) {
     const { score, breakdown, inputParameters } = data.affordabilityIndex;
 
     if (context.language === 'hi') {
-      userPrompt += `**खरीदारी योजना (Purchase Planner)**: ${score}/100\n`;
+      userPrompt += `"क्या मैं यह खरीद सकता हूँ?" स्कोर: ${score}/100\n`;
       userPrompt += `श्रेणी: ${breakdown.affordabilityCategory}\n`;
       userPrompt += `लागत-से-लाभ अनुपात: ${breakdown.costToProfitRatio.toFixed(2)}\n`;
       userPrompt += `योजनाबद्ध लागत: ₹${inputParameters.plannedCost}\n`;
       userPrompt += `औसत मासिक लाभ: ₹${inputParameters.avgMonthlyProfit}\n\n`;
     } else if (context.language === 'mr') {
-      userPrompt += `**खरेदी योजना (Purchase Planner)**: ${score}/100\n`;
+      userPrompt += `"मी हे परवडवू शकतो का?" स्कोअर: ${score}/100\n`;
       userPrompt += `श्रेणी: ${breakdown.affordabilityCategory}\n`;
       userPrompt += `खर्च-ते-नफा गुणोत्तर: ${breakdown.costToProfitRatio.toFixed(2)}\n`;
       userPrompt += `नियोजित खर्च: ₹${inputParameters.plannedCost}\n`;
       userPrompt += `सरासरी मासिक नफा: ₹${inputParameters.avgMonthlyProfit}\n\n`;
     } else {
-      userPrompt += `**Purchase Planner**: ${score}/100\n`;
+      userPrompt += `"Can I afford this?" score: ${score}/100\n`;
       userPrompt += `Category: ${breakdown.affordabilityCategory}\n`;
       userPrompt += `Cost-to-Profit Ratio: ${breakdown.costToProfitRatio.toFixed(2)}\n`;
       userPrompt += `Planned Cost: ₹${inputParameters.plannedCost}\n`;
@@ -480,14 +531,53 @@ export function buildIndexExplanationPrompt(
 
   // Add instruction to explain implications
   if (context.language === 'hi') {
-    userPrompt += 'इन संकेतकों का मेरे व्यवसाय के लिए क्या मतलब है और मुझे क्या कार्रवाई करनी चाहिए?\n\n';
-    userPrompt += 'महत्वपूर्ण: सामान्य टेम्पलेट या शीर्षक का उपयोग न करें। सीधे विश्लेषण से शुरू करें।';
+    userPrompt +=
+      'इन संकेतकों का मेरे व्यवसाय के लिए क्या मतलब है और मुझे क्या कार्रवाई करनी चाहिए?\n\n' +
+      'आउटपुट फॉर्मेट (अनिवार्य):\n' +
+      '1) 1 लाइन का सारांश (Financial Stress स्कोर और एक मुख्य कारण)\n' +
+      '2) क्या अच्छा चल रहा है (2 बिंदु)\n' +
+      '3) किस पर ध्यान देना है (2 बिंदु)\n' +
+      '4) इस सप्ताह के लिए Top 3 actions (क्रमांक 1-3, बहुत स्पष्ट और व्यवहारिक)\n\n' +
+      'महत्वपूर्ण:\n' +
+      '- केवल ऊपर दिए गए वास्तविक ratios/scores के आधार पर लिखें; नए आंकड़े न बनाएं\n' +
+      '- Financial Stress: कम स्कोर अच्छा, ज्यादा स्कोर खराब (ज्यादा तनाव)\n' +
+      '- Can I afford this?: ज्यादा स्कोर अच्छा (ज्यादा परवडणारा)\n' +
+      '- सामान्यतः नए लोन/उधार/फाइनेंसिंग की सलाह न दें। पहले cashflow fixes बताएं: वसूली (receivables), खर्च नियंत्रण, और छोटा emergency buffer।\n' +
+      '- केवल तब फाइनेंसिंग का विकल्प बताएं जब नकद बफर बहुत कम (जैसे 0) हो *और* क्रेडिट अनुपात सुरक्षित रूप से कम हो (जैसे ~0.2 से नीचे) — और तब भी सावधानी, छोटी सीमा और स्पष्ट कारण बताएं।\n' +
+      '- “perfect” या “excellent” जैसे शब्द तभी इस्तेमाल करें जब उसका मतलब सही दिशा में हो\n' +
+      '- सामान्य टेम्पलेट/हेडिंग्स का उपयोग न करें; सीधे सारांश से शुरू करें\n';
   } else if (context.language === 'mr') {
-    userPrompt += 'या निर्देशकांचा माझ्या व्यवसायासाठी काय अर्थ आहे आणि मी कोणती कृती करावी?\n\n';
-    userPrompt += 'महत्त्वाचे: सामान्य टेम्पलेट किंवा शीर्षक वापरू नका. थेट विश्लेषणापासून सुरुवात करा.';
+    userPrompt +=
+      'या निर्देशकांचा माझ्या व्यवसायासाठी काय अर्थ आहे आणि मी कोणती कृती करावी?\n\n' +
+      'आउटपुट फॉरमॅट (अनिवार्य):\n' +
+      '1) 1 ओळ सारांश (Financial Stress स्कोअर आणि 1 मुख्य कारण)\n' +
+      '2) काय चांगले चालले आहे (2 मुद्दे)\n' +
+      '3) कशाकडे लक्ष द्यावे (2 मुद्दे)\n' +
+      '4) या आठवड्यासाठी Top 3 actions (क्रमांक 1-3, अगदी स्पष्ट आणि व्यवहार्य)\n\n' +
+      'महत्त्वाचे:\n' +
+      '- फक्त वर दिलेल्या वास्तविक ratios/scores वरून लिहा; नवीन आकडे बनवू नका\n' +
+      '- Financial Stress: कमी स्कोअर चांगला, जास्त स्कोअर वाईट (जास्त तणाव)\n' +
+      '- Can I afford this?: जास्त स्कोअर चांगला (जास्त परवडणारा)\n' +
+      '- सामान्यतः नवीन कर्ज/उधार/फायनन्सिंग सुचवू नका. आधी cashflow fixes सांगा: वसुली (receivables), खर्च नियंत्रण, आणि छोटा emergency buffer.\n' +
+      '- फक्त तेव्हाच फायनन्सिंगचा पर्याय सांगा जेव्हा रोख बफर खूप कमी (उदा. 0) असेल *आणि* क्रेडिट गुणोत्तर सुरक्षितपणे कमी (उदा. ~0.2 पेक्षा कमी) असेल — आणि तरीही सावधपणे, छोटी मर्यादा आणि स्पष्ट कारण द्या.\n' +
+      '- “perfect/excellent” असे शब्द फक्त योग्य दिशेत अर्थ बसत असेल तरच वापरा\n' +
+      '- सामान्य टेम्पलेट/हेडिंग्स वापरू नका; थेट सारांशापासून सुरू करा\n';
   } else {
-    userPrompt += 'What do these indicators mean for my business and what actions should I take?\n\n';
-    userPrompt += 'Important: Do not use generic templates or headings. Start directly with the analysis.';
+    userPrompt +=
+      'What do these indicators mean for my business and what actions should I take?\n\n' +
+      'REQUIRED OUTPUT FORMAT:\n' +
+      '1) One-line summary (Financial Stress score + the #1 driver)\n' +
+      '2) What’s going well (2 bullets)\n' +
+      '3) What needs attention (2 bullets)\n' +
+      '4) Top 3 actions for this week (numbered 1-3; concrete and low-effort)\n\n' +
+      'IMPORTANT:\n' +
+      '- Use ONLY the ratios/scores given above; do not invent new numbers\n' +
+      '- Financial Stress: lower score is better; higher score is worse (more stress)\n' +
+      '- "Can I afford this?": higher score is better (more affordable)\n' +
+      '- Do NOT recommend taking new loans/credit/financing by default. Prefer cashflow fixes: faster collections, expense control, and building a small emergency buffer.\n' +
+      '- Only mention financing as an option if cash buffer is critical (e.g. 0) AND credit ratio is safely low (e.g. below ~0.2) — and even then, be cautious and suggest small limits with a clear reason.\n' +
+      '- Do not invert meanings; do not call high-stress components “perfect”\n' +
+      '- No greetings, no generic templates/headings; start directly with the one-line summary\n';
   }
 
   return {

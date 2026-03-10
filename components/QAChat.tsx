@@ -88,7 +88,18 @@ export default function QAChat({ sessionId, language }: QAChatProps) {
           { role: 'assistant', content: data.answer },
         ]);
       } else {
-        setError(data.error || t('questionFailed', language));
+        const rawError: string | undefined = data.error || data.message;
+
+        // If the API returned a known translation key, show a friendly, specific message
+        if (rawError && (rawError.startsWith('errors.') || rawError === 'qaNoData')) {
+          const key =
+            rawError === 'qaNoData'
+              ? 'qaNoData'
+              : rawError;
+          setError(t(key, language));
+        } else {
+          setError(rawError || t('questionFailed', language));
+        }
       }
     } catch {
       setError(t('questionFailed', language));

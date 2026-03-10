@@ -496,6 +496,11 @@ export const translations: Translations = {
     hi: 'उत्तर प्राप्त करने में विफल। कृपया पुनः प्रयास करें।',
     mr: 'उत्तर मिळवण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
   },
+  qaNoData: {
+    en: 'No uploaded CSV data found for this chat. Please upload your sales/expenses CSV files in Advanced Analysis first.',
+    hi: 'इस चैट के लिए कोई अपलोड किया गया CSV डेटा नहीं मिला। कृपया पहले उन्नत विश्लेषण में अपनी बिक्री/खर्च CSV फ़ाइलें अपलोड करें।',
+    mr: 'या चॅटसाठी कोणताही अपलोड केलेला CSV डेटा सापडला नाही. कृपया प्रथम प्रगत विश्लेषण विभागात तुमच्या विक्री/खर्च CSV फाइल्स अपलोड करा.',
+  },
   sessionExpired: {
     en: 'Session expired. Please upload data again.',
     hi: 'सत्र समाप्त हो गया। कृपया डेटा फिर से अपलोड करें।',
@@ -1918,16 +1923,20 @@ export const translations: Translations = {
     mr: 'प्रगतीत',
   },
 
-  // Financial Health Meter & Purchase Planner translations (formerly Stress & Affordability Index)
+  // Financial Stress & Affordability Check (user-facing names)
   'indices.stressIndex': {
-    en: 'Financial Health Meter',
-    hi: 'आर्थिक सेहत',
-    mr: 'आर्थिक आरोग्य'
+    // Shown as the card title and section heading for the stress index.
+    // Keep wording very simple and direct.
+    en: 'Financial Stress',
+    hi: 'पैसों का तनाव',
+    mr: 'आर्थिक ताण'
   },
   'indices.affordabilityIndex': {
-    en: 'Purchase Planner',
-    hi: 'खरीदारी योजना',
-    mr: 'खरेदी योजना'
+    // Shown on the Purchase Planner card and headings.
+    // Phrase it as a question that matches the user’s intent.
+    en: 'Can I afford this?',
+    hi: 'क्या मैं यह खरीद सकता हूँ?',
+    mr: 'मी हे परवडवू शकतो का?'
   },
   'indices.score': {
     en: 'Score',
@@ -2379,6 +2388,11 @@ export const errorTranslations: Translations = {
     en: 'Profile not found. Please complete your profile.',
     hi: 'प्रोफ़ाइल नहीं मिली। कृपया अपनी प्रोफ़ाइल पूरी करें।',
     mr: 'प्रोफाइल सापडली नाही. कृपया तुमची प्रोफाइल पूर्ण करा.'
+  },
+  'errors.sessionNotFound': {
+    en: 'This analysis session has expired. Please upload your CSV data again.',
+    hi: 'यह विश्लेषण सत्र समाप्त हो चुका है। कृपया अपना CSV डेटा फिर से अपलोड करें।',
+    mr: 'हे विश्लेषण सत्र संपले आहे. कृपया तुमचा CSV डेटा पुन्हा अपलोड करा.',
   },
 
   // AI Provider Fallback Error Messages

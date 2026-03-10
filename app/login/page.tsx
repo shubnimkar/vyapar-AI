@@ -8,6 +8,8 @@ import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { logger } from '@/lib/logger';
+import { fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
+import { fullSync as creditFullSync } from '@/lib/credit-sync';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -104,13 +106,27 @@ export default function LoginPage() {
           rememberDevice
         );
         SessionManager.saveSession(session);
-        
-        // Try to pull data from DynamoDB
+
+        // Perform full sync of daily and credit data into local offline stores
         try {
-          const { HybridSyncManager } = await import('@/lib/hybrid-sync-dynamodb');
-          await HybridSyncManager.pullFromCloud(result.user.id);
+          const [dailyResult, creditResult] = await Promise.all([
+            dailyFullSync(result.user.id).catch((err) => {
+              logger.warn('Daily full sync failed after login', { error: err });
+              return { pulled: 0, pushed: 0, failed: 1 };
+            }),
+            creditFullSync(result.user.id).catch((err) => {
+              logger.warn('Credit full sync failed after login', { error: err });
+              return { pulled: 0, pushed: 0, failed: 1 };
+            }),
+          ]);
+
+          logger.info('Full sync completed after login', {
+            userId: result.user.id,
+            daily: dailyResult,
+            credit: creditResult,
+          });
         } catch (pullError) {
-          logger.warn('Failed to pull data from cloud', { error: pullError });
+          logger.warn('Failed to sync data after login', { error: pullError });
         }
         
         // Check if profile exists

@@ -6,6 +6,8 @@ import { SessionManager } from '@/lib/session-manager';
 import { Language, UserProfile as UserProfileType } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { logger } from '@/lib/logger';
+import { fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
+import { fullSync as creditFullSync } from '@/lib/credit-sync';
 
 interface UserProfileProps {
   language: Language;
@@ -73,9 +75,22 @@ export default function UserProfile({ language }: UserProfileProps) {
       if (user) {
         logger.info('[UserProfile] Syncing data before logout...');
         try {
-          const { HybridSyncManager } = await import('@/lib/hybrid-sync-dynamodb');
-          await HybridSyncManager.syncToCloud(user.userId);
-          logger.info('[UserProfile] Data synced successfully');
+          const [dailyResult, creditResult] = await Promise.all([
+            dailyFullSync(user.userId).catch((error) => {
+              logger.error('[UserProfile] Daily full sync failed before logout', { error });
+              return { pulled: 0, pushed: 0, failed: 1 };
+            }),
+            creditFullSync(user.userId).catch((error) => {
+              logger.error('[UserProfile] Credit full sync failed before logout', { error });
+              return { pulled: 0, pushed: 0, failed: 1 };
+            }),
+          ]);
+
+          logger.info('[UserProfile] Data synced successfully before logout', {
+            userId: user.userId,
+            daily: dailyResult,
+            credit: creditResult,
+          });
         } catch (syncError) {
           logger.error('[UserProfile] Failed to sync data before logout', { error: syncError });
           // Continue with logout anyway - data remains in localStorage for offline use

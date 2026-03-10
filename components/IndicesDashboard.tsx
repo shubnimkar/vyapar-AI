@@ -41,9 +41,15 @@ export default function IndicesDashboard({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('online');
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [explanation, setExplanation] = useState<string | null>(null);
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [isExplaining, setIsExplaining] = useState(false);
+
+  // Clear cached explanations when the underlying stress score changes
+  useEffect(() => {
+    if (indexData?.stressIndex?.score !== undefined) {
+      setExplanations({});
+    }
+  }, [indexData?.stressIndex?.score]);
 
   /**
    * Load latest indices on mount
@@ -185,38 +191,64 @@ export default function IndicesDashboard({
   };
 
   /**
-   * Get AI explanation for current indices
+   * Fetch AI explanation for current indices in a specific language
+   */
+  const fetchExplanationForLanguage = async (lang: Language): Promise<string> => {
+    if (!indexData?.stressIndex) {
+      throw new Error('No stress index available');
+    }
+
+    const response = await fetch('/api/indices/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        stressIndex: indexData.stressIndex,
+        affordabilityIndex: indexData.affordabilityIndex,
+        userProfile,
+        language: lang,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.success && data.explanation) {
+      return typeof data.explanation === 'string'
+        ? data.explanation
+        : data.explanation?.content ?? t('indices.error', lang);
+    }
+
+    throw new Error(data.error || 'Explain failed');
+  };
+
+  /**
+   * Get AI explanation for current indices (all languages, cached)
    */
   const handleExplain = async () => {
     if (!indexData?.stressIndex) return;
 
+    const allLanguages: Language[] = ['en', 'hi', 'mr'];
+
+    // If all languages are already cached, nothing more to do
+    if (allLanguages.every((l) => explanations[l])) return;
+
     setIsExplaining(true);
-    setExplanation(null);
 
     try {
-      const response = await fetch('/api/indices/explain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stressIndex: indexData.stressIndex,
-          affordabilityIndex: indexData.affordabilityIndex,
-          userProfile,
-          language,
-        }),
+      const results = await Promise.allSettled(
+        allLanguages.map((lang) => fetchExplanationForLanguage(lang))
+      );
+
+      const newCache: Record<string, string> = { ...explanations };
+      results.forEach((result, i) => {
+        const lang = allLanguages[i];
+        if (result.status === 'fulfilled') {
+          newCache[lang] = result.value;
+        } else {
+          newCache[lang] = explanations[lang] || t('indices.error', lang);
+        }
       });
 
-      const data = await response.json();
-
-      if (data.success && data.explanation) {
-        setExplanation(data.explanation);
-        setShowExplanation(true);
-      } else {
-        setExplanation(t('indices.error', language));
-        setShowExplanation(true);
-      }
-    } catch (err) {
-      setExplanation(t('indices.error', language));
-      setShowExplanation(true);
+      setExplanations(newCache);
     } finally {
       setIsExplaining(false);
     }
@@ -307,73 +339,138 @@ export default function IndicesDashboard({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Sync Status */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-800">
-          {t('indices.stressIndex', language)} & {t('indices.affordabilityIndex', language)}
-        </h2>
-        {renderSyncStatus()}
+    <>
+      <div className="w-full">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+              {t('indices.stressIndex', language)} &amp; {t('indices.affordabilityIndex', language)}
+            </h2>
+            <p className="text-slate-500 text-sm mt-1">
+              {language === 'hi'
+                ? 'आपके व्यवसाय के तनाव और बड़ी खरीद क्षमता का त्वरित सारांश'
+                : language === 'mr'
+                  ? 'तुमच्या व्यवसायातील ताण आणि मोठ्या खरेदीची क्षमता याचे झटपट चित्र'
+                  : 'Real-time overview of your financial stress and affordability.'}
+            </p>
+          </div>
+          <div className="self-start md:self-auto">{renderSyncStatus()}</div>
+        </header>
+
+        {/* Main Content */}
+        <section className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <StressIndexDisplay stressIndex={indexData.stressIndex} language={language} />
+          <AffordabilityPlanner
+            userId={userId}
+            language={language}
+            onCalculate={handleCalculateAffordability}
+          />
+        </section>
+
+        {/* Footer Actions */}
+        <footer className="mt-8 flex justify-center">
+          <Button
+            onClick={handleExplain}
+            disabled={isExplaining}
+            loading={isExplaining}
+            variant="primary"
+            size="lg"
+            className="px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl shadow-blue-200 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center gap-3"
+          >
+            <span>
+              {isExplaining
+                ? t('indices.explaining', language)
+                : t('indices.explain', language)}
+            </span>
+            <svg
+              className="h-5 w-5"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </Button>
+        </footer>
+
+        {/* Inline AI Explanation */}
+        {(isExplaining || Object.keys(explanations).length > 0) && (
+          <div className="mt-6">
+            {isExplaining && !Object.keys(explanations).length && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg animate-pulse">
+                <div className="flex items-center gap-2 mb-3">
+                  <div
+                    className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
+                    style={{ animationDelay: '0ms' }}
+                  />
+                  <div
+                    className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  />
+                  <div
+                    className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  />
+                  <span className="text-xs text-blue-500 ml-1">
+                    {language === 'hi'
+                      ? 'AI तीनों भाषाओं में विश्लेषण तैयार कर रहा है…'
+                      : language === 'mr'
+                        ? 'AI सर्व तीन भाषांमध्ये विश्लेषण तयार करत आहे…'
+                        : 'Generating AI explanation in all languages…'}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-blue-200 rounded w-full" />
+                  <div className="h-3 bg-blue-200 rounded w-5/6" />
+                  <div className="h-3 bg-blue-200 rounded w-4/6" />
+                  <div className="h-3 bg-blue-200 rounded w-full mt-3" />
+                  <div className="h-3 bg-blue-200 rounded w-3/4" />
+                </div>
+              </div>
+            )}
+            {!isExplaining && Object.keys(explanations).length > 0 && (() => {
+              const currentText = explanations[language];
+              const anyText =
+                currentText || Object.values(explanations)[0];
+              const isFallback = !currentText && !!anyText;
+
+              if (!anyText) {
+                return (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-neutral-700">
+                      {t('indices.error', language)}
+                    </p>
+                  </div>
+                );
+              }
+
+              const translateHint: Record<string, string> = {
+                hi: 'ऊपर भाषा बदलने पर यही विश्लेषण तुरंत उसी भाषा में दिखेगा।',
+                mr: 'वर भाषा बदलल्यास हे विश्लेषण लगेच त्या भाषेत दिसेल.',
+                en: 'Switch language at the top to see this explanation in that language instantly.',
+              };
+
+              return (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-neutral-700 whitespace-pre-wrap">
+                    {anyText}
+                  </p>
+                  {isFallback && (
+                    <p className="mt-2 text-xs text-blue-500 italic">
+                      {translateHint[language] || translateHint.en}
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}
       </div>
-
-      {/* Indices Grid - Responsive Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Stress Index Display */}
-        <StressIndexDisplay stressIndex={indexData.stressIndex} language={language} />
-
-        {/* Affordability Planner */}
-        <AffordabilityPlanner
-          userId={userId}
-          language={language}
-          onCalculate={handleCalculateAffordability}
-        />
-      </div>
-
-      {/* Explain Button */}
-      <div className="flex justify-center mt-6">
-        <Button
-          onClick={handleExplain}
-          disabled={isExplaining}
-          loading={isExplaining}
-          variant="primary"
-          size="lg"
-          className="w-full lg:w-auto min-w-[200px]"
-        >
-          {isExplaining
-            ? t('indices.explaining', language)
-            : t('indices.explain', language)}
-        </Button>
-      </div>
-
-      {/* AI Explanation Modal */}
-      {showExplanation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-neutral-800">
-                {t('indices.aiExplanation', language)}
-              </h3>
-              <button
-                onClick={() => setShowExplanation(false)}
-                className="text-neutral-500 hover:text-neutral-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            <div className="prose max-w-none">
-              <p className="text-neutral-700 whitespace-pre-wrap">{explanation}</p>
-            </div>
-            <div className="mt-6 text-center">
-              <Button
-                onClick={() => setShowExplanation(false)}
-                variant="primary"
-              >
-                {t('indices.close', language)}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

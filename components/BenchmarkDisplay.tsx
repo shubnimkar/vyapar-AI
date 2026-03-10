@@ -62,8 +62,16 @@ export default function BenchmarkDisplay({
     );
   }
 
-  // Error state
+  // Error state with friendlier, typed messages
   if (error) {
+    // Map backend error codes / messages to user-friendly translations where possible
+    const normalized =
+      error === 'benchmark.profileIncomplete' ||
+      error === 'benchmark.noDailyEntries' ||
+      error === 'benchmark.segmentUnavailable'
+        ? t(error, language)
+        : error;
+
     return (
       <Card>
         <div className="flex items-center gap-3 mb-4">
@@ -73,7 +81,7 @@ export default function BenchmarkDisplay({
           <h3 className="text-base font-semibold text-gray-900">{t('benchmark.title', language)}</h3>
         </div>
         <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-          {error}
+          {normalized}
         </p>
       </Card>
     );
