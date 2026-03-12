@@ -2172,8 +2172,8 @@ export const translations: Translations = {
   },
   'benchmark.getAiExplanation': {
     en: 'Get AI Insights',
-    hi: 'AI विश्लेषण देखें',
-    mr: 'AI विश्लेषण पहा'
+    hi: 'AI इनसाइट्स देखें',
+    mr: 'AI इनसाइट्स पाहा'
   },
   'benchmark.aiExplanation': {
     en: 'AI Explanation',

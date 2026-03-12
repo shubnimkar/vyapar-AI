@@ -113,6 +113,7 @@ export const RATE_LIMITS = {
   SIGNUP: { maxAttempts: 5, windowMs: 60 * 60 * 1000 },        // 5 per hour
   LOGIN: { maxAttempts: 10, windowMs: 15 * 60 * 1000 },        // 10 per 15 minutes
   CHECK_USERNAME: { maxAttempts: 20, windowMs: 60 * 1000 },    // 20 per minute
+  PASSWORD_RESET_REQUEST: { maxAttempts: 3, windowMs: 60 * 60 * 1000 }, // 3 per hour
 };
 
 /**

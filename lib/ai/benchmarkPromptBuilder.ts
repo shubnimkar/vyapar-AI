@@ -159,7 +159,13 @@ function buildBenchmarkUserPrompt(
   }
 
   // Add guidance based on performance categories
-  prompt += buildGuidancePrompt(healthScoreComparison.category, marginComparison.category, language);
+  prompt += buildGuidancePrompt(
+    healthScoreComparison.category,
+    marginComparison.category,
+    language,
+    context.city_tier,
+    healthScoreComparison.percentile
+  );
 
   return prompt;
 }
@@ -170,7 +176,9 @@ function buildBenchmarkUserPrompt(
 function buildGuidancePrompt(
   healthCategory: string,
   marginCategory: string,
-  language: string
+  language: string,
+  cityTier?: string,
+  healthPercentile?: number
 ): string {
   let guidance = '';
 
@@ -180,6 +188,16 @@ function buildGuidancePrompt(
 
   if (language === 'hi') {
     guidance += '**आपके लिए सुझाव:**\n\n';
+    
+    // Add city tier context if available
+    if (cityTier) {
+      guidance += `आप ${getCityTierLabel(cityTier, language)} में काम कर रहे हैं। `;
+    }
+    
+    // Add percentile explanation for very low scores
+    if (healthPercentile !== undefined && healthPercentile < 25) {
+      guidance += `आपका प्रतिशतक रैंक ${healthPercentile.toFixed(0)} का मतलब है कि ${(100 - healthPercentile).toFixed(0)}% समान व्यवसाय आपसे बेहतर प्रदर्शन कर रहे हैं। `;
+    }
     
     if (isBelowAverage) {
       guidance += 'कृपया 2-3 व्यावहारिक सुझाव दें जो मेरे प्रदर्शन को बेहतर बनाने में मदद करें। ';
@@ -196,6 +214,16 @@ function buildGuidancePrompt(
   } else if (language === 'mr') {
     guidance += '**तुमच्यासाठी सूचना:**\n\n';
     
+    // Add city tier context if available
+    if (cityTier) {
+      guidance += `तुम्ही ${getCityTierLabel(cityTier, language)} मध्ये काम करत आहात. `;
+    }
+    
+    // Add percentile explanation for very low scores
+    if (healthPercentile !== undefined && healthPercentile < 25) {
+      guidance += `तुमची टक्केवारी रँक ${healthPercentile.toFixed(0)} याचा अर्थ ${(100 - healthPercentile).toFixed(0)}% समान व्यवसाय तुमच्यापेक्षा चांगले काम करत आहेत. `;
+    }
+    
     if (isBelowAverage) {
       guidance += 'कृपया 2-3 व्यावहारिक सूचना द्या ज्या माझ्या कामगिरीत सुधारणा करण्यास मदत करतील। ';
       guidance += 'सूचना सोप्या आणि लगेच लागू करण्यायोग्य असाव्यात।\n\n';
@@ -210,6 +238,16 @@ function buildGuidancePrompt(
     }
   } else {
     guidance += '**Guidance for You:**\n\n';
+    
+    // Add city tier context if available
+    if (cityTier) {
+      guidance += `You're operating in a ${getCityTierLabel(cityTier, language)} area. `;
+    }
+    
+    // Add percentile explanation for very low scores
+    if (healthPercentile !== undefined && healthPercentile < 25) {
+      guidance += `Your percentile rank of ${healthPercentile.toFixed(0)} means ${(100 - healthPercentile).toFixed(0)}% of similar businesses are performing better than you. `;
+    }
     
     if (isBelowAverage) {
       guidance += 'Please provide 2-3 actionable suggestions to help improve my performance. ';
@@ -251,4 +289,34 @@ function getCategoryLabel(category: string, language: string): string {
   };
 
   return labels[category]?.[language] || labels[category]?.['en'] || category;
+}
+
+/**
+ * Get localized city tier label
+ */
+function getCityTierLabel(cityTier: string, language: string): string {
+  const labels: Record<string, Record<string, string>> = {
+    'tier-1': {
+      en: 'tier-1 city',
+      hi: 'टियर-1 शहर',
+      mr: 'टियर-1 शहर',
+    },
+    'tier-2': {
+      en: 'tier-2 city',
+      hi: 'टियर-2 शहर',
+      mr: 'टियर-2 शहर',
+    },
+    'tier-3': {
+      en: 'tier-3 city',
+      hi: 'टियर-3 शहर',
+      mr: 'टियर-3 शहर',
+    },
+    'rural': {
+      en: 'rural area',
+      hi: 'ग्रामीण क्षेत्र',
+      mr: 'ग्रामीण भाग',
+    },
+  };
+
+  return labels[cityTier]?.[language] || labels[cityTier]?.['en'] || cityTier;
 }

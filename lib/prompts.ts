@@ -46,6 +46,11 @@ function getLanguageInstructions(language: Language): string {
 /**
  * Build analysis prompt for business health insights
  * HYBRID MODEL: Accepts pre-calculated metrics
+ *
+ * Uses fixed ASCII section markers [SECTION_1]–[SECTION_5] so that the parser
+ * can reliably extract sections regardless of the AI response language.
+ * The AI is told to keep the markers in English but write content in the
+ * requested language.
  */
 export function buildAnalysisPrompt(
   salesData: ParsedCSV | undefined,
@@ -65,12 +70,24 @@ export function buildAnalysisPrompt(
 **IMPORTANT - Pre-Calculated Metrics:**
 These numbers have already been calculated deterministically. Your job is to EXPLAIN what they mean and provide actionable recommendations. DO NOT recalculate these numbers.
 
-${calculatedMetrics.profit !== undefined ? `- Estimated Profit: ₹${calculatedMetrics.profit.toFixed(2)}` : ''}
+${calculatedMetrics.profit !== undefined ? `- Estimated Profit: \u20b9${calculatedMetrics.profit.toFixed(2)}` : ''}
 ${calculatedMetrics.expenseRatio !== undefined ? `- Expense Ratio: ${(calculatedMetrics.expenseRatio * 100).toFixed(1)}%` : ''}
-${calculatedMetrics.blockedInventory !== undefined ? `- Blocked Inventory Cash: ₹${calculatedMetrics.blockedInventory.toFixed(2)}` : ''}
+${calculatedMetrics.blockedInventory !== undefined ? `- Blocked Inventory Cash: \u20b9${calculatedMetrics.blockedInventory.toFixed(2)}` : ''}
 
 `;
   }
+
+  const section1Task = calculatedMetrics?.profit !== undefined
+    ? `Explain what the profit of \u20b9${calculatedMetrics.profit.toFixed(2)} means for this shop. Is it good? Compare it to the cash flow.`
+    : 'Calculate actual profit considering inventory. Explain the difference between money in hand (cash flow) and real profit in simple terms.';
+
+  const section2Task = calculatedMetrics
+    ? 'Based on the sales and inventory data, which products are causing losses? Be specific with product names and numbers from the data.'
+    : 'Identify products where selling price is below cost price or where inventory holding costs exceed margins. List specific product names.';
+
+  const section3Task = calculatedMetrics?.blockedInventory !== undefined
+    ? `The shop has \u20b9${calculatedMetrics.blockedInventory.toFixed(2)} stuck in inventory. Which products are slow-moving? What should the owner do?`
+    : 'Calculate total cash tied up in unsold inventory. Identify slow-moving items that are blocking money.';
 
   const prompt = `You are a business health advisor for small retail shops in India. ${calculatedMetrics ? 'You are explaining pre-calculated business metrics.' : 'Analyze the following data and provide insights.'}
 
@@ -80,53 +97,36 @@ ${formatCSVData(salesData, 'Sales Data')}
 ${formatCSVData(expensesData, 'Expenses Data')}
 ${formatCSVData(inventoryData, 'Inventory Data')}
 
-**Your Task:**
-
-${calculatedMetrics ? `
-1. **Explain True Profit**: Explain what the profit of ₹${calculatedMetrics.profit?.toFixed(2) || 'N/A'} means. Is it good for this type of shop? How does it compare to the cash flow?
-
-2. **Identify Loss-Making Products**: Based on the sales and inventory data, which products are causing losses? Be specific with product names.
-
-3. **Explain Blocked Inventory**: The shop has ₹${calculatedMetrics.blockedInventory?.toFixed(2) || 'N/A'} stuck in inventory. Which products are slow-moving? What should the owner do?
-
-4. **Highlight Abnormal Expenses**: Look at the expense data. Are there any unusual or concerning expenses? Be specific.
-
-5. **Cashflow Forecast**: Based on recent patterns, will the shop face cash shortage in the next 7 days? Why or why not?
-
-**CRITICAL**: Reference the pre-calculated numbers above. DO NOT recalculate them. Focus on interpretation and advice.
-` : `
-1. **True Profit vs Cash Flow**: Calculate actual profit considering inventory costs and blocked capital. Explain the difference between money in hand (cash flow) and real profit in simple terms.
-
-2. **Loss-Making Products**: Identify products where selling price is below cost price or where inventory holding costs exceed margins. List specific product names.
-
-3. **Blocked Inventory Cash**: Calculate total cash tied up in unsold inventory. Identify slow-moving items that are blocking money.
-
-4. **Abnormal Expenses**: Detect expenses that are unusually high compared to typical patterns or business size. Be specific about which expenses seem abnormal.
-
-5. **7-Day Cashflow Forecast**: Based on recent patterns, predict if the shop will face cash shortage in the next 7 days. Provide reasoning.
-`}
-
-**Output Format:**
-Provide insights in simple language without financial jargon. Use examples from the actual data. Be specific with numbers and product names.
-
 **Language Instructions:**
 ${getLanguageInstructions(language)}
 
-**Important:**
-- Use simple terms: "real profit", "money stuck", "cash in hand" instead of "EBITDA", "working capital", "liquidity"
-- Provide actionable suggestions, not just analysis
-- Be encouraging and helpful in tone
-- Use specific numbers from the data
+**CRITICAL OUTPUT FORMAT — You MUST follow this exactly:**
+Output exactly 5 sections. Each section MUST begin with its marker on its own line.
+IMPORTANT: Copy the markers [SECTION_1] through [SECTION_5] literally — do NOT translate or modify them.
+Write the content after each marker in the language specified above.
 
-**CRITICAL - Anti-Template Instructions:**
-DO NOT use generic templates, placeholder headings, or section markers like:
-- "### Understanding Your HealthScore"
-- "#### Identify"
-- "#### Highlight"
-- "### Explanation of"
-- Any other generic headings or templates
+[SECTION_1]
+${section1Task}
 
-Instead, start DIRECTLY with specific, personalized business advice based on the actual data and business context. Reference specific numbers, products, and provide actionable recommendations immediately.
+[SECTION_2]
+${section2Task}
+
+[SECTION_3]
+${section3Task}
+
+[SECTION_4]
+Look at the expense data. List any unusual or abnormal expenses. Be specific about amounts and why they seem high for a shop of this size.
+
+[SECTION_5]
+Based on recent patterns, will the shop face a cash shortage in the next 7 days? Why or why not? Give actionable steps.
+
+**Rules:**
+- The markers [SECTION_1] through [SECTION_5] MUST appear exactly as shown above — do NOT translate them
+- Write the content AFTER each marker in the language specified in the Language Instructions
+- Use simple conversational language, no financial jargon
+- Reference actual numbers and product names from the data
+- Be specific and actionable
+${calculatedMetrics ? '- Reference the pre-calculated metrics above; do NOT recalculate them' : ''}
 
 Please provide the analysis now.`;
 

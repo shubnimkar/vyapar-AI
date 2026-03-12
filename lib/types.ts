@@ -311,6 +311,7 @@ export interface ToggleAutomationRequest {
 export interface UserProfile {
   id: string;
   phoneNumber: string;
+  email?: string;
   deviceId?: string;
   shopName: string;
   userName: string;
@@ -341,6 +342,7 @@ export interface UserProfilePreferences {
 export interface ProfileSetupData {
   shopName: string;
   userName: string;
+  email?: string;
   language: Language;
   businessType?: BusinessType;
   city?: CityTier;

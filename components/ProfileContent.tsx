@@ -119,12 +119,14 @@ export default function ProfileContent({ language, user, showBackButton = false 
         <ProfileSetupForm
           phoneNumber={profileData.phoneNumber || ''}
           userId={user.userId}
+            username={user.username}
           onComplete={handleEditComplete}
           onSkip={() => setIsEditMode(false)}
           language={language}
           initialData={{
             shopName: profileData.shopName,
             userName: profileData.userName,
+              email: profileData.email,
             language: profileData.language,
             businessType: profileData.business_type,
             city: profileData.city_tier,
@@ -280,7 +282,13 @@ export default function ProfileContent({ language, user, showBackButton = false 
                       <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
                         {language === 'hi' ? 'ईमेल पता' : language === 'mr' ? 'ईमेल पत्ता' : 'Email Address'}
                       </label>
-                      <p className="text-slate-800 font-medium">{user.username}@vyapar-ai.com</p>
+                      {profileData?.email ? (
+                        <p className="text-slate-800 font-medium">{profileData.email}</p>
+                      ) : (
+                        <p className="text-slate-400 italic text-sm">
+                          {language === 'hi' ? 'प्रदान नहीं किया गया' : language === 'mr' ? 'प्रदान केले नाही' : 'Not provided'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

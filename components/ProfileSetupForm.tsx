@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 interface ProfileSetupFormProps {
   phoneNumber: string;
   userId: string;
+  username?: string;
   onComplete: () => void;
   onSkip: () => void;
   language: Language;
@@ -18,6 +19,7 @@ interface ProfileSetupFormProps {
 export default function ProfileSetupForm({
   phoneNumber,
   userId,
+  username,
   onComplete,
   language,
   initialData,
@@ -54,6 +56,18 @@ export default function ProfileSetupForm({
 
     if (!formData.userName.trim()) {
       newErrors.userName = t('error.required', language);
+    }
+
+    if (formData.email) {
+      const email = formData.email.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        newErrors.email =
+          language === 'hi'
+            ? 'मान्य ईमेल दर्ज करें'
+            : language === 'mr'
+              ? 'वैध ईमेल प्रविष्ट करा'
+              : 'Enter a valid email';
+      }
     }
 
     if (!formData.language) {
@@ -102,6 +116,8 @@ export default function ProfileSetupForm({
         body: JSON.stringify({
           ...formData,
           userId,
+          username,
+          email: formData.email?.trim()?.toLowerCase() || undefined,
           phoneNumber: phoneNumberValue || undefined,
           businessType: skipOptional ? undefined : formData.businessType,
           business_type: skipOptional ? formData.business_type ?? 'other' : formData.businessType ?? 'other',
@@ -281,6 +297,39 @@ export default function ProfileSetupForm({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   {errors.phoneNumber}
+                </p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-700" htmlFor="email">
+                {language === 'hi' ? 'ईमेल' : language === 'mr' ? 'ईमेल' : 'Email'}
+              </label>
+              <div className="relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <input
+                  type="email"
+                  id="email"
+                  value={formData.email || ''}
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    if (errors.email) setErrors({ ...errors, email: '' });
+                  }}
+                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                    errors.email ? 'border-red-500 bg-red-50' : 'border-slate-300'
+                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  placeholder="name@business.com"
+                />
+              </div>
+              {errors.email && (
+                <p className="text-xs text-red-600 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {errors.email}
                 </p>
               )}
             </div>

@@ -2,7 +2,7 @@
 // Authenticates existing users
 
 import { NextRequest, NextResponse } from 'next/server';
-import { UserService } from '@/lib/dynamodb-client';
+import { EmailLookupService, UserService } from '@/lib/dynamodb-client';
 import { PasswordHasher } from '@/lib/password-hasher';
 import { InputSanitizer } from '@/lib/input-sanitizer';
 import { RateLimiter, RATE_LIMITS } from '@/lib/rate-limiter';
@@ -10,7 +10,7 @@ import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 
 interface LoginRequest {
-  username: string;
+  username: string; // username OR email
   password: string;
   rememberDevice?: boolean;
 }
@@ -54,14 +54,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sanitize username
-    const sanitizedUsername = InputSanitizer.sanitizeUsername(username);
+    const rawIdentifier = String(username).trim();
+    const looksLikeEmail = rawIdentifier.includes('@');
+
+    let resolvedUsername: string | null = null;
+    if (looksLikeEmail) {
+      const email = rawIdentifier.toLowerCase();
+      const lookup = await EmailLookupService.getByEmail(email);
+      resolvedUsername = lookup?.username || null;
+    } else {
+      resolvedUsername = InputSanitizer.sanitizeUsername(rawIdentifier);
+    }
+
+    if (!resolvedUsername) {
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
+        { status: 401 }
+      );
+    }
 
     // Get user from database
-    const user = await UserService.getUserByUsername(sanitizedUsername);
+    const user = await UserService.getUserByUsername(resolvedUsername);
     
     if (!user) {
-      logger.warn('User not found during login', { username: sanitizedUsername, ip });
+      logger.warn('User not found during login', { identifier: rawIdentifier, ip });
       
       return NextResponse.json(
         createErrorResponse(ErrorCode.AUTH_REQUIRED, 'errors.authRequired'),
@@ -74,7 +90,7 @@ export async function POST(request: NextRequest) {
     
     if (!verifyResult.success || !verifyResult.match) {
       logger.warn('Invalid password during login', { 
-        username: sanitizedUsername, 
+        username: resolvedUsername, 
         userId: user.userId,
         ip
       });
@@ -87,7 +103,7 @@ export async function POST(request: NextRequest) {
 
     // Update login statistics
     try {
-      await UserService.updateLoginStats(user.userId, sanitizedUsername);
+      await UserService.updateLoginStats(user.userId, resolvedUsername);
     } catch (error) {
       logger.error('Failed to update login stats', { 
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -97,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     logger.info('Successful login', { 
-      username: sanitizedUsername, 
+      username: resolvedUsername, 
       userId: user.userId
     });
 

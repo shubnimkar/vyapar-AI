@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       const apiProfile: UserProfile = {
         id: profile.userId,
         phoneNumber: profile.phoneNumber || '',
+        email: profile.email,
         shopName: profile.shopName,
         userName: profile.userName,
         language: profile.language as 'en' | 'hi' | 'mr',
@@ -227,6 +228,7 @@ export async function PUT(request: NextRequest) {
         userId,
         shopName: shopName?.trim() || existingProfile?.shopName || '',
         userName: userName?.trim() || existingProfile?.userName || '',
+        email: body.email?.trim()?.toLowerCase() || existingProfile?.email,
         language: language || existingProfile?.language || 'en',
         businessType: businessType?.trim() || existingProfile?.businessType,
         city: city?.trim() || existingProfile?.city,
@@ -245,6 +247,7 @@ export async function PUT(request: NextRequest) {
       const apiProfile: UserProfile = {
         id: userId,
         phoneNumber: dynamoProfile.phoneNumber || existingProfile?.phoneNumber || '',
+        email: dynamoProfile.email,
         shopName: dynamoProfile.shopName,
         userName: dynamoProfile.userName,
         language: dynamoProfile.language as 'en' | 'hi' | 'mr',

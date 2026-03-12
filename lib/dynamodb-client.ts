@@ -285,6 +285,7 @@ export interface UserProfile {
   userId: string;
   shopName: string;
   userName: string;
+  email?: string;
   businessType?: string;
   city?: string;
   phoneNumber?: string;
@@ -326,6 +327,7 @@ export class ProfileService {
       userId: item.userId as string,
       shopName: item.shopName as string,
       userName: item.userName as string,
+      email: item.email as string | undefined,
       phoneNumber: item.phoneNumber as string | undefined,
       language: item.language as string,
       businessType: item.businessType as string | undefined,
@@ -657,6 +659,7 @@ export class CreditEntryService {
 export interface UserRecord {
   userId: string;
   username: string;              // Original case
+  email?: string;
   passwordHash: string;          // bcrypt hash
   createdAt: string;
   updatedAt: string;
@@ -696,6 +699,7 @@ export class UserService {
     return {
       userId: item.userId as string,
       username: item.username as string,
+      email: item.email as string | undefined,
       passwordHash: item.passwordHash as string,
       createdAt: item.createdAt as string,
       updatedAt: item.updatedAt as string,
@@ -720,6 +724,7 @@ export class UserService {
     return {
       userId: item.userId as string,
       username: item.username as string,
+      email: item.email as string | undefined,
       passwordHash: item.passwordHash as string,
       createdAt: item.createdAt as string,
       updatedAt: item.updatedAt as string,
@@ -751,6 +756,116 @@ export class UserService {
   static async usernameExists(username: string): Promise<boolean> {
     const user = await this.getUserByUsername(username);
     return user !== null;
+  }
+
+  static async updateEmail(username: string, email: string | null): Promise<void> {
+    await DynamoDBService.updateItem(generatePK('USER', username.toLowerCase()), 'METADATA', {
+      email: email || undefined,
+    });
+  }
+}
+
+// ============================================
+// Email Lookup (email -> userId/username)
+// ============================================
+
+export interface EmailLookupRecord {
+  email: string;
+  userId: string;
+  username: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export class EmailLookupService {
+  static normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+  }
+
+  static async getByEmail(email: string): Promise<EmailLookupRecord | null> {
+    const normalized = this.normalizeEmail(email);
+    const item = await DynamoDBService.getItem(generatePK('EMAIL', normalized), 'METADATA');
+    if (!item) return null;
+    return {
+      email: item.email as string,
+      userId: item.userId as string,
+      username: item.username as string,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
+    };
+  }
+
+  static async emailExists(email: string): Promise<boolean> {
+    return (await this.getByEmail(email)) !== null;
+  }
+
+  static async createMapping(record: { email: string; userId: string; username: string; createdAt?: string }): Promise<void> {
+    const now = record.createdAt || new Date().toISOString();
+    const normalized = this.normalizeEmail(record.email);
+    const item = {
+      PK: generatePK('EMAIL', normalized),
+      SK: 'METADATA',
+      entityType: 'EMAIL',
+      email: normalized,
+      userId: record.userId,
+      username: record.username,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await DynamoDBService.putItem(item);
+  }
+
+  static async deleteMapping(email: string): Promise<void> {
+    const normalized = this.normalizeEmail(email);
+    await DynamoDBService.deleteItem(generatePK('EMAIL', normalized), 'METADATA');
+  }
+}
+
+// ============================================
+// Password reset tokens (single use)
+// ============================================
+
+export interface PasswordResetTokenRecord {
+  tokenHash: string;
+  userId: string;
+  email: string;
+  expiresAt: number; // unix seconds
+  usedAt?: number; // unix seconds
+  createdAt: string;
+  updatedAt: string;
+}
+
+export class PasswordResetTokenService {
+  static async createToken(record: Omit<PasswordResetTokenRecord, 'createdAt' | 'updatedAt'>): Promise<void> {
+    const nowIso = new Date().toISOString();
+    const item = {
+      PK: generatePK('RESET', record.tokenHash),
+      SK: 'METADATA',
+      entityType: 'RESET',
+      ...record,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+    await DynamoDBService.putItem(item);
+  }
+
+  static async getByTokenHash(tokenHash: string): Promise<PasswordResetTokenRecord | null> {
+    const item = await DynamoDBService.getItem(generatePK('RESET', tokenHash), 'METADATA');
+    if (!item) return null;
+    return {
+      tokenHash: item.tokenHash as string,
+      userId: item.userId as string,
+      email: item.email as string,
+      expiresAt: item.expiresAt as number,
+      usedAt: item.usedAt as number | undefined,
+      createdAt: item.createdAt as string,
+      updatedAt: item.updatedAt as string,
+    };
+  }
+
+  static async markUsed(tokenHash: string): Promise<void> {
+    const usedAt = Math.floor(Date.now() / 1000);
+    await DynamoDBService.updateItem(generatePK('RESET', tokenHash), 'METADATA', { usedAt });
   }
 }
 

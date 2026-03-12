@@ -2,7 +2,7 @@
 // Creates or updates user profile after authentication
 
 import { NextRequest, NextResponse } from 'next/server';
-import { ProfileService, type UserProfile as DynamoProfile } from '@/lib/dynamodb-client';
+import { EmailLookupService, ProfileService, UserService, type UserProfile as DynamoProfile } from '@/lib/dynamodb-client';
 import { APIResponse, UserProfile, ValidationError, BusinessType, CityTier } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     logger.info('Profile setup request received', { path: '/api/profile/setup' });
     
     const body = await request.json();
-    const { shopName, userName, language, businessType, city, userId, phoneNumber, business_type, city_tier, explanation_mode } = body;
+    const { shopName, userName, email, username, language, businessType, city, userId, phoneNumber, business_type, city_tier, explanation_mode } = body;
 
     // Validate required fields
     const errors: ValidationError[] = [];
@@ -125,6 +125,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate email if provided
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    if (normalizedEmail) {
+      const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
+      if (!ok) {
+        errors.push({ field: 'email', message: 'Invalid email format', code: 'invalid' });
+        return NextResponse.json<APIResponse<null>>(
+          { success: false, error: 'Validation failed', errors },
+          { status: 400 }
+        );
+      }
+      const existing = await EmailLookupService.getByEmail(normalizedEmail);
+      if (existing && existing.userId !== userId) {
+        errors.push({ field: 'email', message: 'Email already in use', code: 'duplicate' });
+        return NextResponse.json<APIResponse<null>>(
+          { success: false, error: 'Validation failed', errors },
+          { status: 409 }
+        );
+      }
+    }
+
     try {
       const now = new Date().toISOString();
 
@@ -133,6 +154,7 @@ export async function POST(request: NextRequest) {
         userId,
         shopName: shopName.trim(),
         userName: userName.trim(),
+        email: normalizedEmail || undefined,
         language,
         businessType: businessType?.trim(),
         city: city?.trim(),
@@ -147,10 +169,18 @@ export async function POST(request: NextRequest) {
       // Save to DynamoDB
       await ProfileService.saveProfile(dynamoProfile);
 
+      // Keep auth/email lookup in sync when username is provided (edit-mode flow)
+      if (normalizedEmail && typeof username === 'string' && username.trim()) {
+        const normalizedUsername = username.trim();
+        await UserService.updateEmail(normalizedUsername, normalizedEmail);
+        await EmailLookupService.createMapping({ email: normalizedEmail, userId, username: normalizedUsername });
+      }
+
       // Transform to API UserProfile format
       const profile: UserProfile = {
         id: userId,
         phoneNumber: phoneNumber || '',
+        email: dynamoProfile.email,
         deviceId: undefined,
         shopName: dynamoProfile.shopName,
         userName: dynamoProfile.userName,

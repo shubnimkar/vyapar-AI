@@ -9,21 +9,21 @@ import { Input } from '../ui/Input';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginFormProps {
-  onSubmit: (username: string, password: string, rememberDevice: boolean) => Promise<void>;
+  onSubmit: (usernameOrEmail: string, password: string, rememberDevice: boolean) => Promise<void>;
   loading: boolean;
   error: string;
   language: Language;
 }
 
 export default function LoginForm({ onSubmit, loading, error, language }: LoginFormProps) {
-  const [username, setUsername] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberDevice, setRememberDevice] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(username, password, rememberDevice);
+    await onSubmit(usernameOrEmail, password, rememberDevice);
   };
 
   return (
@@ -34,13 +34,13 @@ export default function LoginForm({ onSubmit, loading, error, language }: LoginF
         </Card>
       )}
 
-      {/* Username */}
+      {/* Username or Email */}
       <Input
         type="text"
-        label={t('usernameLabel', language)}
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder={language === 'hi' ? 'उपयोगकर्ता नाम' : language === 'mr' ? 'वापरकर्ता नाव' : 'Username'}
+        label={language === 'hi' ? 'यूज़रनेम या ईमेल' : language === 'mr' ? 'वापरकर्तानाव किंवा ईमेल' : 'Username or email'}
+        value={usernameOrEmail}
+        onChange={(e) => setUsernameOrEmail(e.target.value)}
+        placeholder={language === 'hi' ? 'यूज़रनेम / name@business.com' : language === 'mr' ? 'वापरकर्तानाव / name@business.com' : 'username / name@business.com'}
         disabled={loading}
         required
       />
@@ -100,6 +100,19 @@ export default function LoginForm({ onSubmit, loading, error, language }: LoginF
           : t('loginButton', language)
         }
       </Button>
+
+      <div className="text-center">
+        <a
+          href="/forgot-password"
+          className="text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-4"
+        >
+          {language === 'hi'
+            ? 'पासवर्ड भूल गए?'
+            : language === 'mr'
+              ? 'पासवर्ड विसरलात?'
+              : 'Forgot password?'}
+        </a>
+      </div>
     </form>
   );
 }

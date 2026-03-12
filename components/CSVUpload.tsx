@@ -304,21 +304,33 @@ export default function CSVUpload({
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <h4 className="font-semibold text-green-900 mb-2">{t.successTitle}</h4>
-                  <p className="text-sm text-green-700 mb-3">
-                    {uploadResult.summary.validRows} {t.successMessage}
-                  </p>
-                  <div className="flex gap-4 text-sm">
-                    <div>
-                      <span className="font-medium text-green-900">{t.validRows}:</span>{' '}
-                      <span className="text-green-700">{uploadResult.summary.validRows}</span>
-                    </div>
-                    {uploadResult.summary.invalidRows > 0 && (
-                      <div>
-                        <span className="font-medium text-orange-900">{t.invalidRows}:</span>{' '}
-                        <span className="text-orange-700">{uploadResult.summary.invalidRows}</span>
-                      </div>
-                    )}
-                  </div>
+                  {(() => {
+                    const validRows = Number.isNaN(uploadResult.summary.validRows)
+                      ? 0
+                      : uploadResult.summary.validRows;
+                    const invalidRows = Number.isNaN(uploadResult.summary.invalidRows)
+                      ? 0
+                      : uploadResult.summary.invalidRows;
+                    return (
+                      <>
+                        <p className="text-sm text-green-700 mb-3">
+                          {validRows} {t.successMessage}
+                        </p>
+                        <div className="flex gap-4 text-sm">
+                          <div>
+                            <span className="font-medium text-green-900">{t.validRows}:</span>{' '}
+                            <span className="text-green-700">{validRows}</span>
+                          </div>
+                          {invalidRows > 0 && (
+                            <div>
+                              <span className="font-medium text-orange-900">{t.invalidRows}:</span>{' '}
+                              <span className="text-orange-700">{invalidRows}</span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

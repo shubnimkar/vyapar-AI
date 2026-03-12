@@ -254,33 +254,9 @@ export default function IndicesDashboard({
     }
   };
 
-  /**
-   * Render sync status indicator
-   */
-  const renderSyncStatus = () => {
-    const statusConfig = {
-      online: {
-        variant: 'success' as const,
-        text: t('indices.syncStatus.online', language),
-      },
-      offline: {
-        variant: 'default' as const,
-        text: t('indices.syncStatus.offline', language),
-      },
-      syncing: {
-        variant: 'info' as const,
-        text: t('indices.syncStatus.syncing', language),
-      },
-    };
-
-    const config = statusConfig[syncStatus];
-
-    return (
-      <Badge variant={config.variant}>
-        {config.text}
-      </Badge>
-    );
-  };
+  // Intentionally hide the online/offline badge in UI.
+  // We still track `syncStatus` internally for future enhancements.
+  const renderSyncStatus = () => null;
 
   // Loading state
   if (isLoading) {

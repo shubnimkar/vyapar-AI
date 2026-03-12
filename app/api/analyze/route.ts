@@ -213,8 +213,9 @@ function stripMarkdownFormatting(text: string): string {
 
 /**
  * Parse AI response into structured insights
- * Improved parsing to handle various AI response formats
- * Returns raw content as fallback if parsing fails
+ * Improved parsing to handle various AI response formats.
+ * PRIMARY: delimiter-based parsing on [SECTION_1]-[SECTION_5]
+ * FALLBACK: regex-based parsing for older responses without markers
  */
 function parseInsights(content: string): BusinessInsights {
   const sections: BusinessInsights = {
@@ -230,9 +231,60 @@ function parseInsights(content: string): BusinessInsights {
     sections.trueProfitAnalysis = content || 'No analysis available';
     return sections;
   }
-  
-  // DEFENSIVE FIX: Strip generic placeholder headings that AI might generate
-  // These are template-style headings we explicitly told AI not to use
+
+  // --- PRIMARY: delimiter-based parsing on [SECTION_N] markers ---
+  const markerRegex = /\[SECTION_(\d)\]/gi;
+  const markerMatches = [...content.matchAll(markerRegex)];
+
+  if (markerMatches.length >= 2) {
+    const slices: { num: number; text: string }[] = [];
+
+    for (let i = 0; i < markerMatches.length; i++) {
+      const match = markerMatches[i];
+      const num = parseInt(match[1], 10);
+      const contentStart = (match.index ?? 0) + match[0].length;
+      const contentEnd =
+        i + 1 < markerMatches.length
+          ? markerMatches[i + 1].index ?? content.length
+          : content.length;
+
+      slices.push({
+        num,
+        text: content.slice(contentStart, contentEnd).trim(),
+      });
+    }
+
+    const sectionMap: Record<number, string> = {};
+    for (const { num, text } of slices) {
+      sectionMap[num] = text;
+    }
+
+    if (sectionMap[1]) sections.trueProfitAnalysis = stripMarkdownFormatting(sectionMap[1]);
+    if (sectionMap[3]) sections.blockedInventoryCash = stripMarkdownFormatting(sectionMap[3]);
+    if (sectionMap[5]) sections.cashflowForecast = stripMarkdownFormatting(sectionMap[5]);
+
+    for (const [num, key] of [[2, 'lossMakingProducts'], [4, 'abnormalExpenses']] as const) {
+      const raw = sectionMap[num];
+      if (raw) {
+        const listItems = raw
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line && line.match(/^[-•*\d.]/))
+          .map(line => line.replace(/^[-•*\d.]\s*/, '').trim())
+          .filter(line => line.length > 0);
+
+        (sections as any)[key] =
+          listItems.length > 0
+            ? listItems.map(stripMarkdownFormatting)
+            : [stripMarkdownFormatting(raw)];
+      }
+    }
+
+    return sections;
+  }
+
+  // --- FALLBACK: legacy keyword-regex parsing ---
+  let cleanedContent = content;
   const placeholderHeadings = [
     /^#{1,4}\s*Understanding\s+Your\s+HealthScore.*$/gim,
     /^#{1,4}\s*Explanation\s+of.*$/gim,
@@ -240,20 +292,12 @@ function parseInsights(content: string): BusinessInsights {
     /^#{1,4}\s*Highlight\s*$/gim,
     /^#{1,4}\s*Analysis\s*$/gim,
   ];
-  
-  let cleanedContent = content;
   for (const pattern of placeholderHeadings) {
     cleanedContent = cleanedContent.replace(pattern, '');
   }
-  
-  // Clean up extra whitespace after removing headings
   cleanedContent = cleanedContent.replace(/\n{3,}/g, '\n\n').trim();
-  
-  // Use cleaned content for parsing
   content = cleanedContent;
   
-  // Try to extract sections using regex patterns that match section headers
-  // Pattern matches: **Header:** or ## Header or **Header** followed by content
   const sectionPatterns = [
     {
       key: 'trueProfitAnalysis',
@@ -296,18 +340,14 @@ function parseInsights(content: string): BusinessInsights {
   
   let parsedAnySection = false;
   
-  // Try each section pattern
   for (const section of sectionPatterns) {
     for (const pattern of section.patterns) {
       const match = content.match(pattern);
       if (match && match[1]) {
         let extractedContent = match[1].trim();
-        
-        // Clean up the content - remove trailing section markers
         extractedContent = extractedContent.replace(/(?:\*\*|##)\s*(?:\d+\.|\w+)/g, '').trim();
         
-        if (section.isList) {
-          // Parse as list
+        if ((section as any).isList) {
           const listItems = extractedContent
             .split('\n')
             .map(line => line.trim())
@@ -321,7 +361,6 @@ function parseInsights(content: string): BusinessInsights {
             break;
           }
         } else {
-          // Parse as text
           if (extractedContent.length > 0) {
             (sections as any)[section.key] = extractedContent;
             parsedAnySection = true;
@@ -332,13 +371,10 @@ function parseInsights(content: string): BusinessInsights {
     }
   }
   
-  // Fallback: if no sections parsed successfully, return raw content in trueProfitAnalysis
-  // This ensures we always show SOMETHING instead of empty placeholders
   if (!parsedAnySection) {
     sections.trueProfitAnalysis = content;
   }
   
-  // Apply markdown stripping to all sections
   sections.trueProfitAnalysis = stripMarkdownFormatting(sections.trueProfitAnalysis);
   sections.blockedInventoryCash = stripMarkdownFormatting(sections.blockedInventoryCash);
   sections.cashflowForecast = stripMarkdownFormatting(sections.cashflowForecast);

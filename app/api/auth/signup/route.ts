@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { UserService, ProfileService, type UserRecord, type UserProfile } from '@/lib/dynamodb-client';
+import { UserService, ProfileService, EmailLookupService, type UserRecord, type UserProfile } from '@/lib/dynamodb-client';
 import { PasswordHasher } from '@/lib/password-hasher';
 import { UsernameValidator } from '@/lib/username-validator';
 import { InputSanitizer } from '@/lib/input-sanitizer';
@@ -13,6 +13,7 @@ import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-u
 
 interface SignupRequest {
   username: string;
+  email: string;
   password: string;
   shopName: string;
   ownerName: string;
@@ -48,10 +49,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body: SignupRequest = await request.json();
-    const { username, password, shopName, ownerName, businessType, city, phoneNumber, language } = body;
+    const { username, email, password, shopName, ownerName, businessType, city, phoneNumber, language } = body;
 
     // Validate required fields
-    if (!username || !password || !shopName || !ownerName || !businessType || !city || !language) {
+    if (!username || !email || !password || !shopName || !ownerName || !businessType || !city || !language) {
       logger.warn('Missing required fields in signup request');
       return NextResponse.json(
         createErrorResponse(ErrorCode.MISSING_REQUIRED_FIELDS, 'errors.missingRequiredFields'),
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
 
     // Sanitize inputs
     const sanitizedUsername = InputSanitizer.sanitizeUsername(username);
+    const sanitizedEmail = email.trim().toLowerCase();
     const sanitizedShopName = InputSanitizer.sanitizeText(shopName);
     const sanitizedOwnerName = InputSanitizer.sanitizeText(ownerName);
     const sanitizedCity = InputSanitizer.sanitizeText(city);
@@ -71,6 +73,16 @@ export async function POST(request: NextRequest) {
         InputSanitizer.detectSqlKeywords(shopName) ||
         InputSanitizer.detectSqlKeywords(ownerName)) {
       logger.warn('SQL injection attempt detected in signup');
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedEmail);
+    if (!emailOk) {
+      logger.warn('Invalid email format in signup', { email: sanitizedEmail });
       return NextResponse.json(
         createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 400 }
@@ -93,6 +105,16 @@ export async function POST(request: NextRequest) {
       logger.warn('Username already taken', { username: sanitizedUsername });
       return NextResponse.json(
         createErrorResponse(ErrorCode.USERNAME_TAKEN, 'errors.usernameTaken'),
+        { status: 409 }
+      );
+    }
+
+    // Check email availability
+    const emailExists = await EmailLookupService.emailExists(sanitizedEmail);
+    if (emailExists) {
+      logger.warn('Email already in use', { email: sanitizedEmail });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput'),
         { status: 409 }
       );
     }
@@ -148,6 +170,7 @@ export async function POST(request: NextRequest) {
     const userRecord: UserRecord = {
       userId,
       username: sanitizedUsername,
+      email: sanitizedEmail,
       passwordHash: hashResult.hash,
       createdAt: now,
       updatedAt: now,
@@ -159,6 +182,7 @@ export async function POST(request: NextRequest) {
       userId,
       shopName: sanitizedShopName,
       userName: sanitizedOwnerName,
+      email: sanitizedEmail,
       businessType,
       city: sanitizedCity,
       phoneNumber: sanitizedPhone,
@@ -170,6 +194,7 @@ export async function POST(request: NextRequest) {
     // Save to DynamoDB (atomic operation)
     try {
       await UserService.createUser(userRecord);
+      await EmailLookupService.createMapping({ email: sanitizedEmail, userId, username: sanitizedUsername, createdAt: now });
       await ProfileService.saveProfile(profileRecord);
       
       logger.info('User created successfully', { userId });

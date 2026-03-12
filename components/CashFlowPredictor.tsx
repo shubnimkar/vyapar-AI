@@ -14,7 +14,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
   const [error, setError] = useState<string | null>(null);
   const [insufficientData, setInsufficientData] = useState(false);
   const [explaining, setExplaining] = useState(false);
-  const [explanation, setExplanation] = useState('');
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
 
   const translations = {
     en: {
@@ -98,39 +98,53 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
   const hasNegativePredictions = predictions.some((p) => p.isNegative);
   const negativeCount = predictions.filter((p) => p.isNegative).length;
 
+  // Fetch explanation for a single language
+  const fetchExplanationForLanguage = async (lang: Language): Promise<string> => {
+    const response = await fetch('/api/explain', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        metric: 'cashflowPrediction',
+        predictions,
+        language: lang,
+      }),
+    });
+    const data = await response.json();
+    if (data.success && data.explanation) {
+      if (typeof data.explanation === 'string') return data.explanation;
+      if (typeof data.explanation === 'object' && data.explanation.content) return data.explanation.content;
+    }
+    throw new Error('Explain failed');
+  };
+
+  // Fetch AI explanation for all 3 languages concurrently and cache results
   const handleExplainPrediction = async () => {
     if (predictions.length === 0) return;
-    
+
+    const allLanguages: Language[] = ['en', 'hi', 'mr'];
+
+    // If all languages are already cached, nothing to do
+    if (allLanguages.every((l) => explanations[l])) return;
+
     setExplaining(true);
-    setExplanation('');
-    
+
     try {
-      const response = await fetch('/api/explain', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          metric: 'cashflowPrediction',
-          predictions,
-          language,
-        }),
+      const results = await Promise.allSettled(
+        allLanguages.map((lang) => fetchExplanationForLanguage(lang))
+      );
+
+      const newCache: Record<string, string> = { ...explanations };
+      results.forEach((result, i) => {
+        const lang = allLanguages[i];
+        if (result.status === 'fulfilled') {
+          newCache[lang] = result.value;
+        } else {
+          newCache[lang] = explanations[lang] || '';
+        }
       });
 
-      const data = await response.json();
-      if (data.success && data.explanation) {
-        // Handle both flat string and nested object formats for backward compatibility
-        if (typeof data.explanation === 'string') {
-          setExplanation(data.explanation);
-        } else if (typeof data.explanation === 'object' && data.explanation.content) {
-          setExplanation(data.explanation.content);
-        } else {
-          setExplanation('Unable to generate explanation at this time.');
-        }
-      } else {
-        setExplanation('Unable to generate explanation at this time.');
-      }
-    } catch (err) {
-      setExplanation('Unable to generate explanation at this time.');
+      setExplanations(newCache);
     } finally {
       setExplaining(false);
     }
@@ -202,11 +216,54 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
             </div>
           )}
 
-          {explanation && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{explanation}</p>
+          {/* Loading skeleton while fetching all 3 languages */}
+          {explaining && !Object.keys(explanations).length && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg animate-pulse">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="text-xs text-blue-500 ml-1">
+                  {language === 'hi'
+                    ? 'AI तीनों भाषाओं में विश्लेषण तैयार कर रहा है…'
+                    : language === 'mr'
+                      ? 'AI सर्व तीन भाषांमध्ये विश्लेषण तयार करत आहे…'
+                      : 'Generating AI explanation in all languages…'}
+                </span>
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 bg-blue-200 rounded w-full" />
+                <div className="h-3 bg-blue-200 rounded w-5/6" />
+                <div className="h-3 bg-blue-200 rounded w-4/6" />
+                <div className="h-3 bg-blue-200 rounded w-full mt-3" />
+                <div className="h-3 bg-blue-200 rounded w-3/4" />
+              </div>
             </div>
           )}
+
+          {/* Explanation — instant language switch from cache */}
+          {!explaining && Object.keys(explanations).length > 0 && (() => {
+            const currentText = explanations[language];
+            const anyText = currentText || Object.values(explanations).find(Boolean);
+            const isFallback = !currentText && !!anyText;
+
+            const translateHint: Record<string, string> = {
+              hi: 'ऊपर भाषा बदलने पर यही विश्लेषण तुरंत उसी भाषा में दिखेगा।',
+              mr: 'वर भाषा बदलल्यास हे विश्लेषण लगेच त्या भाषेत दिसेल.',
+              en: 'Switch language at the top to see this explanation in that language instantly.',
+            };
+
+            return anyText ? (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{anyText}</p>
+                {isFallback && (
+                  <p className="mt-2 text-xs text-blue-500 italic">
+                    {translateHint[language] || translateHint.en}
+                  </p>
+                )}
+              </div>
+            ) : null;
+          })()}
 
           <div className="space-y-2">
             {predictions.map((prediction, index) => (

@@ -20,6 +20,7 @@ interface SignupFormProps {
 
 export interface SignupData {
   username: string;
+  email: string;
   password: string;
   confirmPassword: string;
   shopName: string;
@@ -33,6 +34,7 @@ export interface SignupData {
 export default function SignupForm({ onSubmit, loading, error, language }: SignupFormProps) {
   const [formData, setFormData] = useState<SignupData>({
     username: '',
+    email: '',
     password: '',
     confirmPassword: '',
     shopName: '',
@@ -159,6 +161,10 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
       newErrors.username = t('error.required', language);
     }
 
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      newErrors.email = t('error.required', language);
+    }
+
     if (!formData.password || formData.password.length < 8) {
       newErrors.password = t('weakPassword', language);
     }
@@ -237,6 +243,17 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
           <p className="mt-2 text-sm text-success-600">{t('usernameAvailable', language)}</p>
         )}
       </div>
+
+      {/* Email */}
+      <Input
+        type="email"
+        label={`${language === 'hi' ? 'ईमेल' : language === 'mr' ? 'ईमेल' : 'Email'} *`}
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        error={errors.email}
+        placeholder="name@business.com"
+        disabled={loading}
+      />
 
       {/* Password */}
       <div>

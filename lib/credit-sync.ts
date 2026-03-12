@@ -322,7 +322,8 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
     };
   } catch (error) {
     logger.error('Full sync failed', { error });
-    throw error;
+    // Always rethrow an Error instance so callers/Next don't surface "[object Event]"
+    throw error instanceof Error ? error : new Error(String(error));
   }
 }
 

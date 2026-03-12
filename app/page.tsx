@@ -110,6 +110,7 @@ export default function Home() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<Set<FileType>>(new Set());
   const [insights, setInsights] = useState<BusinessInsights | null>(null);
+  const [insightsCache, setInsightsCache] = useState<Record<string, BusinessInsights>>({});
   const [benchmark, setBenchmark] = useState<BenchmarkData | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -377,12 +378,13 @@ export default function Home() {
     setLanguage(lang);
     localStorage.setItem('vyapar-lang', lang);
 
-    // Re-generate AI content (recommendations and alerts) in the new language
-    if (insights) {
-      regenerateAIContent(lang);
+    // Instantly swap to cached insights for the new language (no API call needed)
+    if (insightsCache[lang]) {
+      setInsights(insightsCache[lang]);
     }
   };
 
+  // Retained for backward compatibility with other callers if any
   const regenerateAIContent = async (lang: Language) => {
     try {
       const { generateMockRecommendations, generateMockAlerts } = await import('@/lib/bedrock-client-mock');
@@ -719,6 +721,18 @@ export default function Home() {
     }
   };
 
+  // Fetch analysis for a single language — returns { insights, benchmark }
+  const fetchAnalysisForLanguage = async (lang: Language): Promise<{ insights: BusinessInsights; benchmark: BenchmarkData | null }> => {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, language: lang }),
+    });
+    const data = await response.json();
+    if (data.success && data.insights) return { insights: data.insights, benchmark: data.benchmark || null };
+    throw new Error(data.error || 'Analysis failed');
+  };
+
   const handleAnalyze = async () => {
     if (!sessionId) {
       setError(t('uploadDataFirst', language));
@@ -728,26 +742,39 @@ export default function Home() {
     setAnalyzing(true);
     setError(null);
 
+    const allLanguages: Language[] = ['en', 'hi', 'mr'];
+
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionId,
-          language,
-        }),
+      const results = await Promise.allSettled(
+        allLanguages.map((lang) => fetchAnalysisForLanguage(lang))
+      );
+
+      const newCache: Record<string, BusinessInsights> = {};
+      let firstSuccess: BusinessInsights | null = null;
+      let resolvedBenchmark: BenchmarkData | null = null;
+
+      results.forEach((result, i) => {
+        const lang = allLanguages[i];
+        if (result.status === 'fulfilled') {
+          newCache[lang] = result.value.insights;
+          // Use the current language's benchmark if available, otherwise first one
+          if (!resolvedBenchmark || lang === language) {
+            resolvedBenchmark = result.value.benchmark;
+          }
+          if (!firstSuccess || lang === language) {
+            firstSuccess = result.value.insights;
+          }
+        }
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setInsights(data.insights);
-        setBenchmark(data.benchmark || null);
-      } else {
-        setError(data.error || t('analysisFailed', language));
+      if (Object.keys(newCache).length === 0) {
+        setError(t('analysisFailed', language));
+        return;
       }
+
+      setInsightsCache(newCache);
+      setInsights(newCache[language] || firstSuccess);
+      if (resolvedBenchmark) setBenchmark(resolvedBenchmark);
     } catch {
       setError(t('analysisFailed', language));
     } finally {
@@ -973,7 +1000,22 @@ export default function Home() {
               )}
               {insights.chartData && <Charts chartData={insights.chartData} language={language} />}
               {benchmark && <Benchmark benchmark={benchmark} language={language} />}
-              <InsightsDisplay insights={insights} language={language} />
+              {/* Translate hint when switching language after analysis */}
+              {insights && (() => {
+                const isCached = !!insightsCache[language];
+                const hasOtherLanguages = Object.keys(insightsCache).length > 1;
+                const translateHint: Record<string, string> = {
+                  hi: 'विश्लेषण तीनों भाषाओं में तैयार है — ऊपर भाषा बदलें, तुरंत दिखेगा।',
+                  mr: 'विश्लेषण तिन्ही भाषांमध्ये तयार आहे — वर भाषा बदला, लगेच दिसेल.',
+                  en: 'Analysis ready in all languages — switch language above to see it instantly.',
+                };
+                return (!isCached && hasOtherLanguages) ? (
+                  <p className="text-xs text-blue-500 italic text-center">
+                    {translateHint[language] || translateHint.en}
+                  </p>
+                ) : null;
+              })()}
+              <InsightsDisplay insights={insightsCache[language] || insights} language={language} />
             </div>
           )}
         </div>
