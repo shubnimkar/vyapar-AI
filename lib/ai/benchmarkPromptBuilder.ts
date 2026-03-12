@@ -163,7 +163,7 @@ function buildBenchmarkUserPrompt(
     healthScoreComparison.category,
     marginComparison.category,
     language,
-    context.city_tier,
+    context.city_tier || undefined,
     healthScoreComparison.percentile
   );
 
