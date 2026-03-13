@@ -10,6 +10,54 @@
 import { Language } from './types';
 import { translations } from './translations';
 
+function getLocale(language: Language): string {
+  switch (language) {
+    case 'hi':
+      return 'hi-IN';
+    case 'mr':
+      return 'mr-IN';
+    default:
+      return 'en-IN';
+  }
+}
+
+function formatAmount(amount: number, language: Language): string {
+  return new Intl.NumberFormat(getLocale(language), {
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function formatDueDate(dueDate: string, language: Language): string {
+  const parsedDate = new Date(`${dueDate}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return dueDate;
+  }
+
+  return new Intl.DateTimeFormat(getLocale(language), {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(parsedDate);
+}
+
+function getShopReference(shopName: string | undefined, language: Language): string {
+  const trimmedShopName = shopName?.trim();
+
+  if (!trimmedShopName) {
+    return '';
+  }
+
+  switch (language) {
+    case 'hi':
+      return `${trimmedShopName} की ओर से `;
+    case 'mr':
+      return `${trimmedShopName} कडून `;
+    default:
+      return `this is ${trimmedShopName}. `;
+  }
+}
+
 /**
  * Get localized reminder message template with customer details
  * 
@@ -23,27 +71,26 @@ export function getReminderMessage(
   customerName: string,
   amount: number,
   dueDate: string,
-  language: Language
+  language: Language,
+  shopName?: string
 ): string {
-  // Get the appropriate template based on language
   const templateKey = `whatsapp.reminder.${language}`;
   const template = translations[templateKey]?.[language] || translations['whatsapp.reminder.en']['en'];
-  
-  // Replace placeholders with actual values
-  // Use a function replacer to avoid issues with special characters like $ in replacement strings
+
   const message = template
     .replace('{name}', () => customerName)
-    .replace('{amount}', () => amount.toString())
-    .replace('{date}', () => dueDate);
-  
+    .replace('{amount}', () => formatAmount(amount, language))
+    .replace('{date}', () => formatDueDate(dueDate, language))
+    .replace('{shopReference}', () => getShopReference(shopName, language));
+
   return message;
 }
 
 /**
- * Format phone number to international format (+91XXXXXXXXXX for India)
+ * Format phone number to international format for wa.me (91XXXXXXXXXX for India)
  * 
  * @param phoneNumber - 10-digit phone number (numeric only)
- * @returns Formatted phone number with +91 prefix
+ * @returns Formatted phone number with 91 country code prefix and no plus sign
  * @throws Error if phone number is invalid
  */
 function formatPhoneNumber(phoneNumber: string): string {
@@ -60,8 +107,8 @@ function formatPhoneNumber(phoneNumber: string): string {
     throw new Error('Invalid phone number: must contain only digits');
   }
   
-  // Format as +91XXXXXXXXXX
-  return `+91${cleaned}`;
+  // wa.me requires country code without a leading plus sign.
+  return `91${cleaned}`;
 }
 
 /**
@@ -84,20 +131,14 @@ export function generateReminderLink(
   customerName: string,
   amount: number,
   dueDate: string,
-  language: Language
+  language: Language,
+  shopName?: string
 ): string {
-  // Format phone number to international format
   const formattedPhone = formatPhoneNumber(phoneNumber);
-  
-  // Get localized reminder message
-  const message = getReminderMessage(customerName, amount, dueDate, language);
-  
-  // URL encode the message to handle special characters and emojis
+
+  const message = getReminderMessage(customerName, amount, dueDate, language, shopName);
+
   const encodedMessage = encodeURIComponent(message);
-  
-  // Construct WhatsApp URL
-  // Format: https://wa.me/{phone}?text={encoded_message}
-  const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
-  
-  return whatsappUrl;
+
+  return `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
 }

@@ -1,0 +1,429 @@
+diff --git a/components/FollowUpPanel.tsx b/components/FollowUpPanel.tsx
+index 8988ee8..2abab71 100644
+--- a/components/FollowUpPanel.tsx
++++ b/components/FollowUpPanel.tsx
+@@ -16,7 +16,7 @@
+  */
+ 
+ import React, { useState, useEffect } from 'react';
+-import { AlertCircle, CheckCircle2, ListFilter, X } from 'lucide-react';
++import { AlertCircle, AlertTriangle, CheckCircle2, Landmark, Search, Timer, X } from 'lucide-react';
+ import { getOverdueCredits } from '@/lib/credit-manager';
+ import { markCreditAsPaid, syncPendingEntries, updateCreditEntry } from '@/lib/credit-sync';
+ import { generateReminderLink } from '@/lib/whatsapp-link-generator';
+@@ -44,8 +44,6 @@ interface ErrorState {
+   creditId?: string; // For credit-specific errors
+ }
+ 
+-type FollowUpFilter = 'all' | 'needs-reminder' | 'has-phone' | 'high-overdue';
+-
+ export default function FollowUpPanel({
+   userId,
+   language,
+@@ -58,8 +56,10 @@ export default function FollowUpPanel({
+   const [isOnline, setIsOnline] = useState(true);
+   const [isSyncing, setIsSyncing] = useState(false);
+   const [error, setError] = useState<ErrorState>({ type: null, message: '' });
+-  const [showFilters, setShowFilters] = useState(false);
+-  const [activeFilter, setActiveFilter] = useState<FollowUpFilter>('all');
++  const [searchQuery, setSearchQuery] = useState('');
++  const [currentPage, setCurrentPage] = useState(1);
++  const [showAllEntries, setShowAllEntries] = useState(false);
++  const itemsPerPage = 5;
+ 
+   // Calculate summary from overdue credits (deterministic)
+   const summary = React.useMemo(() => {
+@@ -79,18 +79,24 @@ export default function FollowUpPanel({
+   }, [overdueCredits]);
+ 
+   const visibleCredits = React.useMemo(() => {
+-    switch (activeFilter) {
+-      case 'needs-reminder':
+-        return overdueCredits.filter((credit) => credit.daysSinceReminder === null || credit.daysSinceReminder >= 3);
+-      case 'has-phone':
+-        return overdueCredits.filter((credit) => Boolean(credit.phoneNumber?.trim()));
+-      case 'high-overdue':
+-        return overdueCredits.filter((credit) => credit.daysOverdue >= 15);
+-      case 'all':
+-      default:
+-        return overdueCredits;
++    const query = searchQuery.trim().toLowerCase();
++    if (!query) {
++      return overdueCredits;
+     }
+-  }, [activeFilter, overdueCredits]);
++
++    return overdueCredits.filter((credit) =>
++      credit.customerName.toLowerCase().includes(query) ||
++      credit.amount.toString().includes(query) ||
++      credit.phoneNumber?.includes(query)
++    );
++  }, [overdueCredits, searchQuery]);
++
++  const totalPages = Math.max(1, Math.ceil(visibleCredits.length / itemsPerPage));
++  const startIndex = (currentPage - 1) * itemsPerPage;
++  const endIndex = startIndex + itemsPerPage;
++  const paginatedCredits = showAllEntries ? visibleCredits : visibleCredits.slice(startIndex, endIndex);
++  const showingStart = visibleCredits.length > 0 ? startIndex + 1 : 0;
++  const showingEnd = showAllEntries ? visibleCredits.length : Math.min(endIndex, visibleCredits.length);
+ 
+   // Monitor online/offline status
+   useEffect(() => {
+@@ -126,6 +132,16 @@ export default function FollowUpPanel({
+     loadSyncStatus();
+   }, [userId, overdueThreshold]);
+ 
++  useEffect(() => {
++    setCurrentPage(1);
++  }, [searchQuery, overdueCredits.length, showAllEntries]);
++
++  useEffect(() => {
++    if (currentPage > totalPages) {
++      setCurrentPage(totalPages);
++    }
++  }, [currentPage, totalPages]);
++
+   const loadCredits = () => {
+     try {
+       setIsLoading(true);
+@@ -444,64 +460,36 @@ export default function FollowUpPanel({
+     }
+   };
+ 
+-  const getFilterLabel = (filter: FollowUpFilter): string => {
+-    switch (filter) {
+-      case 'needs-reminder':
+-        return 'Needs reminder';
+-      case 'has-phone':
+-        return 'Has phone number';
+-      case 'high-overdue':
+-        return '15+ days overdue';
+-      case 'all':
+-      default:
+-        return 'All follow-ups';
+-    }
+-  };
+-
+   if (isLoading) {
+     return (
+-      <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen pb-24">
+-        <div className="sticky top-0 z-50 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-4 flex items-center justify-between bg-white/90">
++      <div className="p-6 md:p-8 bg-white font-display text-slate-900">
++        <div className="flex items-center justify-between gap-4 mb-6">
+           <div className="flex items-center gap-3">
+-            <h1 className="text-lg font-bold tracking-tight">Follow-Up & Collections</h1>
+-            <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">
++            <h1 className="text-2xl font-bold tracking-tight">Follow-Up & Collections</h1>
++            <p className="text-sm font-medium text-slate-500 mt-0.5">
+               Showing credits overdue by more than {overdueThreshold} days
+             </p>
+           </div>
+-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
++          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200">
+             <span className="size-2 rounded-full bg-slate-400 animate-pulse"></span>
+-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Loading...</span>
++            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">Loading...</span>
+           </div>
+         </div>
+-        <div className="px-4 py-6">
+-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+-            <div className="grid grid-cols-3 gap-4 items-center text-center">
+-              <div className="flex flex-col gap-1">
+-                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+-                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-tight">Overdue</span>
+-              </div>
+-              <div className="flex flex-col gap-1 border-x border-slate-100 dark:border-slate-800">
+-                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+-                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-tight">Total</span>
+-              </div>
+-              <div className="flex flex-col gap-1">
+-                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
+-                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-tight">Days</span>
+-              </div>
+-            </div>
+-          </div>
++        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
++          <div className="rounded-2xl p-5 bg-slate-100 animate-pulse h-36" />
++          <div className="rounded-2xl p-5 bg-slate-100 animate-pulse h-36" />
++          <div className="rounded-2xl p-5 bg-slate-100 animate-pulse h-36" />
+         </div>
+       </div>
+     );
+   }
+ 
+   return (
+-    <div className="bg-white font-display text-slate-900 min-h-screen pb-24">
+-      {/* Header Section */}
+-      <header className="backdrop-blur-md border-b border-slate-200 px-4 py-4 flex items-center justify-between bg-white/90">
++    <div className="p-6 md:p-8 bg-white font-display text-slate-900">
++      <div className="flex items-center justify-between gap-4 mb-6">
+         <div className="flex items-center gap-3">
+-          <h1 className="text-lg font-bold tracking-tight">Follow-up &amp; Collections</h1>
+-          <p className="text-xs md:text-sm font-medium text-slate-500 mt-0.5">Showing credits overdue by 3+ days</p>
++          <h1 className="text-2xl font-bold tracking-tight">Follow-Up &amp; Collections</h1>
++          <p className="text-sm font-medium text-slate-500 mt-0.5">Showing credits overdue by {overdueThreshold}+ days</p>
+         </div>
+         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
+           syncStatus.status === 'synced' ? 'bg-emerald-50 border-emerald-100' :
+@@ -525,11 +513,10 @@ export default function FollowUpPanel({
+             {getSyncStatusText()}
+           </span>
+         </div>
+-      </header>
++      </div>
+ 
+-      {/* Error State */}
+       {error.type && (
+-        <div className="px-4 py-4">
++        <div className="mb-6">
+           <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+             <div className="flex items-center gap-3">
+               <AlertCircle className="size-5 text-red-600" aria-hidden="true" />
+@@ -541,7 +528,7 @@ export default function FollowUpPanel({
+               </div>
+               <button
+                 onClick={() => setError({ type: null, message: '' })}
+-                className="ml-auto text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
++                className="ml-auto text-red-600 hover:text-red-800"
+               >
+                 <X className="size-4" aria-hidden="true" />
+               </button>
+@@ -550,84 +537,73 @@ export default function FollowUpPanel({
+         </div>
+       )}
+ 
+-      {/* Summary Metrics Section */}
+-      <section className="px-4 py-6">
+-        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+-          <div className="grid grid-cols-3 gap-4 items-center text-center">
+-            {/* Overdue Customers */}
+-            <div className="flex flex-col gap-1">
+-              <span className="text-3xl font-extrabold text-overdue-red">{summary.totalOverdue}</span>
+-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-tight">
+-                Overdue Customers
+-              </span>
++      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
++        <div className="bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
++          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">+0%</div>
++          <div className="flex items-center gap-2 mb-3">
++            <div className="p-2 bg-white/20 rounded-lg">
++              <Landmark className="w-5 h-5" />
+             </div>
+-            {/* Total Overdue */}
+-            <div className="flex flex-col gap-1 border-x border-slate-100">
+-              <span className="text-3xl font-extrabold text-overdue-red">{formatAmount(summary.totalAmount)}</span>
+-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-tight">
+-                Total Overdue
+-              </span>
++          </div>
++          <p className="text-white/90 text-xs font-medium mb-1">Overdue Customers</p>
++          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{summary.totalOverdue}</h3>
++          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">ACTIVE FOLLOW-UPS</p>
++        </div>
++
++        <div className="bg-gradient-to-br from-[#f43f5e] to-[#ec4899] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
++          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">+0%</div>
++          <div className="flex items-center gap-2 mb-3">
++            <div className="p-2 bg-white/20 rounded-lg">
++              <AlertCircle className="w-5 h-5" />
+             </div>
+-            {/* Oldest Credit */}
+-            <div className="flex flex-col gap-1">
+-              <span className="text-3xl font-extrabold text-overdue-red">{summary.oldestOverdue}</span>
+-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-tight">
+-                Oldest Credit
+-              </span>
++          </div>
++          <p className="text-white/90 text-xs font-medium mb-1">Total Overdue</p>
++          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{formatAmount(summary.totalAmount)}</h3>
++          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">REQUIRES ACTION</p>
++        </div>
++
++        <div className="bg-gradient-to-br from-[#f59e0b] to-[#f97316] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
++          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">+0%</div>
++          <div className="flex items-center gap-2 mb-3">
++            <div className="p-2 bg-white/20 rounded-lg">
++              <Timer className="w-5 h-5" />
+             </div>
+           </div>
++          <p className="text-white/90 text-xs font-medium mb-1">Oldest Credit</p>
++          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{summary.oldestOverdue}</h3>
++          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">DAYS OVERDUE</p>
+         </div>
+-      </section>
++      </div>
+ 
+-      {/* Follow-up List Section */}
+-      <section className="px-4 pb-12">
+-        <div className="flex items-center justify-between mb-4">
+-          <h3 className="text-base font-bold text-slate-900 px-1">
+-            Customer Follow-ups
+-          </h3>
+-          <div className="relative">
+-            <button
+-              type="button"
+-              onClick={() => setShowFilters((current) => !current)}
+-              aria-expanded={showFilters}
+-              className="text-primary text-sm font-semibold flex items-center gap-1"
+-            >
+-              <ListFilter className="size-4" aria-hidden="true" />
+-              {activeFilter === 'all' ? 'Filter' : getFilterLabel(activeFilter)}
+-            </button>
+-            {showFilters && (
+-              <div className="absolute right-0 top-full z-10 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+-                {([
+-                  'all',
+-                  'needs-reminder',
+-                  'has-phone',
+-                  'high-overdue',
+-                ] as FollowUpFilter[]).map((filter) => (
+-                  <button
+-                    key={filter}
+-                    type="button"
+-                    onClick={() => {
+-                      setActiveFilter(filter);
+-                      setShowFilters(false);
+-                    }}
+-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+-                      activeFilter === filter
+-                        ? 'bg-blue-50 text-blue-700'
+-                        : 'text-slate-700 hover:bg-slate-50'
+-                    }`}
+-                  >
+-                    <span>{getFilterLabel(filter)}</span>
+-                    {activeFilter === filter && <CheckCircle2 className="size-4" aria-hidden="true" />}
+-                  </button>
+-                ))}
+-              </div>
+-            )}
++      <section>
++        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
++          <div className="relative w-full max-w-md">
++            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
++            <input
++              className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35] transition-all placeholder:text-slate-400"
++              placeholder="Search follow-ups by customer, amount, or phone..."
++              type="text"
++              value={searchQuery}
++              onChange={(e) => setSearchQuery(e.target.value)}
++            />
+           </div>
++          <button
++            type="button"
++            onClick={() => {
++              setShowAllEntries((current) => !current);
++              if (!showAllEntries) {
++                setCurrentPage(1);
++              }
++            }}
++            className="text-sm text-[#ff6b35] hover:text-[#ff5722] font-medium self-end md:self-auto"
++          >
++            {showAllEntries ? 'Show Less' : 'View All'}
++          </button>
+         </div>
+ 
+         {/* Empty State */}
+         {visibleCredits.length === 0 && (
+-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center">
++          <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+             <CheckCircle2 className="mx-auto mb-4 size-10 text-slate-400" aria-hidden="true" />
+             <h3 className="text-lg font-semibold text-slate-900 mb-2">
+               {overdueCredits.length === 0 ? 'No overdue credits' : 'No matching follow-ups'}
+@@ -643,26 +619,31 @@ export default function FollowUpPanel({
+         {/* Overdue Credits List */}
+         {visibleCredits.length > 0 && (
+           <div className="space-y-4">
+-            {visibleCredits.map((credit) => (
++            {paginatedCredits.map((credit) => (
+               <div
+                 key={credit.id}
+-                className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
++                className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+               >
+-                <div className="p-4 border-b border-slate-50">
++                <div className="p-6 border-b border-slate-200">
+                   <div className="flex justify-between items-start">
+                     <div className="flex flex-col gap-3">
+-                      <h4 className="text-xl font-bold text-slate-900">{credit.customerName}</h4>
++                      <h4 className="text-2xl font-bold text-slate-900">{credit.customerName}</h4>
+                       <div className="flex flex-col gap-2">
+                         <div className="flex items-center justify-between min-w-[320px] text-sm text-slate-500">
+                           <span>Entry Date: {formatDate(credit.dateGiven)}</span>
+                           <span>Due Date: {formatDate(credit.dueDate)}</span>
+                         </div>
+                         <div>
+-                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${
+-                            credit.daysOverdue >= 30 ? 'border-red-100' :
+-                            credit.daysOverdue >= 15 ? 'border-orange-100' :
+-                            'border-yellow-100'
++                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
++                            credit.daysOverdue >= 30 ? 'bg-rose-50 text-rose-700' :
++                            credit.daysOverdue >= 15 ? 'bg-orange-50 text-orange-700' :
++                            'bg-amber-50 text-amber-700'
+                           }`}>
++                            <span className={`size-1.5 rounded-full ${
++                              credit.daysOverdue >= 30 ? 'bg-rose-500' :
++                              credit.daysOverdue >= 15 ? 'bg-orange-500' :
++                              'bg-amber-500'
++                            }`}></span>
+                             {credit.daysOverdue} days overdue
+                           </span>
+                         </div>
+@@ -685,13 +666,13 @@ export default function FollowUpPanel({
+                     </p>
+                   </div>
+                 </div>
+-                <div className="p-3 bg-slate-50/50 grid-cols-2 gap-3 flex grid">
++                <div className="p-4 bg-white grid-cols-2 gap-3 flex grid">
+                   {/* WhatsApp Reminder Button */}
+                   {credit.phoneNumber && (
+                     <button
+                       onClick={() => handleSendReminder(credit)}
+                       disabled={error.type === 'validation' && error.creditId === credit.id}
+-                      className="flex items-center justify-center gap-2 bg-primary hover:opacity-90 text-white py-2.5 px-4 rounded-xl font-semibold text-xs transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
++                      className="flex items-center justify-center gap-2 bg-[#ff6b35] hover:bg-[#ff5722] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                       <svg className="size-4" height="20" viewBox="0 0 48 48" width="20" x="0px" xmlns="http://www.w3.org/2000/svg" y="0px">
+                         <path d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z" fill="#fff"></path>
+@@ -707,7 +688,7 @@ export default function FollowUpPanel({
+                   <button
+                     onClick={() => handleMarkAsPaid(credit)}
+                     disabled={error.type !== null && error.creditId === credit.id}
+-                    className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 py-2.5 px-4 rounded-xl font-semibold text-xs hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
++                    className="flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                   >
+                     <CheckCircle2 className="size-4" aria-hidden="true" />
+                     Mark Paid
+@@ -715,6 +696,32 @@ export default function FollowUpPanel({
+                 </div>
+               </div>
+             ))}
++
++            {!showAllEntries && (
++              <div className="px-6 py-4 bg-white border border-slate-200 rounded-xl flex items-center justify-between">
++                <p className="text-sm text-gray-600">
++                  {`Showing ${showingStart} to ${showingEnd} of ${visibleCredits.length} follow-ups`}
++                </p>
++                <div className="flex items-center gap-2">
++                  <button
++                    type="button"
++                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
++                    disabled={currentPage === 1}
++                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
++                  >
++                    Previous
++                  </button>
++                  <button
++                    type="button"
++                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
++                    disabled={currentPage === totalPages}
++                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
++                  >
++                    Next
++                  </button>
++                </div>
++              </div>
++            )}
+           </div>
+         )}
+       </section>

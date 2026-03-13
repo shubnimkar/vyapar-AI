@@ -66,6 +66,7 @@ export interface ReminderConfig {
   amount: number;
   dueDate: string;
   language: Language;
+  shopName?: string;
 }
 
 // NEW: Follow-up panel summary (Udhaar Follow-up Helper)

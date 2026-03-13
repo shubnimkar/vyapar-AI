@@ -143,6 +143,11 @@ export const translations: Translations = {
     hi: 'देय तिथि',
     mr: 'देय तारीख',
   },
+  entryDate: {
+    en: 'Entry Date',
+    hi: 'प्रविष्टि तिथि',
+    mr: 'नोंद तारीख',
+  },
   addCredit: {
     en: 'Add Credit Entry',
     hi: 'उधार प्रविष्टि जोड़ें',
@@ -1175,22 +1180,152 @@ export const translations: Translations = {
     hi: 'सबसे पुराना उधार',
     mr: 'सर्वात जुने उधार'
   },
+  'followUp.collectionsQueue': {
+    en: 'Collections Queue',
+    hi: 'वसूली कतार',
+    mr: 'वसुली रांग'
+  },
+  'followUp.collectionsSubtitle': {
+    en: 'Overdue entries that need reminder or payment action.',
+    hi: 'अतिदेय प्रविष्टियाँ जिन्हें रिमाइंडर या भुगतान कार्रवाई की आवश्यकता है।',
+    mr: 'थकीत नोंदी ज्यांना रिमाइंडर किंवा पेमेंट कृतीची गरज आहे.'
+  },
+  'followUp.searchPlaceholder': {
+    en: 'Search follow-ups by customer, amount, or phone...',
+    hi: 'ग्राहक, राशि या फोन से फॉलो-अप खोजें...',
+    mr: 'ग्राहक, रक्कम किंवा फोनने फॉलो-अप शोधा...'
+  },
+  'followUp.viewAll': {
+    en: 'View All',
+    hi: 'सभी देखें',
+    mr: 'सर्व पहा'
+  },
+  'followUp.showLess': {
+    en: 'Show Less',
+    hi: 'कम दिखाएं',
+    mr: 'कमी दाखवा'
+  },
+  'followUp.noMatching': {
+    en: 'No matching follow-ups',
+    hi: 'कोई मेल खाते फॉलो-अप नहीं',
+    mr: 'जुळणारे फॉलो-अप नाहीत'
+  },
+  'followUp.tryAnotherSearch': {
+    en: 'Try another search to view more follow-ups',
+    hi: 'अधिक फॉलो-अप देखने के लिए दूसरा खोज शब्द आज़माएँ',
+    mr: 'अधिक फॉलो-अप पाहण्यासाठी दुसरा शोध वापरून पहा'
+  },
+  'followUp.showingResults': {
+    en: 'Showing {start} to {end} of {total} follow-ups',
+    hi: '{total} फॉलो-अप में से {start} से {end} दिखा रहे हैं',
+    mr: '{total} फॉलो-अपपैकी {start} ते {end} दाखवत आहे'
+  },
+  'followUp.synced': {
+    en: 'Synced',
+    hi: 'सिंक हो गया',
+    mr: 'सिंक झाले'
+  },
+  'followUp.pendingSync': {
+    en: '{count} pending',
+    hi: '{count} लंबित',
+    mr: '{count} प्रलंबित'
+  },
+  'followUp.offline': {
+    en: 'Offline',
+    hi: 'ऑफ़लाइन',
+    mr: 'ऑफलाइन'
+  },
+  'followUp.syncing': {
+    en: 'Syncing...',
+    hi: 'सिंक हो रहा है...',
+    mr: 'सिंक होत आहे...'
+  },
+  'followUp.loading': {
+    en: 'Loading...',
+    hi: 'लोड हो रहा है...',
+    mr: 'लोड होत आहे...'
+  },
+  'followUp.networkErrorTitle': {
+    en: 'Network Error',
+    hi: 'नेटवर्क त्रुटि',
+    mr: 'नेटवर्क त्रुटी'
+  },
+  'followUp.errorTitle': {
+    en: 'Error',
+    hi: 'त्रुटि',
+    mr: 'त्रुटी'
+  },
+  'credit.recentActivity': {
+    en: 'Recent Activity',
+    hi: 'हाल की गतिविधि',
+    mr: 'अलीकडील क्रियाकलाप'
+  },
+  'credit.totalAlerts': {
+    en: 'Total Alerts',
+    hi: 'कुल अलर्ट',
+    mr: 'एकूण सूचना'
+  },
+  'credit.requiresAction': {
+    en: 'REQUIRES ACTION',
+    hi: 'कार्रवाई की आवश्यकता',
+    mr: 'कृती आवश्यक'
+  },
+  'credit.updatedAgo': {
+    en: 'UPDATED 5M AGO',
+    hi: '5 मिनट पहले अपडेट किया गया',
+    mr: '5 मिनिटांपूर्वी अपडेट केले'
+  },
+  'credit.criticalCount': {
+    en: '3 CRITICAL',
+    hi: '3 गंभीर',
+    mr: '3 गंभीर'
+  },
+  'credit.viewAll': {
+    en: 'View All',
+    hi: 'सभी देखें',
+    mr: 'सर्व पहा'
+  },
+  'credit.showLess': {
+    en: 'Show Less',
+    hi: 'कम दिखाएं',
+    mr: 'कमी दाखवा'
+  },
+  'credit.status': {
+    en: 'Status',
+    hi: 'स्थिति',
+    mr: 'स्थिती'
+  },
+  'credit.action': {
+    en: 'Action',
+    hi: 'कार्रवाई',
+    mr: 'कृती'
+  },
+  'credit.pending': {
+    en: 'Pending',
+    hi: 'लंबित',
+    mr: 'प्रलंबित'
+  },
+  'credit.showingLogs': {
+    en: 'Showing {start} to {end} of {total} activity logs',
+    hi: '{total} गतिविधि लॉग में से {start} से {end} दिखा रहे हैं',
+    mr: '{total} क्रियाकलाप लॉगपैकी {start} ते {end} दाखवत आहे'
+  },
 
   // WhatsApp message templates (Udhaar Follow-up Helper)
   'whatsapp.reminder.en': {
-    en: 'Hello {name}, this is a friendly reminder that ₹{amount} is due since {date}. Please pay at your earliest convenience. Thank you!',
-    hi: 'Hello {name}, this is a friendly reminder that ₹{amount} is due since {date}. Please pay at your earliest convenience. Thank you!',
-    mr: 'Hello {name}, this is a friendly reminder that ₹{amount} is due since {date}. Please pay at your earliest convenience. Thank you!'
+    en: 'Hello {name}, {shopReference}a gentle reminder that your payment of ₹{amount} was due on {date}. Please make the payment at your earliest convenience. Thank you.',
+    hi: 'Hello {name}, {shopReference}a gentle reminder that your payment of ₹{amount} was due on {date}. Please make the payment at your earliest convenience. Thank you.',
+    mr: 'Hello {name}, {shopReference}a gentle reminder that your payment of ₹{amount} was due on {date}. Please make the payment at your earliest convenience. Thank you.'
   },
   'whatsapp.reminder.hi': {
-    en: 'नमस्ते {name}, यह एक अनुस्मारक है कि ₹{amount} {date} से बकाया है। कृपया जल्द से जल्द भुगतान करें। धन्यवाद!',
-    hi: 'नमस्ते {name}, यह एक अनुस्मारक है कि ₹{amount} {date} से बकाया है। कृपया जल्द से जल्द भुगतान करें। धन्यवाद!',
-    mr: 'नमस्ते {name}, यह एक अनुस्मारक है कि ₹{amount} {date} से बकाया है। कृपया जल्द से जल्द भुगतान करें। धन्यवाद!'
+    en: 'नमस्ते {name}, {shopReference}यह एक विनम्र अनुस्मारक है कि ₹{amount} का भुगतान {date} को देय था। कृपया अपनी सुविधा अनुसार जल्द भुगतान करें। धन्यवाद।',
+    hi: 'नमस्ते {name}, {shopReference}यह एक विनम्र अनुस्मारक है कि ₹{amount} का भुगतान {date} को देय था। कृपया अपनी सुविधा अनुसार जल्द भुगतान करें। धन्यवाद।',
+    mr: 'नमस्ते {name}, {shopReference}यह एक विनम्र अनुस्मारक है कि ₹{amount} का भुगतान {date} को देय था। कृपया अपनी सुविधा अनुसार जल्द भुगतान करें। धन्यवाद।'
   },
   'whatsapp.reminder.mr': {
-    en: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!',
-    hi: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!',
-    mr: 'नमस्कार {name}, हे एक स्मरणपत्र आहे की ₹{amount} {date} पासून थकित आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद!'
+    en: 'नमस्कार {name}, {shopReference}₹{amount} चे पेमेंट {date} रोजी देय होते याची ही नम्र आठवण आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद.',
+    hi: 'नमस्कार {name}, {shopReference}₹{amount} चे पेमेंट {date} रोजी देय होते याची ही नम्र आठवण आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद.',
+    mr: 'नमस्कार {name}, {shopReference}₹{amount} चे पेमेंट {date} रोजी देय होते याची ही नम्र आठवण आहे. कृपया लवकरात लवकर पेमेंट करा. धन्यवाद.'
   },
 
   // Error messages for Follow-Up Panel
@@ -1688,6 +1823,11 @@ export const translations: Translations = {
     en: 'Back',
     hi: 'वापस',
     mr: 'मागे',
+  },
+  'ui.button.previous': {
+    en: 'Previous',
+    hi: 'पिछला',
+    mr: 'मागील',
   },
   'ui.button.next': {
     en: 'Next',

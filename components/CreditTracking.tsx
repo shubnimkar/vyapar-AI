@@ -266,6 +266,13 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     }
   };
 
+  const formatTemplate = (template: string, values: Record<string, string | number>): string => {
+    return Object.entries(values).reduce(
+      (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
+      template
+    );
+  };
+
   return (
     <div className="p-6 md:p-8 bg-white font-display text-slate-900">
       {/* Header */}
@@ -305,7 +312,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           <p className="text-white/90 text-xs font-medium mb-1">{t('totalOutstanding', language)}</p>
           <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">₹{summary.totalOutstanding.toLocaleString('en-IN')}</h3>
           <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
-            {language === 'hi' ? '5 मिनट पहले अपडेट किया गया' : language === 'mr' ? '5 मिनिटांपूर्वी अपडेट केले' : 'UPDATED 5M AGO'}
+            {t('credit.updatedAgo', language)}
           </p>
         </div>
 
@@ -320,7 +327,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           <p className="text-white/90 text-xs font-medium mb-1">{t('totalOverdue', language)}</p>
           <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">₹{summary.totalOverdue.toLocaleString('en-IN')}</h3>
           <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
-            {language === 'hi' ? 'कार्रवाई की आवश्यकता' : language === 'mr' ? 'कृती आवश्यक' : 'REQUIRES ACTION'}
+            {t('credit.requiresAction', language)}
           </p>
         </div>
 
@@ -333,11 +340,11 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
             </div>
           </div>
           <p className="text-white/90 text-xs font-medium mb-1">
-            {language === 'hi' ? 'कुल अलर्ट' : language === 'mr' ? 'एकूण सूचना' : 'Total Alerts'}
+            {t('credit.totalAlerts', language)}
           </p>
           <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{summary.overdueCount}</h3>
           <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
-            {language === 'hi' ? '3 गंभीर' : language === 'mr' ? '3 गंभीर' : '3 CRITICAL'}
+            {t('credit.criticalCount', language)}
           </p>
         </div>
       </div>
@@ -428,7 +435,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 bg-white border-b border-slate-200 flex items-center justify-between">
           <h2 className="text-base font-semibold text-gray-900">
-            {language === 'hi' ? 'हाल की गतिविधि' : language === 'mr' ? 'अलीकडील क्रियाकलाप' : 'Recent Activity'}
+            {t('credit.recentActivity', language)}
           </h2>
           <button 
             onClick={() => {
@@ -439,10 +446,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
             }}
             className="text-sm text-[#ff6b35] hover:text-[#ff5722] font-medium"
           >
-            {showAllEntries 
-              ? (language === 'hi' ? 'कम दिखाएं' : language === 'mr' ? 'कमी दाखवा' : 'Show Less')
-              : (language === 'hi' ? 'सभी देखें' : language === 'mr' ? 'सर्व पहा' : 'View All')
-            }
+            {showAllEntries ? t('credit.showLess', language) : t('credit.viewAll', language)}
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -452,8 +456,8 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('customerName', language)}</th>
                 <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('amount', language)}</th>
                 <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('dueDate', language)}</th>
-                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-center">Status</th>
-                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-right">Action</th>
+                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-center">{t('credit.status', language)}</th>
+                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-right">{t('credit.action', language)}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
@@ -489,11 +493,11 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                           </span>
                         ) : overdue ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
-                            <span className="size-1.5 rounded-full bg-rose-500"></span> Overdue
+                            <span className="size-1.5 rounded-full bg-rose-500"></span> {t('overdue', language)}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                            Pending
+                            {t('credit.pending', language)}
                           </span>
                         )}
                       </td>
@@ -529,11 +533,11 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
         {filteredEntries.length > 0 && !showAllEntries && (
           <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              {language === 'hi' 
-                ? `${filteredEntries.length} गतिविधि लॉग में से ${showingStart} से ${showingEnd} दिखा रहे हैं`
-                : language === 'mr'
-                ? `${filteredEntries.length} क्रियाकलाप लॉगपैकी ${showingStart} ते ${showingEnd} दाखवत आहे`
-                : `Showing ${showingStart} to ${showingEnd} of ${filteredEntries.length} activity logs`}
+              {formatTemplate(t('credit.showingLogs', language), {
+                start: showingStart,
+                end: showingEnd,
+                total: filteredEntries.length,
+              })}
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -541,14 +545,14 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 disabled={currentPage === 1}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {language === 'hi' ? 'पिछला' : language === 'mr' ? 'मागील' : 'Previous'}
+                {t('ui.button.previous', language)}
               </button>
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {language === 'hi' ? 'अगला' : language === 'mr' ? 'पुढील' : 'Next'}
+                {t('ui.button.next', language)}
               </button>
             </div>
           </div>

@@ -16,8 +16,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle2, ListFilter, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Search, X } from 'lucide-react';
 import { getOverdueCredits } from '@/lib/credit-manager';
+import { markCreditAsPaid, syncPendingEntries, updateCreditEntry } from '@/lib/credit-sync';
 import { generateReminderLink } from '@/lib/whatsapp-link-generator';
 import { recordReminder } from '@/lib/reminder-tracker';
 import { t } from '@/lib/translations';
@@ -43,8 +44,6 @@ interface ErrorState {
   creditId?: string; // For credit-specific errors
 }
 
-type FollowUpFilter = 'all' | 'needs-reminder' | 'has-phone' | 'high-overdue';
-
 export default function FollowUpPanel({
   userId,
   language,
@@ -57,8 +56,11 @@ export default function FollowUpPanel({
   const [isOnline, setIsOnline] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<ErrorState>({ type: null, message: '' });
-  const [showFilters, setShowFilters] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<FollowUpFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showAllEntries, setShowAllEntries] = useState(false);
+  const [shopName, setShopName] = useState('');
+  const itemsPerPage = 5;
 
   // Calculate summary from overdue credits (deterministic)
   const summary = React.useMemo(() => {
@@ -78,18 +80,24 @@ export default function FollowUpPanel({
   }, [overdueCredits]);
 
   const visibleCredits = React.useMemo(() => {
-    switch (activeFilter) {
-      case 'needs-reminder':
-        return overdueCredits.filter((credit) => credit.daysSinceReminder === null || credit.daysSinceReminder >= 3);
-      case 'has-phone':
-        return overdueCredits.filter((credit) => Boolean(credit.phoneNumber?.trim()));
-      case 'high-overdue':
-        return overdueCredits.filter((credit) => credit.daysOverdue >= 15);
-      case 'all':
-      default:
-        return overdueCredits;
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return overdueCredits;
     }
-  }, [activeFilter, overdueCredits]);
+
+    return overdueCredits.filter((credit) =>
+      credit.customerName.toLowerCase().includes(query) ||
+      credit.amount.toString().includes(query) ||
+      credit.phoneNumber?.includes(query)
+    );
+  }, [overdueCredits, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleCredits.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCredits = showAllEntries ? visibleCredits : visibleCredits.slice(startIndex, endIndex);
+  const showingStart = visibleCredits.length > 0 ? startIndex + 1 : 0;
+  const showingEnd = showAllEntries ? visibleCredits.length : Math.min(endIndex, visibleCredits.length);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -124,6 +132,40 @@ export default function FollowUpPanel({
     loadCredits();
     loadSyncStatus();
   }, [userId, overdueThreshold]);
+
+  useEffect(() => {
+    const loadShopName = async () => {
+      try {
+        const response = await fetch(`/api/profile?userId=${userId}`);
+        const result = await response.json();
+
+        if (result.success && result.data?.shopName) {
+          setShopName(result.data.shopName);
+          return;
+        }
+
+        setShopName('');
+      } catch (profileError) {
+        logger.warn('Failed to load shop name for reminder message', {
+          userId,
+          error: profileError instanceof Error ? profileError.message : String(profileError),
+        });
+        setShopName('');
+      }
+    };
+
+    loadShopName();
+  }, [userId]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, overdueCredits.length, showAllEntries]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const loadCredits = () => {
     try {
@@ -211,10 +253,7 @@ export default function FollowUpPanel({
     try {
       setIsSyncing(true);
       setError({ type: null, message: '' });
-      
-      // Import sync function dynamically
-      const { syncPendingEntries } = await import('@/lib/credit-sync');
-      
+
       // Sync pending entries
       const result = await syncPendingEntries(userId);
       
@@ -259,6 +298,13 @@ export default function FollowUpPanel({
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
+  function formatTemplate(template: string, values: Record<string, string | number>): string {
+    return Object.entries(values).reduce(
+      (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
+      template
+    );
+  }
+
   const getSyncStatusColor = (): string => {
     if (isSyncing) return 'text-blue-600';
     
@@ -275,15 +321,17 @@ export default function FollowUpPanel({
   };
 
   const getSyncStatusText = (): string => {
-    if (isSyncing) return 'Syncing...';
+    if (isSyncing) return t('followUp.syncing', language);
     
     switch (syncStatus.status) {
       case 'synced':
-        return 'Synced';
+        return t('followUp.synced', language);
       case 'pending':
-        return `${syncStatus.pendingCount} pending`;
+        return formatTemplate(t('followUp.pendingSync', language), {
+          count: syncStatus.pendingCount ?? 0,
+        });
       case 'offline':
-        return 'Offline';
+        return t('followUp.offline', language);
       default:
         return '';
     }
@@ -323,7 +371,8 @@ export default function FollowUpPanel({
         credit.customerName,
         credit.amount,
         credit.dueDate,
-        language
+        language,
+        shopName
       );
 
       // Record reminder timestamp (optimistic update)
@@ -366,9 +415,6 @@ export default function FollowUpPanel({
     try {
       // Clear any previous errors for this credit
       setError({ type: null, message: '' });
-
-      // Import markCreditAsPaid dynamically to avoid circular dependencies
-      const { markCreditAsPaid } = await import('@/lib/credit-sync');
       
       // Update credit entry (optimistic update)
       // This works offline - updates localStorage and marks for sync
@@ -410,7 +456,6 @@ export default function FollowUpPanel({
           const result = await response.json();
           if (response.ok && result.success) {
             // Mark as synced in localStorage
-            const { updateCreditEntry } = await import('@/lib/credit-sync');
             updateCreditEntry(credit.id, { isPaid: true, paidAt: new Date().toISOString() }, true);
             loadSyncStatus();
             logger.info('Credit payment synced to DynamoDB', { userId, creditId: credit.id });
@@ -450,64 +495,36 @@ export default function FollowUpPanel({
     }
   };
 
-  const getFilterLabel = (filter: FollowUpFilter): string => {
-    switch (filter) {
-      case 'needs-reminder':
-        return 'Needs reminder';
-      case 'has-phone':
-        return 'Has phone number';
-      case 'high-overdue':
-        return '15+ days overdue';
-      case 'all':
-      default:
-        return 'All follow-ups';
-    }
-  };
-
   if (isLoading) {
     return (
-      <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen pb-24">
-        <div className="sticky top-0 z-50 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 py-4 flex items-center justify-between bg-white/90">
-          <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold tracking-tight">Follow-Up & Collections</h1>
-            <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-              Showing credits overdue by more than {overdueThreshold} days
-            </p>
+      <section className="mt-8">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
+            <p className="text-sm text-slate-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200">
             <span className="size-2 rounded-full bg-slate-400 animate-pulse"></span>
-            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Loading...</span>
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{t('followUp.loading', language)}</span>
           </div>
         </div>
-        <div className="px-4 py-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-            <div className="grid grid-cols-3 gap-4 items-center text-center">
-              <div className="flex flex-col gap-1">
-                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-tight">Overdue</span>
-              </div>
-              <div className="flex flex-col gap-1 border-x border-slate-100 dark:border-slate-800">
-                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-tight">Total</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse"></div>
-                <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-tight">Days</span>
-              </div>
-            </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <div className="h-10 w-full max-w-md rounded-lg bg-slate-100 animate-pulse mb-6" />
+          <div className="space-y-4">
+            <div className="rounded-xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
+            <div className="rounded-xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="bg-white font-display text-slate-900 min-h-screen pb-24">
-      {/* Header Section */}
-      <header className="backdrop-blur-md border-b border-slate-200 px-4 py-4 flex items-center justify-between bg-white/90">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold tracking-tight">Follow-up &amp; Collections</h1>
-          <p className="text-xs md:text-sm font-medium text-slate-500 mt-0.5">Showing credits overdue by 3+ days</p>
+    <section className="mt-8">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
+          <p className="text-sm text-slate-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
         </div>
         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
           syncStatus.status === 'synced' ? 'bg-emerald-50 border-emerald-100' :
@@ -531,23 +548,22 @@ export default function FollowUpPanel({
             {getSyncStatusText()}
           </span>
         </div>
-      </header>
+      </div>
 
-      {/* Error State */}
       {error.type && (
-        <div className="px-4 py-4">
+        <div className="mb-4">
           <div className="bg-red-50 border border-red-200 rounded-xl p-4">
             <div className="flex items-center gap-3">
               <AlertCircle className="size-5 text-red-600" aria-hidden="true" />
               <div>
                 <h3 className="text-sm font-semibold text-red-800">
-                  {error.type === 'network' ? 'Network Error' : 'Error'}
+                  {error.type === 'network' ? t('followUp.networkErrorTitle', language) : t('followUp.errorTitle', language)}
                 </h3>
                 <p className="text-sm text-red-700 mt-1">{error.message}</p>
               </div>
               <button
                 onClick={() => setError({ type: null, message: '' })}
-                className="ml-auto text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
+                className="ml-auto text-red-600 hover:text-red-800"
               >
                 <X className="size-4" aria-hidden="true" />
               </button>
@@ -556,133 +572,87 @@ export default function FollowUpPanel({
         </div>
       )}
 
-      {/* Summary Metrics Section */}
-      <section className="px-4 py-6">
-        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
-          <div className="grid grid-cols-3 gap-4 items-center text-center">
-            {/* Overdue Customers */}
-            <div className="flex flex-col gap-1">
-              <span className="text-3xl font-extrabold text-overdue-red">{summary.totalOverdue}</span>
-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-tight">
-                Overdue Customers
-              </span>
-            </div>
-            {/* Total Overdue */}
-            <div className="flex flex-col gap-1 border-x border-slate-100">
-              <span className="text-3xl font-extrabold text-overdue-red">{formatAmount(summary.totalAmount)}</span>
-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-tight">
-                Total Overdue
-              </span>
-            </div>
-            {/* Oldest Credit */}
-            <div className="flex flex-col gap-1">
-              <span className="text-3xl font-extrabold text-overdue-red">{summary.oldestOverdue}</span>
-              <span className="text-slate-500 text-xs font-semibold uppercase tracking-tight">
-                Oldest Credit
-              </span>
-            </div>
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <input
+              className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35] transition-all placeholder:text-slate-400"
+              placeholder={t('followUp.searchPlaceholder', language)}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-        </div>
-      </section>
-
-      {/* Follow-up List Section */}
-      <section className="px-4 pb-12">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-slate-900 px-1">
-            Customer Follow-ups
-          </h3>
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowFilters((current) => !current)}
-              aria-expanded={showFilters}
-              className="text-primary text-sm font-semibold flex items-center gap-1"
-            >
-              <ListFilter className="size-4" aria-hidden="true" />
-              {activeFilter === 'all' ? 'Filter' : getFilterLabel(activeFilter)}
-            </button>
-            {showFilters && (
-              <div className="absolute right-0 top-full z-10 mt-2 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-                {([
-                  'all',
-                  'needs-reminder',
-                  'has-phone',
-                  'high-overdue',
-                ] as FollowUpFilter[]).map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => {
-                      setActiveFilter(filter);
-                      setShowFilters(false);
-                    }}
-                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                      activeFilter === filter
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{getFilterLabel(filter)}</span>
-                    {activeFilter === filter && <CheckCircle2 className="size-4" aria-hidden="true" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowAllEntries((current) => !current);
+              if (!showAllEntries) {
+                setCurrentPage(1);
+              }
+            }}
+            className="text-sm text-[#ff6b35] hover:text-[#ff5722] font-medium self-end md:self-auto"
+          >
+            {showAllEntries ? t('followUp.showLess', language) : t('followUp.viewAll', language)}
+          </button>
         </div>
 
-        {/* Empty State */}
         {visibleCredits.length === 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center">
+          <div className="rounded-xl border border-slate-200 p-8 text-center">
             <CheckCircle2 className="mx-auto mb-4 size-10 text-slate-400" aria-hidden="true" />
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
-              {overdueCredits.length === 0 ? 'No overdue credits' : 'No matching follow-ups'}
+              {overdueCredits.length === 0 ? t('followUp.noOverdue', language) : t('followUp.noMatching', language)}
             </h3>
             <p className="text-slate-500">
               {overdueCredits.length === 0
-                ? 'All credits are up to date'
-                : 'Try another filter to view more follow-ups'}
+                ? t('followUp.noOverdue', language)
+                : t('followUp.tryAnotherSearch', language)}
             </p>
           </div>
         )}
 
-        {/* Overdue Credits List */}
         {visibleCredits.length > 0 && (
           <div className="space-y-4">
-            {visibleCredits.map((credit) => (
+            {paginatedCredits.map((credit) => (
               <div
                 key={credit.id}
-                className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"
+                className="bg-white rounded-xl border border-slate-200 overflow-hidden"
               >
-                <div className="p-4 border-b border-slate-50">
+                <div className="p-6 border-b border-slate-200">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-3">
-                      <h4 className="text-xl font-bold text-slate-900">{credit.customerName}</h4>
+                      <h4 className="text-2xl font-bold text-slate-900">{credit.customerName}</h4>
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between min-w-[320px] text-sm text-slate-500">
-                          <span>Entry Date: {formatDate(credit.dateGiven)}</span>
-                          <span>Due Date: {formatDate(credit.dueDate)}</span>
+                          <span>{t('entryDate', language)}: {formatDate(credit.dateGiven)}</span>
+                          <span>{t('dueDate', language)}: {formatDate(credit.dueDate)}</span>
                         </div>
                         <div>
-                          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${
-                            credit.daysOverdue >= 30 ? 'border-red-100' :
-                            credit.daysOverdue >= 15 ? 'border-orange-100' :
-                            'border-yellow-100'
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                            credit.daysOverdue >= 30 ? 'bg-rose-50 text-rose-700' :
+                            credit.daysOverdue >= 15 ? 'bg-orange-50 text-orange-700' :
+                            'bg-amber-50 text-amber-700'
                           }`}>
-                            {credit.daysOverdue} days overdue
+                            <span className={`size-1.5 rounded-full ${
+                              credit.daysOverdue >= 30 ? 'bg-rose-500' :
+                              credit.daysOverdue >= 15 ? 'bg-orange-500' :
+                              'bg-amber-500'
+                            }`}></span>
+                            {credit.daysOverdue} {t('followUp.daysOverdue', language)}
                           </span>
                         </div>
                         {credit.lastReminderAt ? (
                           <p className="text-xs text-slate-400">
-                            Last reminder: {formatDate(credit.lastReminderAt)}
+                            {t('followUp.lastReminder', language)}: {formatDate(credit.lastReminderAt)}
                             {credit.daysSinceReminder !== null && (
                               <span className="ml-1">
-                                ({credit.daysSinceReminder} days ago)
+                                ({credit.daysSinceReminder} {t('followUp.daysOverdue', language)})
                               </span>
                             )}
                           </p>
                         ) : (
-                          <p className="text-xs text-slate-400">Never reminded</p>
+                          <p className="text-xs text-slate-400">{t('followUp.neverReminded', language)}</p>
                         )}
                       </div>
                     </div>
@@ -691,13 +661,13 @@ export default function FollowUpPanel({
                     </p>
                   </div>
                 </div>
-                <div className="p-3 bg-slate-50/50 grid-cols-2 gap-3 flex grid">
+                <div className="p-4 bg-white grid-cols-2 gap-3 flex grid">
                   {/* WhatsApp Reminder Button */}
                   {credit.phoneNumber && (
                     <button
                       onClick={() => handleSendReminder(credit)}
                       disabled={error.type === 'validation' && error.creditId === credit.id}
-                      className="flex items-center justify-center gap-2 bg-primary hover:opacity-90 text-white py-2.5 px-4 rounded-xl font-semibold text-xs transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center gap-2 bg-[#ff6b35] hover:bg-[#ff5722] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <svg className="size-4" height="20" viewBox="0 0 48 48" width="20" x="0px" xmlns="http://www.w3.org/2000/svg" y="0px">
                         <path d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z" fill="#fff"></path>
@@ -706,24 +676,54 @@ export default function FollowUpPanel({
                         <path d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774c-0.001,2.981,0.833,5.883,2.413,8.396l0.376,0.597l-1.595,5.821l5.973-1.566l0.577,0.342c2.422,1.438,5.2,2.198,8.032,2.199h0.006c8.698,0,15.777-7.077,15.78-15.776C39.795,19.778,38.156,15.814,35.176,12.832z" fill="#40c351"></path>
                         <path clipRule="evenodd" d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z" fill="#fff" fillRule="evenodd"></path>
                       </svg>
-                      Send WhatsApp Reminder
+                      {t('followUp.sendReminder', language)}
                     </button>
                   )}
                   {/* Mark as Paid Button */}
                   <button
                     onClick={() => handleMarkAsPaid(credit)}
                     disabled={error.type !== null && error.creditId === credit.id}
-                    className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 py-2.5 px-4 rounded-xl font-semibold text-xs hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <CheckCircle2 className="size-4" aria-hidden="true" />
-                    Mark Paid
+                    {t('followUp.markPaid', language)}
                   </button>
                 </div>
               </div>
             ))}
+
+            {!showAllEntries && (
+              <div className="pt-2 flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  {formatTemplate(t('followUp.showingResults', language), {
+                    start: showingStart,
+                    end: showingEnd,
+                    total: visibleCredits.length,
+                  })}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {t('ui.button.previous', language)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {t('ui.button.next', language)}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#5246e6",
+        primary: tokens.colors.primary,
         "overdue-red": "#f5415f",
         "alert-orange": "#f18a10",
         "background-light": "#f8f9fb",
