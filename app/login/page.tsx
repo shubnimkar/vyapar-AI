@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Building2, Globe2, ShieldCheck, Sparkles } from 'lucide-react';
 import SignupForm, { SignupData } from '@/components/auth/SignupForm';
 import LoginForm from '@/components/auth/LoginForm';
 import { SessionManager } from '@/lib/session-manager';
@@ -178,99 +179,239 @@ export default function LoginPage() {
     setError('');
   };
 
+  const authHeading =
+    mode === 'signin'
+      ? language === 'hi'
+        ? 'वापसी पर स्वागत है'
+        : language === 'mr'
+          ? 'पुन्हा स्वागत आहे'
+          : 'Welcome back'
+      : language === 'hi'
+        ? 'अपना खाता बनाएं'
+        : language === 'mr'
+          ? 'तुमचे खाते तयार करा'
+          : 'Create your account';
+
+  const authSubheading =
+    mode === 'signin'
+      ? language === 'hi'
+        ? 'अपने व्यवसाय को प्रबंधित करने के लिए साइन इन करें।'
+        : language === 'mr'
+          ? 'तुमचा व्यवसाय व्यवस्थापित करण्यासाठी साइन इन करा.'
+          : 'Sign in to continue managing your business.'
+      : language === 'hi'
+        ? 'कुछ आसान चरणों में Vyapar AI को अपनी दुकान के लिए सेट करें।'
+        : language === 'mr'
+        ? 'काही सोप्या टप्प्यांत Vyapar AI तुमच्या दुकानासाठी सेट करा.'
+          : 'Set up Vyapar AI for your shop in a few steps.';
+
+  const isIndicLanguage = language === 'hi' || language === 'mr';
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            {t('appTitle', language)}
-          </h1>
-          <p className="text-gray-600">
-            {t('appSubtitle', language)}
-          </p>
-        </div>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(99,102,241,0.16),_transparent_28%),linear-gradient(135deg,#f8fbff_0%,#eef3ff_45%,#f5f7ff_100%)]">
+      <div className="grid min-h-screen w-full overflow-hidden bg-white/80 shadow-[0_28px_80px_-32px_rgba(15,23,42,0.35)] backdrop-blur lg:grid-cols-[1.08fr_0.92fr]">
+          <section className="relative overflow-hidden bg-[linear-gradient(160deg,#0f1b4d_0%,#16367a_48%,#2b63ff_100%)] px-6 py-8 text-white sm:px-10 sm:py-12 lg:px-12 lg:py-14">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.22),_transparent_22%),radial-gradient(circle_at_bottom_left,_rgba(147,197,253,0.22),_transparent_28%)]" />
+            <div className="absolute -right-24 top-12 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-blue-300/20 blur-3xl" />
 
-        {/* Language Selector */}
-        <div className="mb-6 flex justify-center gap-2 flex-wrap">
-          <button
-            onClick={() => handleLanguageChange('en')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-              language === 'en'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            English
-          </button>
-          <button
-            onClick={() => handleLanguageChange('hi')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-              language === 'hi'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            हिंदी
-          </button>
-          <button
-            onClick={() => handleLanguageChange('mr')}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-              language === 'mr'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            मराठी
-          </button>
-        </div>
+            <div className="relative flex h-full flex-col justify-between gap-10">
+              <div className="space-y-8">
+                <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-blue-50">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/16">
+                    <Building2 className="h-5 w-5" />
+                  </span>
+                  <span>{t('appTitle', language)}</span>
+                </div>
 
-        {/* Mode Toggle */}
-        <div className="mb-6 flex border-b border-gray-200">
-          <button
-            onClick={() => handleModeSwitch('signin')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${
-              mode === 'signin'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {t('loginButton', language)}
-          </button>
-          <button
-            onClick={() => handleModeSwitch('signup')}
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${
-              mode === 'signup'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {t('signupButton', language)}
-          </button>
-        </div>
+                <div className={`space-y-4 ${isIndicLanguage ? 'max-w-2xl' : 'max-w-xl'}`}>
+                  <p className={`inline-flex items-center gap-2 rounded-full border border-blue-200/20 bg-blue-100/10 px-3 py-1 font-semibold text-blue-100/90 ${isIndicLanguage ? 'text-xs tracking-[0.08em]' : 'text-xs uppercase tracking-[0.2em]'}`}>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {language === 'hi'
+                      ? 'स्मार्ट बिज़नेस ऑपरेटिंग सिस्टम'
+                      : language === 'mr'
+                        ? 'स्मार्ट बिझनेस ऑपरेटिंग सिस्टम'
+                        : 'Smart Business Operating System'}
+                  </p>
+                  <h1 className={`${isIndicLanguage ? 'max-w-3xl text-4xl leading-tight sm:text-5xl' : 'max-w-2xl text-4xl leading-tight sm:text-5xl'} font-bold`}>
+                    {language === 'hi'
+                      ? 'बिक्री, खर्च, उधार और फॉलो-अप को एक ही जगह संभालें।'
+                      : language === 'mr'
+                        ? 'विक्री, खर्च, उधारी आणि फॉलो-अप एकाच ठिकाणी सांभाळा.'
+                        : 'Track sales, expenses, credit, and collections in one place.'}
+                  </h1>
+                  <p className={`${isIndicLanguage ? 'max-w-2xl text-base leading-7 sm:text-lg' : 'max-w-lg text-base leading-7 sm:text-lg'} text-blue-100/88`}>
+                    {language === 'hi'
+                      ? 'छोटे व्यवसायों के लिए बनाया गया सरल, तेज और भरोसेमंद कार्यक्षेत्र।'
+                      : language === 'mr'
+                        ? 'लहान व्यवसायांसाठी तयार केलेले सोपे, जलद आणि विश्वासार्ह कार्यक्षेत्र.'
+                        : 'A calmer, faster workspace for shop owners who need clarity every day.'}
+                  </p>
+                </div>
 
-        {/* Form */}
-        {mode === 'signup' ? (
-          <SignupForm
-            onSubmit={handleSignup}
-            loading={loading}
-            error={error}
-            language={language}
-          />
-        ) : (
-          <LoginForm
-            onSubmit={handleLogin}
-            loading={loading}
-            error={error}
-            language={language}
-          />
-        )}
+                <div className={`grid gap-3 ${isIndicLanguage ? 'sm:grid-cols-1 xl:grid-cols-3' : 'sm:grid-cols-3'}`}>
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <Globe2 className="mb-3 h-5 w-5 text-blue-100" />
+                    <p className={`font-semibold ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                      {language === 'hi'
+                        ? '3 भाषाओं में काम करता है'
+                        : language === 'mr'
+                          ? '3 भाषांमध्ये काम करते'
+                          : 'Works in 3 languages'}
+                    </p>
+                    <p className={`mt-1 text-blue-100/80 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>English, हिंदी, मराठी</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <ShieldCheck className="mb-3 h-5 w-5 text-blue-100" />
+                    <p className={`font-semibold ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                      {language === 'hi'
+                        ? 'निजी और सुरक्षित'
+                        : language === 'mr'
+                          ? 'खाजगी आणि सुरक्षित'
+                          : 'Private and secure'}
+                    </p>
+                    <p className={`mt-1 text-blue-100/80 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                      {language === 'hi'
+                        ? 'सरकारी सिस्टम से जुड़ा नहीं'
+                        : language === 'mr'
+                          ? 'सरकारी सिस्टीमशी जोडलेले नाही'
+                          : 'Not connected to GST or government systems'}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
+                    <Building2 className="mb-3 h-5 w-5 text-blue-100" />
+                    <p className={`font-semibold ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                      {language === 'hi'
+                        ? 'छोटे व्यापार के लिए बना'
+                        : language === 'mr'
+                          ? 'लहान व्यवसायांसाठी बनवलेले'
+                          : 'Built for small business'}
+                    </p>
+                    <p className={`mt-1 text-blue-100/80 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                      {language === 'hi'
+                        ? 'दुकान, सेवा और रिटेल उपयोग के लिए'
+                        : language === 'mr'
+                          ? 'दुकान, सेवा आणि रिटेल वापरासाठी'
+                          : 'Designed for shops, services, and retail teams'}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-        {/* Trust Banner */}
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-500">
-            {t('trustBanner', language)}
-          </p>
-        </div>
+              <div className="relative rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+                    <ShieldCheck className="h-6 w-6 text-blue-50" />
+                  </div>
+                  <div>
+                    <p className={`font-semibold text-white ${isIndicLanguage ? 'text-sm' : 'text-sm'}`}>
+                      {language === 'hi'
+                        ? 'आपका व्यवसाय डेटा निजी रहता है'
+                        : language === 'mr'
+                          ? 'तुमचा व्यवसाय डेटा खाजगी राहतो'
+                          : 'Your business data stays private'}
+                    </p>
+                    <p className={`mt-1 text-blue-100/82 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm leading-6'}`}>
+                      {t('trustBanner', language)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="flex min-h-screen flex-col bg-white/90 px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600/80">
+                  {t('appTitle', language)}
+                </p>
+                <h2 className={`mt-3 font-bold tracking-tight text-slate-900 ${isIndicLanguage ? 'text-3xl leading-tight' : 'text-3xl'}`}>
+                  {authHeading}
+                </h2>
+                <p className={`mt-2 max-w-md text-slate-600 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm leading-6'}`}>
+                  {authSubheading}
+                </p>
+              </div>
+
+              <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 shadow-sm">
+                {(['en', 'hi', 'mr'] as Language[]).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => handleLanguageChange(option)}
+                    className={`rounded-xl px-3 py-2 text-sm font-semibold transition-all ${
+                      language === option
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                    }`}
+                  >
+                    {option === 'en' ? 'EN' : option === 'hi' ? 'हिं' : 'मर'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6 inline-flex rounded-2xl border border-slate-200 bg-slate-100 p-1">
+              <button
+                onClick={() => handleModeSwitch('signin')}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                  mode === 'signin'
+                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {t('loginButton', language)}
+              </button>
+              <button
+                onClick={() => handleModeSwitch('signup')}
+                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                  mode === 'signup'
+                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {t('signupButton', language)}
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:max-h-[calc(100vh-13rem)]">
+              {mode === 'signup' ? (
+                <SignupForm
+                  onSubmit={handleSignup}
+                  loading={loading}
+                  error={error}
+                  language={language}
+                />
+              ) : (
+                <LoginForm
+                  onSubmit={handleLogin}
+                  loading={loading}
+                  error={error}
+                  language={language}
+                />
+              )}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                  <ShieldCheck className="h-4.5 w-4.5" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {language === 'hi'
+                      ? 'विश्वास के साथ उपयोग करें'
+                      : language === 'mr'
+                        ? 'विश्वासाने वापरा'
+                        : 'Use with confidence'}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {t('trustBanner', language)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
       </div>
     </div>
   );

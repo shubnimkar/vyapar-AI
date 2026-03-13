@@ -7,7 +7,6 @@ import { logger } from '@/lib/logger';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import { Badge } from '../ui/Badge';
 import { Spinner } from '../ui/Spinner';
 import { Eye, EyeOff, Check, X } from 'lucide-react';
 
@@ -204,60 +203,96 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <Card className="bg-error-50 border border-error-200" density="compact">
-          <p className="text-sm text-error-800">{error}</p>
+        <Card className="border border-red-200 bg-red-50 shadow-none" density="compact">
+          <p className="text-sm font-medium text-red-700">{error}</p>
         </Card>
       )}
 
-      {/* Username */}
-      <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          {t('usernameLabel', language)} <span className="text-error-500">*</span>
-        </label>
-        <div className="relative">
-          <input
-            type="text"
-            value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-            className={`w-full px-4 py-3 pr-12 border-2 rounded-lg focus:ring-2 focus:ring-offset-0 focus:outline-none transition-all duration-base min-h-[44px] text-base text-neutral-900 placeholder:text-neutral-400 disabled:bg-neutral-100 disabled:cursor-not-allowed ${
-              errors.username ? 'border-error-500 focus:border-error-500 focus:ring-error-500' : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500'
-            }`}
-            placeholder={language === 'hi' ? 'उपयोगकर्ता नाम' : language === 'mr' ? 'वापरकर्ता नाव' : 'Username'}
+      <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
+        <p className="text-sm font-semibold text-slate-900">
+          {language === 'hi'
+            ? 'खाता विवरण'
+            : language === 'mr'
+              ? 'खातेची माहिती'
+              : 'Account details'}
+        </p>
+        <p className="mt-1 text-sm text-slate-600">
+          {language === 'hi'
+            ? 'लॉगिन के लिए उपयोग होने वाली जानकारी भरें।'
+            : language === 'mr'
+              ? 'लॉगिनसाठी वापरली जाणारी माहिती भरा.'
+              : 'Enter the credentials you will use to sign in.'}
+        </p>
+
+        <div className="mt-4 space-y-4">
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              {t('usernameLabel', language)} <span className="text-error-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                className={`w-full rounded-2xl border bg-white px-4 py-3.5 pr-12 text-base text-slate-900 transition-all duration-base placeholder:text-slate-400 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 ${
+                  errors.username
+                    ? 'border-error-500 focus:border-error-500 focus:ring-red-100'
+                    : 'border-slate-300 focus:border-primary-500 focus:ring-blue-100'
+                }`}
+                placeholder={language === 'hi' ? 'उपयोगकर्ता नाम' : language === 'mr' ? 'वापरकर्ता नाव' : 'Username'}
+                disabled={loading}
+                autoFocus
+              />
+              {usernameChecking && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <Spinner size="sm" />
+                </div>
+              )}
+              {!usernameChecking && usernameAvailable === true && formData.username.length >= 3 && (
+                <Check className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-success-500" />
+              )}
+            </div>
+            {errors.username && (
+              <p className="mt-2 text-sm text-error-600">{errors.username}</p>
+            )}
+            {!errors.username && usernameAvailable === true && (
+              <p className="mt-2 text-sm text-success-600">{t('usernameAvailable', language)}</p>
+            )}
+          </div>
+
+          <Input
+            type="email"
+            label={`${language === 'hi' ? 'ईमेल' : language === 'mr' ? 'ईमेल' : 'Email'} *`}
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            error={errors.email}
+            placeholder="name@business.com"
             disabled={loading}
           />
-          {usernameChecking && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-              <Spinner size="sm" />
-            </div>
-          )}
-          {!usernameChecking && usernameAvailable === true && formData.username.length >= 3 && (
-            <Check className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-success-500" />
-          )}
         </div>
-        {errors.username && (
-          <p className="mt-2 text-sm text-error-600">{errors.username}</p>
-        )}
-        {!errors.username && usernameAvailable === true && (
-          <p className="mt-2 text-sm text-success-600">{t('usernameAvailable', language)}</p>
-        )}
       </div>
 
-      {/* Email */}
-      <Input
-        type="email"
-        label={`${language === 'hi' ? 'ईमेल' : language === 'mr' ? 'ईमेल' : 'Email'} *`}
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        error={errors.email}
-        placeholder="name@business.com"
-        disabled={loading}
-      />
+      <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
+        <p className="text-sm font-semibold text-slate-900">
+          {language === 'hi'
+            ? 'सुरक्षा'
+            : language === 'mr'
+              ? 'सुरक्षा'
+              : 'Security'}
+        </p>
+        <p className="mt-1 text-sm text-slate-600">
+          {language === 'hi'
+            ? 'मजबूत पासवर्ड बनाएं और उसकी पुष्टि करें।'
+            : language === 'mr'
+              ? 'मजबूत पासवर्ड तयार करा आणि त्याची पुष्टी करा.'
+              : 'Create a strong password and confirm it.'}
+        </p>
 
-      {/* Password */}
+        <div className="mt-4 space-y-4">
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
+        <label className="block text-sm font-semibold text-slate-700 mb-2">
           {t('passwordLabel', language)} <span className="text-error-500">*</span>
         </label>
         <div className="relative">
@@ -265,8 +300,8 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
             type={showPassword ? 'text' : 'password'}
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className={`w-full px-4 py-3 pr-12 border-2 rounded-lg focus:ring-2 focus:ring-offset-0 focus:outline-none transition-all duration-base min-h-[44px] text-base text-neutral-900 placeholder:text-neutral-400 disabled:bg-neutral-100 disabled:cursor-not-allowed ${
-              errors.password ? 'border-error-500 focus:border-error-500 focus:ring-error-500' : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500'
+            className={`w-full rounded-2xl border bg-white px-4 py-3.5 pr-12 text-base text-slate-900 transition-all duration-base placeholder:text-slate-400 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 ${
+              errors.password ? 'border-error-500 focus:border-error-500 focus:ring-red-100' : 'border-slate-300 focus:border-primary-500 focus:ring-blue-100'
             }`}
             placeholder={language === 'hi' ? 'पासवर्ड' : language === 'mr' ? 'पासवर्ड' : 'Password'}
             disabled={loading}
@@ -274,7 +309,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -305,19 +340,19 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
             
             {/* Password Requirements */}
             <div className="space-y-1 text-xs">
-              <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? 'text-success-600' : 'text-neutral-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? 'text-success-600' : 'text-slate-500'}`}>
                 {passwordStrength.hasMinLength ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' कम से कम 8 अक्षर' : language === 'mr' ? ' किमान 8 वर्ण' : ' At least 8 characters'}
               </div>
-              <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? 'text-success-600' : 'text-neutral-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? 'text-success-600' : 'text-slate-500'}`}>
                 {passwordStrength.hasUppercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' एक बड़ा अक्षर (A-Z)' : language === 'mr' ? ' एक मोठे अक्षर (A-Z)' : ' One uppercase letter (A-Z)'}
               </div>
-              <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? 'text-success-600' : 'text-neutral-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? 'text-success-600' : 'text-slate-500'}`}>
                 {passwordStrength.hasLowercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' एक छोटा अक्षर (a-z)' : language === 'mr' ? ' एक लहान अक्षर (a-z)' : ' One lowercase letter (a-z)'}
               </div>
-              <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? 'text-success-600' : 'text-neutral-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? 'text-success-600' : 'text-slate-500'}`}>
                 {passwordStrength.hasNumber ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' एक संख्या (0-9)' : language === 'mr' ? ' एक संख्या (0-9)' : ' One number (0-9)'}
               </div>
@@ -332,7 +367,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
 
       {/* Confirm Password */}
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
+        <label className="block text-sm font-semibold text-slate-700 mb-2">
           {t('confirmPasswordLabel', language)} <span className="text-error-500">*</span>
         </label>
         <div className="relative">
@@ -340,14 +375,14 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
             type={showConfirmPassword ? 'text' : 'password'}
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            className={`w-full px-4 py-3 pr-12 border-2 rounded-lg focus:ring-2 focus:ring-offset-0 focus:outline-none transition-all duration-base min-h-[44px] text-base text-neutral-900 placeholder:text-neutral-400 disabled:bg-neutral-100 disabled:cursor-not-allowed ${
+            className={`w-full rounded-2xl border bg-white px-4 py-3.5 pr-12 text-base text-slate-900 transition-all duration-base placeholder:text-slate-400 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 ${
               errors.confirmPassword 
-                ? 'border-error-500 focus:border-error-500 focus:ring-error-500' 
+                ? 'border-error-500 focus:border-error-500 focus:ring-red-100' 
                 : passwordsMatch === true 
-                ? 'border-success-500 focus:border-success-500 focus:ring-success-500' 
+                ? 'border-success-500 focus:border-success-500 focus:ring-green-100' 
                 : passwordsMatch === false 
-                ? 'border-error-500 focus:border-error-500 focus:ring-error-500' 
-                : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500'
+                ? 'border-error-500 focus:border-error-500 focus:ring-red-100' 
+                : 'border-slate-300 focus:border-primary-500 focus:ring-blue-100'
             }`}
             placeholder={language === 'hi' ? 'पासवर्ड की पुष्टि करें' : language === 'mr' ? 'पासवर्डची पुष्टी करा' : 'Confirm password'}
             disabled={loading}
@@ -355,7 +390,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
             tabIndex={-1}
           >
             {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -383,73 +418,91 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
           <p className="mt-2 text-sm text-error-600">{errors.confirmPassword}</p>
         )}
       </div>
+        </div>
+      </div>
 
-      {/* Shop Name */}
-      <Input
-        type="text"
-        label={`${t('profile.setup.shopName', language)} *`}
-        value={formData.shopName}
-        onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
-        error={errors.shopName}
-        placeholder={language === 'hi' ? 'दुकान का नाम' : language === 'mr' ? 'दुकानाचे नाव' : 'Shop name'}
-        disabled={loading}
-      />
+      <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
+        <p className="text-sm font-semibold text-slate-900">
+          {language === 'hi'
+            ? 'व्यवसाय जानकारी'
+            : language === 'mr'
+              ? 'व्यवसाय माहिती'
+              : 'Business information'}
+        </p>
+        <p className="mt-1 text-sm text-slate-600">
+          {language === 'hi'
+            ? 'यह जानकारी आपके व्यवसाय प्रोफ़ाइल और रिपोर्टिंग के लिए उपयोग होगी।'
+            : language === 'mr'
+              ? 'ही माहिती तुमच्या व्यवसाय प्रोफाइल आणि रिपोर्टिंगसाठी वापरली जाईल.'
+              : 'This information will be used for your business profile and reporting.'}
+        </p>
 
-      {/* Owner Name */}
-      <Input
-        type="text"
-        label={`${t('ownerNameLabel', language)} *`}
-        value={formData.ownerName}
-        onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-        error={errors.ownerName}
-        placeholder={language === 'hi' ? 'मालिक का नाम' : language === 'mr' ? 'मालकाचे नाव' : 'Owner name'}
-        disabled={loading}
-      />
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Input
+            type="text"
+            label={`${t('profile.setup.shopName', language)} *`}
+            value={formData.shopName}
+            onChange={(e) => setFormData({ ...formData, shopName: e.target.value })}
+            error={errors.shopName}
+            placeholder={language === 'hi' ? 'दुकान का नाम' : language === 'mr' ? 'दुकानाचे नाव' : 'Shop name'}
+            disabled={loading}
+          />
 
-      {/* Business Type */}
-      <Input
-        as="select"
-        label={`${t('profile.setup.businessType', language)} *`}
-        value={formData.businessType}
-        onChange={(e) => setFormData({ ...formData, businessType: e.target.value as any })}
-        disabled={loading}
-      >
-        <option value="retail">{t('businessType.retail', language)}</option>
-        <option value="wholesale">{t('businessType.wholesale', language)}</option>
-        <option value="services">{t('businessType.services', language)}</option>
-        <option value="manufacturing">{t('businessType.manufacturing', language)}</option>
-        <option value="restaurant">{t('businessType.restaurant', language)}</option>
-        <option value="other">{t('businessType.other', language)}</option>
-      </Input>
+          <Input
+            type="text"
+            label={`${t('ownerNameLabel', language)} *`}
+            value={formData.ownerName}
+            onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
+            error={errors.ownerName}
+            placeholder={language === 'hi' ? 'मालिक का नाम' : language === 'mr' ? 'मालकाचे नाव' : 'Owner name'}
+            disabled={loading}
+          />
 
-      {/* City */}
-      <Input
-        type="text"
-        label={`${t('profile.setup.city', language)} *`}
-        value={formData.city}
-        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-        error={errors.city}
-        placeholder={language === 'hi' ? 'शहर' : language === 'mr' ? 'शहर' : 'City'}
-        disabled={loading}
-      />
+          <Input
+            as="select"
+            label={`${t('profile.setup.businessType', language)} *`}
+            value={formData.businessType}
+            onChange={(e) => setFormData({ ...formData, businessType: e.target.value as any })}
+            disabled={loading}
+          >
+            <option value="retail">{t('businessType.retail', language)}</option>
+            <option value="wholesale">{t('businessType.wholesale', language)}</option>
+            <option value="services">{t('businessType.services', language)}</option>
+            <option value="manufacturing">{t('businessType.manufacturing', language)}</option>
+            <option value="restaurant">{t('businessType.restaurant', language)}</option>
+            <option value="other">{t('businessType.other', language)}</option>
+          </Input>
 
-      {/* Phone Number (Optional) */}
-      <Input
-        type="tel"
-        label={t('phoneLabel', language)}
-        value={formData.phoneNumber}
-        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-        placeholder="+91 9876543210"
-        disabled={loading}
-      />
+          <Input
+            type="text"
+            label={`${t('profile.setup.city', language)} *`}
+            value={formData.city}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            error={errors.city}
+            placeholder={language === 'hi' ? 'शहर' : language === 'mr' ? 'शहर' : 'City'}
+            disabled={loading}
+          />
 
-      {/* Submit Button */}
+          <div className="sm:col-span-2">
+            <Input
+              type="tel"
+              label={t('phoneLabel', language)}
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              placeholder="+91 9876543210"
+              disabled={loading}
+            />
+          </div>
+        </div>
+      </div>
+
       <Button
         type="submit"
         disabled={loading || usernameAvailable === false}
         loading={loading}
         fullWidth
         variant="primary"
+        className="min-h-[52px] rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold text-white shadow-[0_18px_32px_-18px_rgba(37,99,235,0.65)] hover:from-blue-700 hover:to-indigo-700 focus:ring-blue-500"
       >
         {loading 
           ? (language === 'hi' ? 'खाता बना रहे हैं...' : language === 'mr' ? 'खाते तयार करत आहे...' : 'Creating account...')
