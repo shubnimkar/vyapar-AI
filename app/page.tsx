@@ -1154,7 +1154,11 @@ export default function Home() {
           </header>
 
           {/* Scrollable Dashboard Content */}
-          <div className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 bg-gray-50">
+          <div
+            className={`flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 ${
+              activeSection === 'credit' ? 'bg-white' : 'bg-gray-50'
+            }`}
+          >
             <div
               className={
                 activeSection === 'health'

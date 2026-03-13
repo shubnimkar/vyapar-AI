@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Language, CreditSummary } from '@/lib/types';
 import { t } from '@/lib/translations';
-import { CreditCard, Plus, Check, Trash2, AlertCircle } from 'lucide-react';
+import { Check, Trash2, AlertCircle, Search, PlusCircle, Landmark, AlertTriangle } from 'lucide-react';
 import { 
   getLocalEntries, 
   createCreditEntry, 
@@ -33,6 +33,10 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
   const [amount, setAmount] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAllEntries, setShowAllEntries] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     loadEntries();
@@ -209,52 +213,142 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     return new Date(dueDate) < new Date();
   };
 
+  const getInitials = (name: string) => name.substring(0, 2).toUpperCase();
+
+  // Generate consistent color for each customer based on their name
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      { bg: 'bg-orange-100', text: 'text-orange-600' },
+      { bg: 'bg-blue-100', text: 'text-blue-600' },
+      { bg: 'bg-yellow-100', text: 'text-yellow-600' },
+      { bg: 'bg-purple-100', text: 'text-purple-600' },
+      { bg: 'bg-green-100', text: 'text-green-600' },
+      { bg: 'bg-pink-100', text: 'text-pink-600' },
+      { bg: 'bg-indigo-100', text: 'text-indigo-600' },
+      { bg: 'bg-teal-100', text: 'text-teal-600' },
+    ];
+    
+    // Use name to generate consistent color index
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colorIndex = hash % colors.length;
+    return colors[colorIndex];
+  };
+
+  // Filter entries based on search query
+  const filteredEntries = entries.filter(entry => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const customerMatch = entry.customerName.toLowerCase().includes(query);
+    const amountMatch = entry.amount.toString().includes(query);
+    const phoneMatch = entry.phoneNumber?.includes(query);
+    
+    return customerMatch || amountMatch || phoneMatch;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredEntries.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEntries = showAllEntries ? filteredEntries : filteredEntries.slice(startIndex, endIndex);
+  const showingStart = filteredEntries.length > 0 ? startIndex + 1 : 0;
+  const showingEnd = showAllEntries ? filteredEntries.length : Math.min(endIndex, filteredEntries.length);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <CreditCard className="w-6 h-6 text-purple-600" />
-          {t('creditTracking', language)}
-        </h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-1"
-          >
-            <Plus className="w-4 h-4" />
-            {t('addCredit', language)}
-          </button>
+    <div className="p-6 md:p-8 bg-white font-display text-slate-900">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <input 
+            className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35] transition-all placeholder:text-slate-400" 
+            placeholder={language === 'hi' ? 'ग्राहक या चालान खोजें...' : language === 'mr' ? 'ग्राहक किंवा चलन शोधा...' : "Search customers or invoices..."} 
+            type="text"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // Reset to first page when searching
+            }}
+          />
         </div>
+        <button 
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 bg-[#ff6b35] hover:bg-[#ff5722] text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>{t('addCredit', language)}</span>
+        </button>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-          <p className="text-xs text-gray-600 mb-1">{t('totalOutstanding', language)}</p>
-          <p className="text-xl font-bold text-purple-700">
-            ₹{summary.totalOutstanding.toLocaleString('en-IN')}
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Total Outstanding */}
+        <div className="bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">+5.2%</div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <Landmark className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-white/90 text-xs font-medium mb-1">{t('totalOutstanding', language)}</p>
+          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">₹{summary.totalOutstanding.toLocaleString('en-IN')}</h3>
+          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
+            {language === 'hi' ? '5 मिनट पहले अपडेट किया गया' : language === 'mr' ? '5 मिनिटांपूर्वी अपडेट केले' : 'UPDATED 5M AGO'}
           </p>
         </div>
 
-        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <p className="text-xs text-gray-600 mb-1">{t('totalOverdue', language)}</p>
-          <p className="text-xl font-bold text-red-700">
-            ₹{summary.totalOverdue.toLocaleString('en-IN')}
+        {/* Total Overdue */}
+        <div className="bg-gradient-to-br from-[#f43f5e] to-[#ec4899] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">-2.4%</div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-white/90 text-xs font-medium mb-1">{t('totalOverdue', language)}</p>
+          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">₹{summary.totalOverdue.toLocaleString('en-IN')}</h3>
+          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
+            {language === 'hi' ? 'कार्रवाई की आवश्यकता' : language === 'mr' ? 'कृती आवश्यक' : 'REQUIRES ACTION'}
           </p>
         </div>
 
-        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-          <p className="text-xs text-gray-600 mb-1">{t('overdueCustomers', language)}</p>
-          <p className="text-xl font-bold text-orange-700">{summary.overdueCount}</p>
+        {/* Total Alerts / Overdue Customers */}
+        <div className="bg-gradient-to-br from-[#f59e0b] to-[#f97316] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">+12%</div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-white/90 text-xs font-medium mb-1">
+            {language === 'hi' ? 'कुल अलर्ट' : language === 'mr' ? 'एकूण सूचना' : 'Total Alerts'}
+          </p>
+          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{summary.overdueCount}</h3>
+          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
+            {language === 'hi' ? '3 गंभीर' : language === 'mr' ? '3 गंभीर' : '3 CRITICAL'}
+          </p>
         </div>
       </div>
 
       {/* Add Form */}
       {showForm && (
-        <form onSubmit={handleAddEntry} className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <form onSubmit={handleAddEntry} className="mb-6 p-5 bg-white rounded-xl border border-slate-200">
+          <h3 className="text-base font-semibold mb-4 text-slate-800">{t('addCredit', language)}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
                 {t('customerName', language)}
               </label>
               <input
@@ -262,14 +356,14 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 required
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
                 placeholder={t('enterName', language)}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('amount', language)} (₹)
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                {t('amount', language)}
               </label>
               <input
                 type="number"
@@ -278,13 +372,13 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
                 placeholder="5000"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
                 {t('dueDate', language)}
               </label>
               <input
@@ -292,44 +386,37 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 required
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
                 {t('phoneNumber', language)} ({t('optional', language)})
               </label>
               <input
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
                 placeholder="9876543210"
                 maxLength={10}
                 pattern="[0-9]{10}"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                {language === 'hi' 
-                  ? '10 अंकों का मोबाइल नंबर (WhatsApp रिमाइंडर के लिए)'
-                  : language === 'mr'
-                  ? '10 अंकांचा मोबाइल नंबर (WhatsApp रिमाइंडरसाठी)'
-                  : '10-digit mobile number (for WhatsApp reminders)'}
-              </p>
             </div>
           </div>
 
           <div className="flex gap-2">
             <button
               type="submit"
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+              className="bg-[#ff6b35] hover:bg-[#ff5722] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
             >
               {t('save', language)}
             </button>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 transition-colors"
             >
               {t('cancel', language)}
             </button>
@@ -337,76 +424,134 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
         </form>
       )}
 
-      {/* Entries List */}
-      <div className="space-y-3">
-        {entries.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">{t('noCreditEntries', language)}</p>
-        ) : (
-          entries.map((entry) => (
-            <div
-              key={entry.id}
-              className={`p-4 rounded-lg border ${
-                entry.isPaid
-                  ? 'bg-gray-50 border-gray-200 opacity-60'
-                  : isOverdue(entry.dueDate)
-                  ? 'bg-red-50 border-red-300'
-                  : 'bg-white border-gray-300'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-gray-800">{entry.customerName}</p>
-                    {!entry.isPaid && isOverdue(entry.dueDate) && (
-                      <AlertCircle className="w-4 h-4 text-red-500" />
-                    )}
-                    {entry.isPaid && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                        {t('paid', language)}
-                      </span>
-                    )}
-                    {entry.syncStatus === 'pending' && (
-                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                        {t('pending', language)}
-                      </span>
-                    )}
-                    {entry.syncStatus === 'error' && (
-                      <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                        {t('error', language)}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    {t('due', language)}: {new Date(entry.dueDate).toLocaleDateString()}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <p className="text-lg font-bold text-gray-800">
-                    ₹{entry.amount.toLocaleString('en-IN')}
-                  </p>
-
-                  {!entry.isPaid && (
-                    <button
-                      onClick={() => handleMarkPaid(entry.id)}
-                      className="text-green-600 hover:text-green-700 p-2"
-                      title={t('markPaid', language)}
-                    >
-                      <Check className="w-5 h-5" />
-                    </button>
-                  )}
-
-                  <button
-                    onClick={() => handleDelete(entry.id)}
-                    className="text-red-600 hover:text-red-700 p-2"
-                    title={t('delete', language)}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+      {/* Recent Activity Table */}
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 bg-white border-b border-slate-200 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">
+            {language === 'hi' ? 'हाल की गतिविधि' : language === 'mr' ? 'अलीकडील क्रियाकलाप' : 'Recent Activity'}
+          </h2>
+          <button 
+            onClick={() => {
+              setShowAllEntries(!showAllEntries);
+              if (!showAllEntries) {
+                setCurrentPage(1); // Reset to first page when toggling
+              }
+            }}
+            className="text-sm text-[#ff6b35] hover:text-[#ff5722] font-medium"
+          >
+            {showAllEntries 
+              ? (language === 'hi' ? 'कम दिखाएं' : language === 'mr' ? 'कमी दाखवा' : 'Show Less')
+              : (language === 'hi' ? 'सभी देखें' : language === 'mr' ? 'सर्व पहा' : 'View All')
+            }
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('customerName', language)}</th>
+                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('amount', language)}</th>
+                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('dueDate', language)}</th>
+                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-center">Status</th>
+                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 bg-white">
+              {paginatedEntries.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 text-sm">{t('noCreditEntries', language)}</td>
+                </tr>
+              ) : (
+                paginatedEntries.map((entry) => {
+                  const overdue = !entry.isPaid && isOverdue(entry.dueDate);
+                  
+                  return (
+                    <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`size-10 flex-shrink-0 rounded-full flex items-center justify-center font-semibold text-sm ${overdue ? 'bg-rose-100 text-rose-600' : `${getAvatarColor(entry.customerName).bg} ${getAvatarColor(entry.customerName).text}`}`}>
+                            {getInitials(entry.customerName)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm text-gray-900">{entry.customerName}</span>
+                            {/* Sync Status Labels */}
+                            {entry.syncStatus === 'pending' && <span className="text-[10px] text-orange-600 mt-0.5">{t('pending', language)}</span>}
+                            {entry.syncStatus === 'error' && <span className="text-[10px] text-red-600 mt-0.5">{t('error', language)}</span>}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">₹{entry.amount.toLocaleString('en-IN')}</td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{new Date(entry.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                      <td className="px-6 py-4 text-center">
+                        {entry.isPaid ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                            {t('paid', language)}
+                          </span>
+                        ) : overdue ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
+                            <span className="size-1.5 rounded-full bg-rose-500"></span> Overdue
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                            Pending
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {!entry.isPaid && (
+                            <button 
+                              onClick={() => handleMarkPaid(entry.id)} 
+                              className="p-1.5 hover:bg-emerald-50 text-emerald-600 rounded-lg transition-colors" 
+                              title={t('markPaid', language)}
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => handleDelete(entry.id)} 
+                            className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-lg transition-colors" 
+                            title={t('delete', language)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        
+        {/* Pagination */}
+        {filteredEntries.length > 0 && !showAllEntries && (
+          <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
+            <p className="text-sm text-gray-600">
+              {language === 'hi' 
+                ? `${filteredEntries.length} गतिविधि लॉग में से ${showingStart} से ${showingEnd} दिखा रहे हैं`
+                : language === 'mr'
+                ? `${filteredEntries.length} क्रियाकलाप लॉगपैकी ${showingStart} ते ${showingEnd} दाखवत आहे`
+                : `Showing ${showingStart} to ${showingEnd} of ${filteredEntries.length} activity logs`}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {language === 'hi' ? 'पिछला' : language === 'mr' ? 'मागील' : 'Previous'}
+              </button>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {language === 'hi' ? 'अगला' : language === 'mr' ? 'पुढील' : 'Next'}
+              </button>
             </div>
-          ))
+          </div>
         )}
       </div>
     </div>

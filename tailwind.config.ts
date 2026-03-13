@@ -10,7 +10,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: tokens.colors.primary,
+        primary: "#5246e6",
+        "overdue-red": "#f5415f",
+        "alert-orange": "#f18a10",
+        "background-light": "#f8f9fb",
+        "background-dark": "#0f172a",
         success: tokens.colors.success,
         warning: tokens.colors.warning,
         error: tokens.colors.error,
@@ -24,6 +28,7 @@ const config: Config = {
       fontFamily: {
         sans: [...tokens.typography.fontFamily.sans],
         devanagari: [...tokens.typography.fontFamily.devanagari],
+        "display": ["Public Sans", "sans-serif"],
       },
       fontSize: {
         xs: [...tokens.typography.fontSize.xs],
