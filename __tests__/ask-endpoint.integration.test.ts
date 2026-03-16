@@ -337,7 +337,7 @@ describe('/api/ask endpoint integration tests', () => {
       expect(data.success).toBe(true);
       expect(data.messages[0].content).toBe('या महिन्यात माझी विक्री किती आहे?');
       expect(data.messages[0].contentByLanguage.mr).toBe('या महिन्यात माझी विक्री किती आहे?');
-      expect(data.messages[0].content).toBe('Conclusion: या महिन्यात तुमची विक्री एकूण ₹7,17,746 आहे.');
+      expect(data.messages[1].content).toBe('Conclusion: या महिन्यात तुमची विक्री एकूण ₹7,17,746 आहे.');
       expect(data.messages[1].contentByLanguage.mr).toBe('Conclusion: या महिन्यात तुमची विक्री एकूण ₹7,17,746 आहे.');
       expect(mockUpdateSession).toHaveBeenCalledWith(
         'test-session-123',
