@@ -407,10 +407,155 @@ export const translations: Translations = {
     hi: 'अपने व्यापार के बारे में प्रश्न लिखें...',
     mr: 'तुमच्या व्यवसायाबद्दल प्रश्न टाइप करा...',
   },
+  qaScope: {
+    en: 'Ask about daily entries, credit follow-ups, pending items, reports, sales, expenses, and inventory.',
+    hi: 'दैनिक एंट्री, उधार फॉलो-अप, लंबित आइटम, रिपोर्ट, बिक्री, खर्च और इन्वेंटरी के बारे में पूछें।',
+    mr: 'दैनिक नोंदी, उधारी फॉलो-अप, प्रलंबित आयटम, रिपोर्ट, विक्री, खर्च आणि इन्व्हेंटरीबद्दल विचारा.',
+  },
+  qaEmptyState: {
+    en: 'Add daily entries, credit records, or upload analysis CSV files to start asking questions.',
+    hi: 'प्रश्न पूछना शुरू करने के लिए दैनिक एंट्री, उधार रिकॉर्ड जोड़ें या विश्लेषण CSV फ़ाइलें अपलोड करें।',
+    mr: 'प्रश्न विचारायला सुरू करण्यासाठी दैनिक नोंदी, उधारी रेकॉर्ड जोडा किंवा विश्लेषण CSV फाइल्स अपलोड करा.',
+  },
   sendButton: {
     en: 'Send',
     hi: 'भेजें',
     mr: 'पाठवा',
+  },
+  qaSourceHeading: {
+    en: 'Using data',
+    hi: 'इस्तेमाल किया गया डेटा',
+    mr: 'वापरलेला डेटा',
+  },
+  qaNewConversation: {
+    en: 'New conversation',
+    hi: 'नई बातचीत',
+    mr: 'नवीन संभाषण',
+  },
+  qaClearingConversation: {
+    en: 'Clearing...',
+    hi: 'साफ किया जा रहा है...',
+    mr: 'साफ करत आहे...',
+  },
+  qaConclusion: {
+    en: 'Conclusion',
+    hi: 'निष्कर्ष',
+    mr: 'निष्कर्ष',
+  },
+  qaWhy: {
+    en: 'Why',
+    hi: 'क्यों',
+    mr: 'का',
+  },
+  qaNextStep: {
+    en: 'Next step',
+    hi: 'अगला कदम',
+    mr: 'पुढचे पाऊल',
+  },
+  'qaSource.dailyEntries': {
+    en: 'Daily entries',
+    hi: 'दैनिक एंट्री',
+    mr: 'दैनिक नोंदी',
+  },
+  'qaSource.creditEntries': {
+    en: 'Credit entries',
+    hi: 'उधार रिकॉर्ड',
+    mr: 'उधारी नोंदी',
+  },
+  'qaSource.pendingTransactions': {
+    en: 'Pending transactions',
+    hi: 'लंबित लेनदेन',
+    mr: 'प्रलंबित व्यवहार',
+  },
+  'qaSource.reports': {
+    en: 'Reports',
+    hi: 'रिपोर्ट',
+    mr: 'रिपोर्ट',
+  },
+  'qaSource.salesCsv': {
+    en: 'Sales CSV',
+    hi: 'बिक्री CSV',
+    mr: 'विक्री CSV',
+  },
+  'qaSource.expensesCsv': {
+    en: 'Expenses CSV',
+    hi: 'खर्च CSV',
+    mr: 'खर्च CSV',
+  },
+  'qaSource.inventoryCsv': {
+    en: 'Inventory CSV',
+    hi: 'इन्वेंटरी CSV',
+    mr: 'इन्व्हेंटरी CSV',
+  },
+  'qaQuick.businessWeek': {
+    en: 'How is my business doing this week?',
+    hi: 'इस सप्ताह मेरा व्यवसाय कैसा चल रहा है?',
+    mr: 'या आठवड्यात माझा व्यवसाय कसा चालला आहे?',
+  },
+  'qaQuick.marginHurt': {
+    en: 'What is hurting my profit margin most?',
+    hi: 'मेरे लाभ मार्जिन को सबसे ज़्यादा क्या नुकसान पहुँचा रहा है?',
+    mr: 'माझ्या नफा मार्जिनवर सर्वात जास्त परिणाम कशाचा होत आहे?',
+  },
+  'qaQuick.creditFollowUp': {
+    en: 'Who should I follow up with today?',
+    hi: 'मुझे आज किन ग्राहकों से फॉलो-अप करना चाहिए?',
+    mr: 'आज मला कोणाशी फॉलो-अप करायला हवा?',
+  },
+  'qaQuick.creditBlocked': {
+    en: 'How much money is stuck in credit?',
+    hi: 'उधार में कितना पैसा अटका है?',
+    mr: 'उधारीत किती पैसे अडकले आहेत?',
+  },
+  'qaQuick.healthWhy': {
+    en: 'Why is my health score at this level?',
+    hi: 'मेरा स्वास्थ्य स्कोर इस स्तर पर क्यों है?',
+    mr: 'माझा हेल्थ स्कोअर या पातळीवर का आहे?',
+  },
+  'qaQuick.improveFirst': {
+    en: 'What should I improve first in my business?',
+    hi: 'मुझे अपने व्यवसाय में सबसे पहले क्या सुधारना चाहिए?',
+    mr: 'माझ्या व्यवसायात मी आधी काय सुधारायला हवे?',
+  },
+  'qaQuick.pendingReview': {
+    en: 'How many pending transactions need review?',
+    hi: 'समीक्षा के लिए कितने लंबित लेनदेन हैं?',
+    mr: 'पुनरावलोकनासाठी किती प्रलंबित व्यवहार आहेत?',
+  },
+  'qaQuick.pendingClear': {
+    en: 'What should I clear first from pending transactions?',
+    hi: 'लंबित लेनदेन में मुझे पहले क्या क्लियर करना चाहिए?',
+    mr: 'प्रलंबित व्यवहारांमध्ये आधी काय क्लिअर करावे?',
+  },
+  'qaQuick.reportChanged': {
+    en: 'What changed in my latest report?',
+    hi: 'मेरी नवीनतम रिपोर्ट में क्या बदला है?',
+    mr: 'माझ्या नवीनतम रिपोर्टमध्ये काय बदलले आहे?',
+  },
+  'qaQuick.reportSummary': {
+    en: 'Summarize my recent reports for me.',
+    hi: 'मेरी हाल की रिपोर्टों का सार बताइए।',
+    mr: 'माझ्या अलीकडील रिपोर्ट्सचा सारांश द्या.',
+  },
+  'qaQuick.productProfit': {
+    en: 'Which product is most profitable?',
+    hi: 'कौन सा उत्पाद सबसे अधिक लाभदायक है?',
+    mr: 'कोणते उत्पादन सर्वात फायदेशीर आहे?',
+  },
+  'qaQuick.productBest': {
+    en: 'Which products sell best?',
+    hi: 'कौन से उत्पाद सबसे अच्छे बिकते हैं?',
+    mr: 'कोणती उत्पादने सर्वात चांगली विकली जातात?',
+  },
+  'qaQuick.biggestExpenses': {
+    en: 'What are my biggest expenses?',
+    hi: 'मेरे सबसे बड़े खर्चे क्या हैं?',
+    mr: 'माझे सर्वात मोठे खर्च काय आहेत?',
+  },
+  'qaQuick.inventoryBlocked': {
+    en: 'How much cash is blocked in inventory?',
+    hi: 'इन्वेंटरी में कितना कैश फंसा है?',
+    mr: 'इन्व्हेंटरीमध्ये किती रोख अडकली आहे?',
   },
   voiceInput: {
     en: 'Voice Input',

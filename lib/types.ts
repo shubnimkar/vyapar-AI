@@ -114,6 +114,7 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   sourcesUsed?: string[];
+  contentByLanguage?: Partial<Record<Language, string>>;
 }
 
 export type SeverityLevel = 'critical' | 'warning' | 'good' | 'info';

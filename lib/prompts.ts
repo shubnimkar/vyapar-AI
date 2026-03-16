@@ -174,8 +174,8 @@ function formatReportSummary(reports: DailyReport[]): string {
 function getLanguageInstructions(language: Language): string {
   const instructions = {
     en: 'IMPORTANT: You MUST respond in English. All your responses must be in English language only. Provide insights in simple English. Use conversational tone appropriate for small shop owners. Avoid financial jargon.',
-    hi: 'अत्यंत महत्वपूर्ण: आपको केवल हिंदी में जवाब देना है। आपके सभी उत्तर केवल हिंदी भाषा में होने चाहिए। अंग्रेजी का उपयोग बिल्कुल न करें। सरल हिंदी में जानकारी प्रदान करें। भारतीय दुकानदारों के लिए उपयुक्त सांस्कृतिक उदाहरण उपयोग करें। वित्तीय शब्दजाल से बचें।',
-    mr: 'अत्यंत महत्त्वाचे: तुम्ही फक्त मराठीत उत्तर द्यावे. तुमची सर्व उत्तरे फक्त मराठी भाषेत असावीत. इंग्रजीचा वापर अजिबात करू नका. सोप्या मराठीत माहिती द्या. भारतीय दुकानदारांसाठी योग्य सांस्कृतिक उदाहरणे वापरा. आर्थिक शब्दजाल टाळा।',
+    hi: 'अत्यंत महत्वपूर्ण: आपको केवल हिंदी में जवाब देना है। आपके सभी उत्तर केवल हिंदी भाषा में होने चाहिए। अंग्रेजी का उपयोग बिल्कुल न करें, सिवाय नाम, ब्रांड, उत्पाद नाम या तकनीकी पहचान के। यदि उपयोगकर्ता अंग्रेजी में प्रश्न पूछे तब भी उत्तर हिंदी में ही दें। सरल हिंदी में जानकारी प्रदान करें। भारतीय दुकानदारों के लिए उपयुक्त उदाहरण उपयोग करें। वित्तीय शब्दजाल से बचें।',
+    mr: 'अत्यंत महत्त्वाचे: तुम्ही फक्त मराठीत उत्तर द्यावे. तुमची सर्व उत्तरे फक्त मराठी भाषेत असावीत. नावे, ब्रँड, उत्पादनांची नावे किंवा तांत्रिक ओळख वगळता इंग्रजीचा वापर अजिबात करू नका. वापरकर्त्याने प्रश्न इंग्रजीत विचारला तरी उत्तर मराठीतच द्या. सोप्या मराठीत माहिती द्या. भारतीय दुकानदारांसाठी योग्य उदाहरणे वापरा. आर्थिक शब्दजाल टाळा.',
   };
   
   return instructions[language];
@@ -364,11 +364,13 @@ ${getLanguageInstructions(language)}
 - If the user is in Credit, focus on collections, overdue amounts, and cash recovery
 - If the user is in Health or Analysis, connect answers to score, margin, and benchmark context when available
 - If the user is in Pending, mention pending transactions when helpful
+- The user's selected app language is "${language}". Respect it strictly even if the question is written in another language
 - When possible, structure the answer using these exact labels on separate lines:
 Conclusion:
 Why:
 Next step:
 - Keep the content after those labels in the requested language
+- For Hindi and Marathi responses, write the full answer body in that language. Do not default to English sentences
 
 **CRITICAL - Anti-Template Instructions:**
 DO NOT use generic templates, placeholder headings, or section markers like:
@@ -383,4 +385,27 @@ Instead, start DIRECTLY with specific, personalized answers based on the actual 
 Please answer the question now.`;
 
   return prompt;
+}
+
+export function buildQAResponseTranslationPrompt(answer: string, language: Language): string {
+  const languageName = language === 'hi' ? 'Hindi' : language === 'mr' ? 'Marathi' : 'English';
+
+  return `You are translating a business assistant reply into ${languageName}.
+
+${getLanguageInstructions(language)}
+
+**Task:**
+- Translate the answer below into ${languageName}
+- Preserve all numbers, currency amounts, dates, customer names, shop names, product names, and brand names exactly
+- Keep the same meaning and business advice
+- If the reply uses these structure labels, keep them exactly in English on their own lines so the UI parser can read them:
+Conclusion:
+Why:
+Next step:
+- Translate only the content after those labels into ${languageName}
+- Do not add extra explanation or commentary
+- Return only the translated answer text
+
+**Answer to translate:**
+${answer}`;
 }

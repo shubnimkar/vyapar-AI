@@ -134,7 +134,7 @@ export default function Home() {
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [qaReports, setQaReports] = useState<DailyReport[]>([]);
   const [qaPendingTransactions, setQaPendingTransactions] = useState<InferredTransaction[]>([]);
-  const [qaInitialMessages, setQaInitialMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; sourcesUsed?: string[] }>>([]);
+  const [qaInitialMessages, setQaInitialMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; sourcesUsed?: string[]; contentByLanguage?: Partial<Record<Language, string>> }>>([]);
 
   // Get pending transaction count for badge
   const pendingCount = usePendingTransactionCount();

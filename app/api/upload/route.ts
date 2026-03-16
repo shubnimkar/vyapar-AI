@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
                 role: message.role,
                 content: message.content,
                 sourcesUsed: message.sourcesUsed,
+                contentByLanguage: message.contentByLanguage,
               })),
             });
           }

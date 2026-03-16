@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, updateSession } from '@/lib/session-store';
 import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
-import { buildQAPrompt } from '@/lib/prompts';
+import { buildQAPrompt, buildQAResponseTranslationPrompt } from '@/lib/prompts';
 import { Language, ChatMessage, DailyEntry, CreditEntry, DailyReport, InferredTransaction } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import {
@@ -46,6 +46,63 @@ function stripMarkdownFormatting(text: string): string {
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
 
   return cleaned;
+}
+
+function needsLocalizedTranslation(text: string, language: Language): boolean {
+  if (!text || language === 'en') {
+    return false;
+  }
+
+  const devanagariMatches = text.match(/[\u0900-\u097F]/g) || [];
+  const latinMatches = text.match(/[A-Za-z]/g) || [];
+  const devanagariCount = devanagariMatches.length;
+  const latinCount = latinMatches.length;
+
+  if (devanagariCount >= 20) {
+    return false;
+  }
+
+  return latinCount > devanagariCount;
+}
+
+async function translateAnswer(
+  answer: string,
+  language: Language,
+  orchestrator: ReturnType<typeof getFallbackOrchestrator>,
+  sessionUserId?: string
+): Promise<string> {
+  if (!answer) {
+    return answer;
+  }
+
+  const translationPrompt = buildQAResponseTranslationPrompt(answer, language);
+  const translationResponse = await orchestrator.generateResponse(
+    translationPrompt,
+    { language },
+    {
+      endpoint: '/api/ask',
+      ...(typeof sessionUserId === 'string' ? { userId: sessionUserId } : {}),
+    }
+  );
+
+  if (!translationResponse.success || !translationResponse.content) {
+    return answer;
+  }
+
+  return translationResponse.content;
+}
+
+async function localizeAnswerIfNeeded(
+  answer: string,
+  language: Language,
+  orchestrator: ReturnType<typeof getFallbackOrchestrator>,
+  sessionUserId?: string
+): Promise<string> {
+  if (!needsLocalizedTranslation(answer, language)) {
+    return answer;
+  }
+
+  return translateAnswer(answer, language, orchestrator, sessionUserId);
 }
 
 function inferRelevantSources(
@@ -224,15 +281,27 @@ export async function POST(request: NextRequest) {
     }
 
     const answer = aiResponse.content || '';
+    const cleanedOriginalAnswer = stripMarkdownFormatting(answer);
+    const localizedAnswer = await localizeAnswerIfNeeded(answer, language, orchestrator, typeof sessionUserId === 'string' ? sessionUserId : undefined);
 
     // Strip markdown formatting from AI response
-    const cleanedAnswer = stripMarkdownFormatting(answer);
+    const cleanedAnswer = stripMarkdownFormatting(localizedAnswer);
+    const contentByLanguage: Partial<Record<Language, string>> = {
+      [language]: cleanedAnswer,
+    };
+
+    if (language !== 'en' && cleanedOriginalAnswer && cleanedOriginalAnswer !== cleanedAnswer) {
+      contentByLanguage.en = cleanedOriginalAnswer;
+    }
 
     // Store question and answer in conversation history
     const userMessage: ChatMessage = {
       role: 'user',
       content: question,
       timestamp: new Date(),
+      contentByLanguage: {
+        [language]: question,
+      },
     };
 
     const assistantMessage: ChatMessage = {
@@ -240,6 +309,7 @@ export async function POST(request: NextRequest) {
       content: cleanedAnswer,
       timestamp: new Date(),
       sourcesUsed,
+      contentByLanguage,
     };
 
     const updatedHistory = [
@@ -259,6 +329,106 @@ export async function POST(request: NextRequest) {
       success: true,
       answer: cleanedAnswer,
       sourcesUsed,
+      contentByLanguage,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      logAndReturnError(
+        error as Error,
+        ErrorCode.SERVER_ERROR,
+        'errors.serverError',
+        'en',
+        { path: '/api/ask' }
+      ),
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { sessionId, language = 'en', messages = [] } = body as {
+      sessionId?: string;
+      language?: Language;
+      messages?: Array<{
+        index: number;
+        content: string;
+        contentByLanguage?: Partial<Record<Language, string>>;
+      }>;
+    };
+
+    if (!sessionId || !Array.isArray(messages)) {
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.INVALID_INPUT, 'errors.invalidInput', language),
+        { status: 400 }
+      );
+    }
+
+    const session = await getSession(sessionId);
+    if (!session) {
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.NOT_FOUND, 'errors.sessionNotFound', language),
+        { status: 404 }
+      );
+    }
+
+    const orchestrator = getFallbackOrchestrator();
+    const sessionUserId = (session as unknown as { userId?: string }).userId;
+
+    const translatedMessages = await Promise.all(
+      messages.map(async (message) => {
+        const cached = message.contentByLanguage?.[language];
+        if (cached) {
+          return {
+            index: message.index,
+            content: cached,
+            contentByLanguage: message.contentByLanguage,
+          };
+        }
+
+        const translatedContent =
+          stripMarkdownFormatting(
+            await translateAnswer(
+              message.content,
+              language,
+              orchestrator,
+              typeof sessionUserId === 'string' ? sessionUserId : undefined
+            )
+          );
+
+        return {
+          index: message.index,
+          content: translatedContent,
+          contentByLanguage: {
+            ...(message.contentByLanguage || {}),
+            [language]: translatedContent,
+          },
+        };
+      })
+    );
+
+    const translatedByIndex = new Map(translatedMessages.map((message) => [message.index, message]));
+    const updatedHistory = session.conversationHistory.map((message, index) => {
+      const translated = translatedByIndex.get(index);
+      if (!translated) {
+        return message;
+      }
+
+      return {
+        ...message,
+        content: language === 'en' ? translated.content : message.content,
+        contentByLanguage: translated.contentByLanguage,
+      };
+    });
+
+    await updateSession(sessionId, {
+      conversationHistory: updatedHistory,
+    });
+
+    return NextResponse.json({
+      success: true,
+      messages: translatedMessages,
     });
   } catch (error) {
     return NextResponse.json(
