@@ -149,6 +149,7 @@ function sessionToDynamoItem(session: SessionData): Record<string, unknown> {
       role: msg.role,
       content: msg.content,
       timestamp: msg.timestamp.toISOString(),
+      sourcesUsed: msg.sourcesUsed,
     })),
     ttl,
   };
@@ -173,6 +174,7 @@ function dynamoItemToSession(item: Record<string, unknown>): SessionData {
       role: msg.role,
       content: msg.content,
       timestamp: new Date(msg.timestamp),
+      sourcesUsed: Array.isArray(msg.sourcesUsed) ? msg.sourcesUsed : undefined,
     })),
   };
 }
@@ -340,5 +342,4 @@ export async function deleteSession(sessionId: string): Promise<boolean> {
     throw new Error('Failed to delete session data');
   }
 }
-
 

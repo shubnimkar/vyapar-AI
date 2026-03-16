@@ -115,6 +115,9 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
       if (result.success) {
         // Refresh reports list
         await fetchReports();
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          window.dispatchEvent(new CustomEvent('reportsUpdated', { detail: result.data }));
+        }
       } else {
         logger.error('Failed to generate report', { error: result.message });
       }

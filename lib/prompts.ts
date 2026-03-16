@@ -1,6 +1,7 @@
 // Prompt templates for AWS Bedrock AI analysis
 
-import { Language, ParsedCSV, ChatMessage } from './types';
+import { calculateCreditSummary, calculateExpenseRatio, calculateHealthScore, calculateProfit, calculateProfitMargin } from './calculations';
+import { Language, ParsedCSV, ChatMessage, DailyEntry, CreditEntry, DailyReport, InferredTransaction } from './types';
 
 /**
  * Format CSV data for inclusion in prompts
@@ -28,6 +29,143 @@ function formatCSVData(data: ParsedCSV | undefined, label: string): string {
   }
   
   return formatted + '\n';
+}
+
+function formatCurrency(amount: number): string {
+  return `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(amount)}`;
+}
+
+function formatDailyEntrySummary(dailyEntries: DailyEntry[]): string {
+  if (dailyEntries.length === 0) {
+    return '**Daily Entries:** Not provided\n';
+  }
+
+  const recentEntries = [...dailyEntries]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 30);
+
+  const totalSales = recentEntries.reduce((sum, entry) => sum + entry.totalSales, 0);
+  const totalExpense = recentEntries.reduce((sum, entry) => sum + entry.totalExpense, 0);
+  const estimatedProfit = recentEntries.reduce((sum, entry) => sum + entry.estimatedProfit, 0);
+  const latestEntry = recentEntries[0];
+  const avgMargin = recentEntries.length > 0
+    ? recentEntries.reduce((sum, entry) => sum + entry.profitMargin, 0) / recentEntries.length
+    : 0;
+
+  return `**Daily Entries:** (${dailyEntries.length} total, ${recentEntries.length} recent)\n` +
+    `- Latest entry date: ${latestEntry.date}\n` +
+    `- Recent sales total: ${formatCurrency(totalSales)}\n` +
+    `- Recent expense total: ${formatCurrency(totalExpense)}\n` +
+    `- Recent estimated profit: ${formatCurrency(estimatedProfit)}\n` +
+    `- Average margin over recent entries: ${(avgMargin * 100).toFixed(1)}%\n` +
+    `${latestEntry.cashInHand !== undefined ? `- Latest cash in hand: ${formatCurrency(latestEntry.cashInHand)}\n` : ''}\n`;
+}
+
+function formatCreditEntrySummary(creditEntries: CreditEntry[]): string {
+  if (creditEntries.length === 0) {
+    return '**Credit Entries:** Not provided\n';
+  }
+
+  const creditSummary = calculateCreditSummary(creditEntries);
+  const overdueEntries = creditEntries
+    .filter((entry) => !entry.isPaid && new Date(entry.dueDate) < new Date())
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .slice(0, 5);
+
+  let formatted = `**Credit Entries:** (${creditEntries.length} total)\n`;
+  formatted += `- Total outstanding: ${formatCurrency(creditSummary.totalOutstanding)}\n`;
+  formatted += `- Total overdue: ${formatCurrency(creditSummary.totalOverdue)}\n`;
+  formatted += `- Overdue customers: ${creditSummary.overdueCount}\n`;
+
+  if (overdueEntries.length > 0) {
+    formatted += '- Most urgent overdue accounts:\n';
+    overdueEntries.forEach((entry, index) => {
+      formatted += `  ${index + 1}. ${entry.customerName} - ${formatCurrency(entry.amount)} due on ${entry.dueDate}\n`;
+    });
+  }
+
+  return `${formatted}\n`;
+}
+
+function formatBusinessSnapshot(dailyEntries: DailyEntry[], creditEntries: CreditEntry[]): string {
+  if (dailyEntries.length === 0) {
+    return '**Business Snapshot:** Not enough daily entry data yet\n\n';
+  }
+
+  const recentEntries = [...dailyEntries]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 30);
+  const totalSales = recentEntries.reduce((sum, entry) => sum + entry.totalSales, 0);
+  const totalExpense = recentEntries.reduce((sum, entry) => sum + entry.totalExpense, 0);
+  const profit = calculateProfit(totalSales, totalExpense);
+  const expenseRatio = calculateExpenseRatio(totalExpense, totalSales);
+  const profitMargin = calculateProfitMargin(profit, totalSales);
+  const latestCash = recentEntries.find((entry) => entry.cashInHand !== undefined)?.cashInHand;
+  const creditSummary = calculateCreditSummary(creditEntries);
+  const healthScore = calculateHealthScore(profitMargin, expenseRatio, latestCash, creditSummary);
+
+  return `**Business Snapshot:**\n` +
+    `- Recent net profit: ${formatCurrency(profit)}\n` +
+    `- Expense ratio: ${(expenseRatio * 100).toFixed(1)}%\n` +
+    `- Profit margin: ${(profitMargin * 100).toFixed(1)}%\n` +
+    `${latestCash !== undefined ? `- Latest cash in hand: ${formatCurrency(latestCash)}\n` : ''}` +
+    `- Business health score: ${healthScore.score}/100\n\n`;
+}
+
+function formatPendingTransactionSummary(transactions: InferredTransaction[]): string {
+  if (transactions.length === 0) {
+    return '**Pending Transactions:** None\n';
+  }
+
+  const deferredCount = transactions.filter((transaction) => Boolean(transaction.deferred_at)).length;
+  const expenseCount = transactions.filter((transaction) => transaction.type === 'expense').length;
+  const saleCount = transactions.filter((transaction) => transaction.type === 'sale').length;
+  const totalAmount = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const recentTransactions = [...transactions]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
+
+  let formatted = `**Pending Transactions:** (${transactions.length} total)\n`;
+  formatted += `- Total pending amount: ${formatCurrency(totalAmount)}\n`;
+  formatted += `- Expense transactions: ${expenseCount}\n`;
+  formatted += `- Sale transactions: ${saleCount}\n`;
+  formatted += `- Deferred for later: ${deferredCount}\n`;
+  formatted += '- Recent pending items:\n';
+
+  recentTransactions.forEach((transaction, index) => {
+    const label = transaction.vendor_name || transaction.category || transaction.type;
+    formatted += `  ${index + 1}. ${label} - ${formatCurrency(transaction.amount)} on ${transaction.date} (${transaction.source})\n`;
+  });
+
+  return `${formatted}\n`;
+}
+
+function formatReportSummary(reports: DailyReport[]): string {
+  if (reports.length === 0) {
+    return '**Reports:** None\n';
+  }
+
+  const recentReports = [...reports]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 5);
+  const latestReport = recentReports[0];
+
+  let formatted = `**Reports:** (${reports.length} total)\n`;
+  formatted += `- Latest report date: ${latestReport.date}\n`;
+  formatted += `- Latest report sales: ${formatCurrency(latestReport.totalSales)}\n`;
+  formatted += `- Latest report expenses: ${formatCurrency(latestReport.totalExpenses)}\n`;
+  formatted += `- Latest report net profit: ${formatCurrency(latestReport.netProfit)}\n`;
+  formatted += '- Recent reports:\n';
+
+  recentReports.forEach((report, index) => {
+    formatted += `  ${index + 1}. ${report.date} - sales ${formatCurrency(report.totalSales)}, expenses ${formatCurrency(report.totalExpenses)}, net ${formatCurrency(report.netProfit)}\n`;
+  });
+
+  if (latestReport.insights) {
+    formatted += `- Latest report insights: ${latestReport.insights.slice(0, 240)}${latestReport.insights.length > 240 ? '...' : ''}\n`;
+  }
+
+  return `${formatted}\n`;
 }
 
 /**
@@ -141,8 +279,31 @@ export function buildQAPrompt(
   salesData: ParsedCSV | undefined,
   expensesData: ParsedCSV | undefined,
   inventoryData: ParsedCSV | undefined,
+  dailyEntries: DailyEntry[],
+  creditEntries: CreditEntry[],
   conversationHistory: ChatMessage[],
-  language: Language
+  language: Language,
+  appContext?: {
+    activeSection?: string;
+    pendingCount?: number;
+    pendingTransactions?: InferredTransaction[];
+    healthScore?: number | null;
+    healthBreakdown?: {
+      marginScore: number;
+      expenseScore: number;
+      cashScore: number;
+      creditScore: number;
+    } | null;
+    benchmark?: {
+      healthScore: number;
+      marginPercent: number;
+      benchmarkHealthScore: number;
+      benchmarkMarginPercent: number;
+        category: string;
+        sampleSize: number;
+      } | null;
+    reports?: DailyReport[];
+  }
 ): string {
   // Format conversation history
   let historyStr = '';
@@ -157,18 +318,33 @@ export function buildQAPrompt(
   // Create data summary
   const dataSummary = `
 **Available Business Data:**
+- Daily entries: ${dailyEntries.length} records
+- Credit entries: ${creditEntries.length} records
 - Sales: ${salesData?.rows.length || 0} records
 - Expenses: ${expensesData?.rows.length || 0} records
 - Inventory: ${inventoryData?.rows.length || 0} records
 
+${formatBusinessSnapshot(dailyEntries, creditEntries)}
+${formatDailyEntrySummary(dailyEntries)}
+${formatCreditEntrySummary(creditEntries)}
+${formatPendingTransactionSummary(appContext?.pendingTransactions || [])}
+${formatReportSummary(appContext?.reports || [])}
 ${salesData ? formatCSVData(salesData, 'Sales Data') : ''}
 ${expensesData ? formatCSVData(expensesData, 'Expenses Data') : ''}
 ${inventoryData ? formatCSVData(inventoryData, 'Inventory Data') : ''}
 `;
 
+  const appContextSummary = `
+**Current App Context:**
+- Active section: ${appContext?.activeSection || 'general'}
+- Pending transactions: ${appContext?.pendingCount ?? 0}
+${typeof appContext?.healthScore === 'number' ? `- Current health score: ${appContext.healthScore}/100\n` : ''}${appContext?.healthBreakdown ? `- Health breakdown: margin ${appContext.healthBreakdown.marginScore}/30, expense ${appContext.healthBreakdown.expenseScore}/30, cash ${appContext.healthBreakdown.cashScore}/20, credit ${appContext.healthBreakdown.creditScore}/20\n` : ''}${appContext?.benchmark ? `- Benchmark health score: ${appContext.benchmark.benchmarkHealthScore}/100 vs your ${appContext.benchmark.healthScore}/100\n- Benchmark margin: ${appContext.benchmark.benchmarkMarginPercent.toFixed(1)}% vs your ${appContext.benchmark.marginPercent.toFixed(1)}%\n- Benchmark category: ${appContext.benchmark.category} from ${appContext.benchmark.sampleSize} similar businesses\n` : ''}${appContext?.reports?.length ? `- Available reports: ${appContext.reports.length}\n` : ''}
+`;
+
   const prompt = `You are answering questions for a small shop owner about their business data. Use only the provided data to answer.
 
 ${dataSummary}
+${appContextSummary}
 
 ${historyStr}
 
@@ -178,9 +354,21 @@ ${question}
 **Instructions:**
 ${getLanguageInstructions(language)}
 - Base answers only on the provided data
+- You can answer using daily entries, credit records, and uploaded CSV data together
 - If data is insufficient, say so clearly
 - Provide specific numbers and examples
-- Be helpful and encouraging
+- When useful, explain what happened, why it happened, and what the owner should do next
+- If the question spans multiple data sources, combine them into one answer
+- If only some data sources are available, answer from those and mention what is missing
+- Prioritize the active section context when it is relevant to the question
+- If the user is in Credit, focus on collections, overdue amounts, and cash recovery
+- If the user is in Health or Analysis, connect answers to score, margin, and benchmark context when available
+- If the user is in Pending, mention pending transactions when helpful
+- When possible, structure the answer using these exact labels on separate lines:
+Conclusion:
+Why:
+Next step:
+- Keep the content after those labels in the requested language
 
 **CRITICAL - Anti-Template Instructions:**
 DO NOT use generic templates, placeholder headings, or section markers like:

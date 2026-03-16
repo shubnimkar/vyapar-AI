@@ -29,7 +29,7 @@ import Toast, { ToastType } from '@/components/Toast';
 import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
 import ExportPDF from '@/components/ExportPDF';
-import { Language, BusinessInsights, FileType, BenchmarkData, InferredTransaction, ExpenseAlert, ExtractedVoiceData, TransactionSource } from '@/lib/types';
+import { Language, BusinessInsights, CreditEntry, DailyReport, FileType, BenchmarkData, InferredTransaction, ExpenseAlert, ExtractedVoiceData, TransactionSource } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { addTransactionToDailyEntry } from '@/lib/add-transaction-to-entry';
 import {
@@ -48,6 +48,7 @@ import {
 import { SessionManager } from '@/lib/session-manager';
 import { getLocalEntries as getLocalDailyEntries, fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
 import { getLocalEntries as getLocalCreditEntries, fullSync as creditFullSync } from '@/lib/credit-sync';
+import { getLocalPendingTransactions } from '@/lib/pending-transaction-store';
 import { calculateCreditSummary, calculateHealthScore } from '@/lib/calculations';
 import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
 import IndicesDashboard from '@/components/IndicesDashboard';
@@ -131,9 +132,43 @@ export default function Home() {
 
   // Toast notification state
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+  const [qaReports, setQaReports] = useState<DailyReport[]>([]);
+  const [qaPendingTransactions, setQaPendingTransactions] = useState<InferredTransaction[]>([]);
+  const [qaInitialMessages, setQaInitialMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; sourcesUsed?: string[] }>>([]);
 
   // Get pending transaction count for badge
   const pendingCount = usePendingTransactionCount();
+  const qaDailyEntries = typeof window !== 'undefined' ? getLocalDailyEntries() : [];
+  const qaCreditEntries: CreditEntry[] = (typeof window !== 'undefined' ? getLocalCreditEntries() : []).map((entry) => ({
+    ...entry,
+    userId: user?.userId || '',
+  }));
+  const qaDataSources = {
+    dailyEntries: qaDailyEntries.length,
+    creditEntries: qaCreditEntries.length,
+    reports: qaReports.length,
+    salesData: uploadedFiles.has('sales'),
+    expensesData: uploadedFiles.has('expenses'),
+    inventoryData: uploadedFiles.has('inventory'),
+  };
+  const qaAppContext = {
+    activeSection,
+    pendingCount: pendingCount.total,
+    pendingTransactions: qaPendingTransactions,
+    healthScore,
+    healthBreakdown,
+    benchmark: benchmarkComparison
+      ? {
+          healthScore: benchmarkComparison.healthScoreComparison.userValue,
+          marginPercent: benchmarkComparison.marginComparison.userValue * 100,
+          benchmarkHealthScore: benchmarkComparison.healthScoreComparison.segmentMedian,
+          benchmarkMarginPercent: benchmarkComparison.marginComparison.segmentMedian * 100,
+          category: benchmarkComparison.healthScoreComparison.category,
+          sampleSize: benchmarkComparison.segmentInfo.sampleSize,
+        }
+      : null,
+    reports: qaReports,
+  };
 
   useEffect(() => {
     const initSession = async () => {
@@ -176,6 +211,16 @@ export default function Home() {
           const data = await response.json();
           if (data.success && data.sessionId) {
             setSessionId(data.sessionId);
+            if (data.dataSources) {
+              const restoredFiles = new Set<FileType>();
+              if (data.dataSources.salesData) restoredFiles.add('sales');
+              if (data.dataSources.expensesData) restoredFiles.add('expenses');
+              if (data.dataSources.inventoryData) restoredFiles.add('inventory');
+              setUploadedFiles(restoredFiles);
+            }
+            if (Array.isArray(data.conversationHistory)) {
+              setQaInitialMessages(data.conversationHistory);
+            }
             return;
           }
         } catch {
@@ -192,6 +237,16 @@ export default function Home() {
         const data = await response.json();
         if (data.success && data.sessionId) {
           setSessionId(data.sessionId);
+          if (data.dataSources) {
+            const restoredFiles = new Set<FileType>();
+            if (data.dataSources.salesData) restoredFiles.add('sales');
+            if (data.dataSources.expensesData) restoredFiles.add('expenses');
+            if (data.dataSources.inventoryData) restoredFiles.add('inventory');
+            setUploadedFiles(restoredFiles);
+          }
+          if (Array.isArray(data.conversationHistory)) {
+            setQaInitialMessages(data.conversationHistory);
+          }
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('vyapar-session-id', data.sessionId);
           }
@@ -223,6 +278,71 @@ export default function Home() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    const refreshPendingTransactions = () => {
+      setQaPendingTransactions(getLocalPendingTransactions());
+    };
+
+    refreshPendingTransactions();
+    window.addEventListener('pendingTransactionsUpdated', refreshPendingTransactions);
+    window.addEventListener('storage', refreshPendingTransactions);
+
+    return () => {
+      window.removeEventListener('pendingTransactionsUpdated', refreshPendingTransactions);
+      window.removeEventListener('storage', refreshPendingTransactions);
+    };
+  }, []);
+
+  useEffect(() => {
+    const loadQAReports = async () => {
+      if (!user?.userId || !['chat', 'reports'].includes(activeSection)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/reports?userId=${user.userId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          setQaReports(result.data || []);
+        }
+      } catch (fetchError) {
+        logger.warn('Failed to load reports for Q&A context', { error: fetchError, userId: user.userId });
+      }
+    };
+
+    loadQAReports();
+  }, [activeSection, user]);
+
+  useEffect(() => {
+    const refreshReportsForQA = async () => {
+      if (!user?.userId) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/reports?userId=${user.userId}`);
+        const result = await response.json();
+
+        if (result.success) {
+          setQaReports(result.data || []);
+        }
+      } catch (fetchError) {
+        logger.warn('Failed to refresh reports after update', { error: fetchError, userId: user.userId });
+      }
+    };
+
+    const handleReportsUpdated = () => {
+      refreshReportsForQA();
+    };
+
+    window.addEventListener('reportsUpdated', handleReportsUpdated);
+
+    return () => {
+      window.removeEventListener('reportsUpdated', handleReportsUpdated);
+    };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -1261,7 +1381,17 @@ export default function Home() {
 
               {activeSection === 'chat' &&
                 (sessionId ? (
-                  <QAChat sessionId={sessionId} language={language} />
+                  <QAChat
+                    sessionId={sessionId}
+                    language={language}
+                    dataSources={qaDataSources}
+                    contextData={{
+                      dailyEntries: qaDailyEntries,
+                      creditEntries: qaCreditEntries,
+                    }}
+                    appContext={qaAppContext}
+                    initialMessages={qaInitialMessages}
+                  />
                 ) : (
                   <div className="bg-white rounded-lg shadow-md p-6 text-slate-600">
                     {language === 'hi'

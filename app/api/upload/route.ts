@@ -34,6 +34,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({
               success: true,
               sessionId: body.restoreSessionId,
+              dataSources: {
+                salesData: Boolean(existingSession.salesData),
+                expensesData: Boolean(existingSession.expensesData),
+                inventoryData: Boolean(existingSession.inventoryData),
+              },
+              conversationHistory: existingSession.conversationHistory.map((message) => ({
+                role: message.role,
+                content: message.content,
+                sourcesUsed: message.sourcesUsed,
+              })),
             });
           }
           // Session doesn't exist, create new one
@@ -48,6 +58,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           sessionId: session.sessionId,
+          dataSources: {
+            salesData: false,
+            expensesData: false,
+            inventoryData: false,
+          },
+          conversationHistory: [],
         });
       }
     }
@@ -161,6 +177,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       sessionId: session.sessionId,
+      dataSources: {
+        salesData: Boolean(fileType === 'sales' || session.salesData),
+        expensesData: Boolean(fileType === 'expenses' || session.expensesData),
+        inventoryData: Boolean(fileType === 'inventory' || session.inventoryData),
+      },
       preview: {
         headers,
         rows: previewRows,

@@ -113,6 +113,7 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  sourcesUsed?: string[];
 }
 
 export type SeverityLevel = 'critical' | 'warning' | 'good' | 'info';

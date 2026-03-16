@@ -502,9 +502,9 @@ export const translations: Translations = {
     mr: 'उत्तर मिळवण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा.',
   },
   qaNoData: {
-    en: 'No uploaded CSV data found for this chat. Please upload your sales/expenses CSV files in Advanced Analysis first.',
-    hi: 'इस चैट के लिए कोई अपलोड किया गया CSV डेटा नहीं मिला। कृपया पहले उन्नत विश्लेषण में अपनी बिक्री/खर्च CSV फ़ाइलें अपलोड करें।',
-    mr: 'या चॅटसाठी कोणताही अपलोड केलेला CSV डेटा सापडला नाही. कृपया प्रथम प्रगत विश्लेषण विभागात तुमच्या विक्री/खर्च CSV फाइल्स अपलोड करा.',
+    en: 'No business data is available for Q&A yet. Add daily entries, credit records, or upload analysis CSV files first.',
+    hi: 'प्रश्नोत्तर के लिए अभी कोई व्यवसाय डेटा उपलब्ध नहीं है। पहले दैनिक एंट्री, उधार रिकॉर्ड जोड़ें या विश्लेषण CSV फ़ाइलें अपलोड करें।',
+    mr: 'प्रश्नोत्तरासाठी अजून कोणताही व्यवसाय डेटा उपलब्ध नाही. आधी दैनिक नोंदी, उधारी रेकॉर्ड जोडा किंवा विश्लेषण CSV फाइल्स अपलोड करा.',
   },
   sessionExpired: {
     en: 'Session expired. Please upload data again.',
