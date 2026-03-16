@@ -205,8 +205,6 @@ export default function LoginPage() {
         ? 'काही सोप्या टप्प्यांत Vyapar AI तुमच्या दुकानासाठी सेट करा.'
           : 'Set up Vyapar AI for your shop in a few steps.';
 
-  const isIndicLanguage = language === 'hi' || language === 'mr';
-
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(99,102,241,0.16),_transparent_28%),linear-gradient(135deg,#f8fbff_0%,#eef3ff_45%,#f5f7ff_100%)]">
       <div className="grid min-h-screen w-full overflow-hidden bg-white/80 shadow-[0_28px_80px_-32px_rgba(15,23,42,0.35)] backdrop-blur lg:grid-cols-[1.08fr_0.92fr]">
@@ -224,8 +222,8 @@ export default function LoginPage() {
                   <span>{t('appTitle', language)}</span>
                 </div>
 
-                <div className={`space-y-4 ${isIndicLanguage ? 'max-w-2xl' : 'max-w-xl'}`}>
-                  <p className={`inline-flex items-center gap-2 rounded-full border border-blue-200/20 bg-blue-100/10 px-3 py-1 font-semibold text-blue-100/90 ${isIndicLanguage ? 'text-xs tracking-[0.08em]' : 'text-xs uppercase tracking-[0.2em]'}`}>
+                <div className="max-w-2xl space-y-4">
+                  <p className="inline-flex items-center gap-2 rounded-full border border-blue-200/20 bg-blue-100/10 px-3 py-1 text-xs font-semibold tracking-[0.08em] text-blue-100/90">
                     <Sparkles className="h-3.5 w-3.5" />
                     {language === 'hi'
                       ? 'स्मार्ट बिज़नेस ऑपरेटिंग सिस्टम'
@@ -233,14 +231,14 @@ export default function LoginPage() {
                         ? 'स्मार्ट बिझनेस ऑपरेटिंग सिस्टम'
                         : 'Smart Business Operating System'}
                   </p>
-                  <h1 className={`${isIndicLanguage ? 'max-w-3xl text-4xl leading-tight sm:text-5xl' : 'max-w-2xl text-4xl leading-tight sm:text-5xl'} font-bold`}>
+                  <h1 className="max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">
                     {language === 'hi'
                       ? 'बिक्री, खर्च, उधार और फॉलो-अप को एक ही जगह संभालें।'
                       : language === 'mr'
                         ? 'विक्री, खर्च, उधारी आणि फॉलो-अप एकाच ठिकाणी सांभाळा.'
                         : 'Track sales, expenses, credit, and collections in one place.'}
                   </h1>
-                  <p className={`${isIndicLanguage ? 'max-w-2xl text-base leading-7 sm:text-lg' : 'max-w-lg text-base leading-7 sm:text-lg'} text-blue-100/88`}>
+                  <p className="max-w-lg text-base leading-7 text-blue-100/88 sm:text-lg">
                     {language === 'hi'
                       ? 'छोटे व्यवसायों के लिए बनाया गया सरल, तेज और भरोसेमंद कार्यक्षेत्र।'
                       : language === 'mr'
@@ -249,28 +247,28 @@ export default function LoginPage() {
                   </p>
                 </div>
 
-                <div className={`grid gap-3 ${isIndicLanguage ? 'sm:grid-cols-1 xl:grid-cols-3' : 'sm:grid-cols-3'}`}>
+                <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <Globe2 className="mb-3 h-5 w-5 text-blue-100" />
-                    <p className={`font-semibold ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                    <p className="text-sm font-semibold leading-6">
                       {language === 'hi'
                         ? '3 भाषाओं में काम करता है'
                         : language === 'mr'
                           ? '3 भाषांमध्ये काम करते'
                           : 'Works in 3 languages'}
                     </p>
-                    <p className={`mt-1 text-blue-100/80 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>English, हिंदी, मराठी</p>
+                    <p className="mt-1 text-sm leading-6 text-blue-100/80">English, हिंदी, मराठी</p>
                   </div>
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <ShieldCheck className="mb-3 h-5 w-5 text-blue-100" />
-                    <p className={`font-semibold ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                    <p className="text-sm font-semibold leading-6">
                       {language === 'hi'
                         ? 'निजी और सुरक्षित'
                         : language === 'mr'
                           ? 'खाजगी आणि सुरक्षित'
                           : 'Private and secure'}
                     </p>
-                    <p className={`mt-1 text-blue-100/80 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                    <p className="mt-1 text-sm leading-6 text-blue-100/80">
                       {language === 'hi'
                         ? 'सरकारी सिस्टम से जुड़ा नहीं'
                         : language === 'mr'
@@ -280,14 +278,14 @@ export default function LoginPage() {
                   </div>
                   <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
                     <Building2 className="mb-3 h-5 w-5 text-blue-100" />
-                    <p className={`font-semibold ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                    <p className="text-sm font-semibold leading-6">
                       {language === 'hi'
                         ? 'छोटे व्यापार के लिए बना'
                         : language === 'mr'
                           ? 'लहान व्यवसायांसाठी बनवलेले'
                           : 'Built for small business'}
                     </p>
-                    <p className={`mt-1 text-blue-100/80 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm'}`}>
+                    <p className="mt-1 text-sm leading-6 text-blue-100/80">
                       {language === 'hi'
                         ? 'दुकान, सेवा और रिटेल उपयोग के लिए'
                         : language === 'mr'
@@ -304,14 +302,14 @@ export default function LoginPage() {
                     <ShieldCheck className="h-6 w-6 text-blue-50" />
                   </div>
                   <div>
-                    <p className={`font-semibold text-white ${isIndicLanguage ? 'text-sm' : 'text-sm'}`}>
+                    <p className="text-sm font-semibold text-white">
                       {language === 'hi'
                         ? 'आपका व्यवसाय डेटा निजी रहता है'
                         : language === 'mr'
                           ? 'तुमचा व्यवसाय डेटा खाजगी राहतो'
                           : 'Your business data stays private'}
                     </p>
-                    <p className={`mt-1 text-blue-100/82 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm leading-6'}`}>
+                    <p className="mt-1 text-sm leading-6 text-blue-100/82">
                       {t('trustBanner', language)}
                     </p>
                   </div>
@@ -326,10 +324,10 @@ export default function LoginPage() {
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600/80">
                   {t('appTitle', language)}
                 </p>
-                <h2 className={`mt-3 font-bold tracking-tight text-slate-900 ${isIndicLanguage ? 'text-3xl leading-tight' : 'text-3xl'}`}>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
                   {authHeading}
                 </h2>
-                <p className={`mt-2 max-w-md text-slate-600 ${isIndicLanguage ? 'text-sm leading-6' : 'text-sm leading-6'}`}>
+                <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">
                   {authSubheading}
                 </p>
               </div>
