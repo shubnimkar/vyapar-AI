@@ -18,7 +18,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle2, Search, X } from 'lucide-react';
 import { getOverdueCredits } from '@/lib/credit-manager';
-import { markCreditAsPaid, syncPendingEntries, updateCreditEntry } from '@/lib/credit-sync';
+import { markCreditAsPaid, syncPendingEntries, updateCreditEntry, getLocalEntries } from '@/lib/credit-sync';
 import { generateReminderLink } from '@/lib/whatsapp-link-generator';
 import { recordReminder } from '@/lib/reminder-tracker';
 import { t } from '@/lib/translations';
@@ -172,22 +172,12 @@ export default function FollowUpPanel({
       setIsLoading(true);
       setError({ type: null, message: '' });
       
-      // Load from localStorage (offline-first)
-      const storedCredits = localStorage.getItem('vyapar-credit-entries');
-      
-      if (!storedCredits) {
-        setOverdueCredits([]);
-        setIsLoading(false);
-        return;
-      }
-
-      const allCredits: CreditEntry[] = JSON.parse(storedCredits);
-      
-      // Filter for current user
-      const userCredits = allCredits.filter(credit => credit.userId === userId);
+      // Load from localStorage via credit-sync (offline-first)
+      // LocalCreditEntry omits userId — all entries in localStorage belong to the current user
+      const allCredits = getLocalEntries();
       
       // Use Credit Manager to calculate and sort overdue credits (deterministic)
-      const overdue = getOverdueCredits(userCredits, overdueThreshold);
+      const overdue = getOverdueCredits(allCredits as unknown as Parameters<typeof getOverdueCredits>[0], overdueThreshold);
       
       setOverdueCredits(overdue);
       setIsLoading(false);
