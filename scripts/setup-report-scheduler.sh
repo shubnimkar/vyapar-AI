@@ -1,26 +1,26 @@
 #!/bin/bash
 
-# Setup EventBridge scheduler for automated daily reports
-# Triggers report-generator Lambda every day at 11:59 PM IST
+# Setup EventBridge scheduler for automated reports
+# Triggers report-generator Lambda every minute so each user's saved reportTime can be honored
 
 set -e
 
 REGION="ap-south-1"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 LAMBDA_FUNCTION="report-generator"
-RULE_NAME="vyapar-ai-daily-reports"
+RULE_NAME="vyapar-ai-automated-reports"
 
-echo "Setting up EventBridge scheduler for daily reports..."
+echo "Setting up EventBridge scheduler for automated reports..."
 echo "Region: $REGION"
 echo "Account: $ACCOUNT_ID"
 echo ""
 
-# Create EventBridge rule (runs daily at 11:59 PM IST = 6:29 PM UTC)
+# Create EventBridge rule (runs every minute; Lambda filters users by saved IST reportTime)
 echo "Creating EventBridge rule..."
 aws events put-rule \
     --name "$RULE_NAME" \
-    --description "Trigger daily report generation for Vyapar AI users" \
-    --schedule-expression "cron(29 18 * * ? *)" \
+    --description "Trigger automated report generation for Vyapar AI users based on saved report times" \
+    --schedule-expression "cron(* * * * ? *)" \
     --state ENABLED \
     --region "$REGION" \
     > /dev/null
@@ -49,10 +49,10 @@ aws events put-targets \
 echo "✓ EventBridge target configured"
 echo ""
 echo "========================================="
-echo "✓ Daily report scheduler configured!"
+echo "✓ Automated report scheduler configured!"
 echo "========================================="
 echo ""
-echo "Schedule: Every day at 11:59 PM IST"
+echo "Schedule: Every minute (Lambda checks each user's saved report time in IST)"
 echo "Lambda: $LAMBDA_FUNCTION"
 echo "Rule: $RULE_NAME"
 echo ""

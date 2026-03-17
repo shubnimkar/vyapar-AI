@@ -301,7 +301,7 @@ export default function Home() {
       }
 
       try {
-        const response = await fetch(`/api/reports?userId=${user.userId}`);
+        const response = await fetch(`/api/reports?userId=${user.userId}&language=${language}`);
         const result = await response.json();
 
         if (result.success) {
@@ -313,7 +313,7 @@ export default function Home() {
     };
 
     loadQAReports();
-  }, [activeSection, user]);
+  }, [activeSection, user, language]);
 
   useEffect(() => {
     const refreshReportsForQA = async () => {
@@ -322,7 +322,7 @@ export default function Home() {
       }
 
       try {
-        const response = await fetch(`/api/reports?userId=${user.userId}`);
+        const response = await fetch(`/api/reports?userId=${user.userId}&language=${language}`);
         const result = await response.json();
 
         if (result.success) {
@@ -342,7 +342,7 @@ export default function Home() {
     return () => {
       window.removeEventListener('reportsUpdated', handleReportsUpdated);
     };
-  }, [user]);
+  }, [user, language]);
 
   useEffect(() => {
     if (user) {
@@ -1415,7 +1415,7 @@ export default function Home() {
               {activeSection === 'reports' && user && (
                 <ReportViewer
                   userId={user.userId}
-                  language={language === 'mr' ? 'hi' : language}
+                  language={language}
                 />
               )}
 

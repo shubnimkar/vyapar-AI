@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DynamoDBService } from '@/lib/dynamodb-client';
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
+import { Language } from '@/lib/types';
+import { getReportLocalizedContent, translateReportLocalizedContent, withReportLocalizedContent } from '@/lib/report-localization';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,6 +14,7 @@ export async function GET(request: NextRequest) {
     
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const language = (searchParams.get('language') || 'en') as Language;
 
     if (!userId) {
       logger.warn('Reports GET missing userId', { path: '/api/reports' });
@@ -24,31 +27,90 @@ export async function GET(request: NextRequest) {
     try {
       logger.info('Fetching reports for user', { userId });
 
-      // Query reports from DynamoDB
-      const reports = await DynamoDBService.queryByPK(
+      const [reports, preferences] = await Promise.all([
+        DynamoDBService.queryByPK(
         `USER#${userId}`,
         'REPORT#'
-      );
+        ),
+        DynamoDBService.getItem(`USER#${userId}`, 'PREFERENCES'),
+      ]);
 
       // Sort by date descending (most recent first) and flatten structure
-      const sortedReports = reports
-        .map(item => ({
+      const localizedReports = await Promise.all(reports.map(async (item) => {
+        const reportData = (item.reportData || {}) as Record<string, unknown>;
+        const reportType = (item.reportType || 'daily') as 'daily' | 'weekly' | 'monthly';
+        const periodStart = typeof reportData.periodStart === 'string' ? reportData.periodStart : item.date;
+        const periodEnd = typeof reportData.periodEnd === 'string' ? reportData.periodEnd : item.date;
+        const localizedContentMap = reportData.localizedContent as Partial<Record<Language, ReturnType<typeof getReportLocalizedContent>>> | undefined;
+
+        let localizedContent = localizedContentMap?.[language];
+        if (!localizedContent) {
+          const baseContent = getReportLocalizedContent(reportData, (reportData.generatedLanguage as Language | undefined) || 'en');
+          const periodLabel = periodStart && periodEnd && periodStart !== periodEnd
+            ? `${periodStart} to ${periodEnd}`
+            : periodEnd || item.date;
+
+          if (language === ((reportData.generatedLanguage as Language | undefined) || 'en')) {
+            localizedContent = baseContent;
+          } else {
+            localizedContent = await translateReportLocalizedContent({
+              reportType,
+              periodLabel,
+              targetLanguage: language,
+              base: baseContent,
+            });
+
+            await DynamoDBService.updateItem(item.PK, item.SK, {
+              reportData: withReportLocalizedContent(reportData, language, localizedContent),
+            });
+          }
+        }
+
+        return {
           id: item.reportId,
           userId: item.userId,
+          reportType,
           date: item.date,
+          periodStart,
+          periodEnd,
           generatedAt: item.createdAt,
-          totalSales: item.reportData?.totalSales || 0,
-          totalExpenses: item.reportData?.totalExpenses || 0,
-          netProfit: item.reportData?.netProfit || 0,
-          topExpenseCategories: item.reportData?.topExpenseCategories || [],
-          insights: item.reportData?.insights || '',
-        }))
-        .sort((a, b) => b.date.localeCompare(a.date));
+          entryCount: reportData.entryCount || 0,
+          totalSales: reportData.totalSales || 0,
+          totalExpenses: reportData.totalExpenses || 0,
+          netProfit: reportData.netProfit || 0,
+          averageDailySales: reportData.averageDailySales || 0,
+          averageDailyExpenses: reportData.averageDailyExpenses || 0,
+          averageDailyProfit: reportData.averageDailyProfit || 0,
+          closingCash: reportData.closingCash ?? null,
+          profitMargin: reportData.profitMargin || 0,
+          expenseRatio: reportData.expenseRatio || 0,
+          bestDay: reportData.bestDay || null,
+          worstDay: reportData.worstDay || null,
+          comparison: reportData.comparison || null,
+          generatedLanguage: reportData.generatedLanguage || 'en',
+          localizedContent: (reportData.localizedContent as Partial<Record<Language, unknown>> | undefined) || {},
+          summary: localizedContent?.summary || '',
+          wins: localizedContent?.wins || [],
+          risks: localizedContent?.risks || [],
+          nextSteps: localizedContent?.nextSteps || [],
+          topExpenseCategories: reportData.topExpenseCategories || [],
+          insights: localizedContent?.insights || '',
+        };
+      }));
+
+      const sortedReports = localizedReports
+        .sort((a, b) => {
+          const aDate = a.periodEnd || a.date;
+          const bDate = b.periodEnd || b.date;
+          return bDate.localeCompare(aDate);
+        });
 
       logger.info('Reports retrieved successfully', { userId, count: sortedReports.length });
       return NextResponse.json({
         success: true,
         data: sortedReports,
+        automationEnabled: Boolean(preferences?.automationEnabled),
+        reportTime: typeof preferences?.reportTime === 'string' ? preferences.reportTime : '20:00',
       });
     } catch (error) {
       return NextResponse.json(
@@ -81,7 +143,7 @@ export async function POST(request: NextRequest) {
     logger.info('Reports POST request received', { path: '/api/reports' });
     
     const body = await request.json();
-    const { userId, automationEnabled } = body;
+    const { userId, automationEnabled, reportTime } = body;
 
     if (!userId) {
       logger.warn('Reports POST missing userId', { path: '/api/reports' });
@@ -101,6 +163,7 @@ export async function POST(request: NextRequest) {
         entityType: 'PREFERENCES',
         userId,
         automationEnabled: automationEnabled ?? false,
+        reportTime: typeof reportTime === 'string' ? reportTime : '20:00',
         updatedAt: new Date().toISOString(),
       });
 
@@ -110,6 +173,7 @@ export async function POST(request: NextRequest) {
         data: {
           userId,
           automationEnabled: automationEnabled ?? false,
+          reportTime: typeof reportTime === 'string' ? reportTime : '20:00',
           updatedAt: new Date().toISOString(),
         },
       });

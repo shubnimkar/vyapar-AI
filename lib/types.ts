@@ -217,12 +217,52 @@ export interface CashFlowPredictionResult {
 export interface DailyReport {
   id: string;
   userId: string;
+  reportType: 'daily' | 'weekly' | 'monthly';
   date: string;
+  periodStart?: string;
+  periodEnd?: string;
   generatedAt: string;
+  entryCount?: number;
   totalSales: number;
   totalExpenses: number;
   netProfit: number;
+  averageDailySales?: number;
+  averageDailyExpenses?: number;
+  averageDailyProfit?: number;
+  closingCash?: number | null;
+  profitMargin?: number;
+  expenseRatio?: number;
+  bestDay?: {
+    date: string;
+    sales: number;
+    profit: number;
+  } | null;
+  worstDay?: {
+    date: string;
+    sales: number;
+    profit: number;
+  } | null;
+  comparison?: {
+    previousLabel: string;
+    salesChangePct: number;
+    expenseChangePct: number;
+    profitChangePct: number;
+  } | null;
+  summary?: string;
+  wins?: string[];
+  risks?: string[];
+  nextSteps?: string[];
+  generatedLanguage?: Language;
+  localizedContent?: Partial<Record<Language, ReportLocalizedContent>>;
   topExpenseCategories: ExpenseCategory[];
+  insights: string;
+}
+
+export interface ReportLocalizedContent {
+  summary: string;
+  wins: string[];
+  risks: string[];
+  nextSteps: string[];
   insights: string;
 }
 
@@ -252,7 +292,7 @@ export interface UserPreferences {
   userId: string;
   automationEnabled: boolean;
   reportTime: string;
-  language: 'en' | 'hi';
+  language: Language;
   updatedAt: string;
 }
 
@@ -297,8 +337,9 @@ export interface ExpenseAlertResponse {
 
 export interface ReportsListResponse {
   success: boolean;
-  reports?: DailyReport[];
+  data?: DailyReport[];
   automationEnabled?: boolean;
+  reportTime?: string;
   error?: string;
 }
 

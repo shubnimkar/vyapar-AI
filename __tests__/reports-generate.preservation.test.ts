@@ -74,6 +74,19 @@ import { logger } from '@/lib/logger';
 
 describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
   const today = new Date().toISOString().split('T')[0];
+  const createDailyEntry = (userId: string, date = today) => ({
+    userId,
+    entryId: `${userId}-${date}`,
+    date,
+    totalSales: 5000,
+    totalExpense: 3000,
+    cashInHand: 2000,
+    estimatedProfit: 2000,
+    expenseRatio: 0.6,
+    profitMargin: 0.4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -212,25 +225,12 @@ describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
    */
   describe('Report Storage Format', () => {
     it('SHOULD store report with correct PK/SK format', async () => {
-      // Arrange: Create valid daily entry
-      const dailyEntry = {
-        PK: 'USER#test-user-storage',
-        SK: 'ENTRY#2024-01-15',
-        entityType: 'DAILY_ENTRY',
-        userId: 'test-user-storage',
-        date: today,
-        totalSales: 5000,
-        totalExpense: 3000,
-        createdAt: new Date().toISOString(),
-      };
-
-      (DynamoDBService.queryByPK as jest.Mock).mockResolvedValue([dailyEntry]);
       (DynamoDBService.putItem as jest.Mock).mockResolvedValue({});
 
       // Act: Call endpoint
       const request = new NextRequest('http://localhost:3000/api/reports/generate', {
         method: 'POST',
-        body: JSON.stringify({ userId: 'test-user-storage' }),
+        body: JSON.stringify({ userId: 'test-user-storage', dailyEntries: [createDailyEntry('test-user-storage')] }),
       });
 
       await generateReport(request);
@@ -249,25 +249,12 @@ describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
     });
 
     it('SHOULD store report with TTL (30 days)', async () => {
-      // Arrange: Create valid daily entry
-      const dailyEntry = {
-        PK: 'USER#test-user-ttl',
-        SK: 'ENTRY#2024-01-15',
-        entityType: 'DAILY_ENTRY',
-        userId: 'test-user-ttl',
-        date: today,
-        totalSales: 5000,
-        totalExpense: 3000,
-        createdAt: new Date().toISOString(),
-      };
-
-      (DynamoDBService.queryByPK as jest.Mock).mockResolvedValue([dailyEntry]);
       (DynamoDBService.putItem as jest.Mock).mockResolvedValue({});
 
       // Act: Call endpoint
       const request = new NextRequest('http://localhost:3000/api/reports/generate', {
         method: 'POST',
-        body: JSON.stringify({ userId: 'test-user-ttl' }),
+        body: JSON.stringify({ userId: 'test-user-ttl', dailyEntries: [createDailyEntry('test-user-ttl')] }),
       });
 
       const beforeTime = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
@@ -287,25 +274,12 @@ describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
     });
 
     it('SHOULD include reportId and createdAt in stored report', async () => {
-      // Arrange: Create valid daily entry
-      const dailyEntry = {
-        PK: 'USER#test-user-metadata',
-        SK: 'ENTRY#2024-01-15',
-        entityType: 'DAILY_ENTRY',
-        userId: 'test-user-metadata',
-        date: today,
-        totalSales: 5000,
-        totalExpense: 3000,
-        createdAt: new Date().toISOString(),
-      };
-
-      (DynamoDBService.queryByPK as jest.Mock).mockResolvedValue([dailyEntry]);
       (DynamoDBService.putItem as jest.Mock).mockResolvedValue({});
 
       // Act: Call endpoint
       const request = new NextRequest('http://localhost:3000/api/reports/generate', {
         method: 'POST',
-        body: JSON.stringify({ userId: 'test-user-metadata' }),
+        body: JSON.stringify({ userId: 'test-user-metadata', dailyEntries: [createDailyEntry('test-user-metadata')] }),
       });
 
       await generateReport(request);
@@ -330,25 +304,12 @@ describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
    */
   describe('Bedrock AI Integration', () => {
     it('SHOULD call Bedrock with correct model ID', async () => {
-      // Arrange: Create valid daily entry
-      const dailyEntry = {
-        PK: 'USER#test-user-bedrock',
-        SK: 'ENTRY#2024-01-15',
-        entityType: 'DAILY_ENTRY',
-        userId: 'test-user-bedrock',
-        date: today,
-        totalSales: 5000,
-        totalExpense: 3000,
-        createdAt: new Date().toISOString(),
-      };
-
-      (DynamoDBService.queryByPK as jest.Mock).mockResolvedValue([dailyEntry]);
       (DynamoDBService.putItem as jest.Mock).mockResolvedValue({});
 
       // Act: Call endpoint
       const request = new NextRequest('http://localhost:3000/api/reports/generate', {
         method: 'POST',
-        body: JSON.stringify({ userId: 'test-user-bedrock' }),
+        body: JSON.stringify({ userId: 'test-user-bedrock', dailyEntries: [createDailyEntry('test-user-bedrock')] }),
       });
 
       const response = await generateReport(request);
@@ -361,25 +322,12 @@ describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
     });
 
     it('SHOULD handle Bedrock response parsing correctly', async () => {
-      // Arrange: Create valid daily entry
-      const dailyEntry = {
-        PK: 'USER#test-user-parsing',
-        SK: 'ENTRY#2024-01-15',
-        entityType: 'DAILY_ENTRY',
-        userId: 'test-user-parsing',
-        date: today,
-        totalSales: 5000,
-        totalExpense: 3000,
-        createdAt: new Date().toISOString(),
-      };
-
-      (DynamoDBService.queryByPK as jest.Mock).mockResolvedValue([dailyEntry]);
       (DynamoDBService.putItem as jest.Mock).mockResolvedValue({});
 
       // Act: Call endpoint
       const request = new NextRequest('http://localhost:3000/api/reports/generate', {
         method: 'POST',
-        body: JSON.stringify({ userId: 'test-user-parsing' }),
+        body: JSON.stringify({ userId: 'test-user-parsing', dailyEntries: [createDailyEntry('test-user-parsing')] }),
       });
 
       const response = await generateReport(request);
@@ -443,25 +391,12 @@ describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
    */
   describe('Logging Behavior', () => {
     it('SHOULD log info when report generation starts', async () => {
-      // Arrange: Create valid daily entry
-      const dailyEntry = {
-        PK: 'USER#test-user-logging',
-        SK: 'ENTRY#2024-01-15',
-        entityType: 'DAILY_ENTRY',
-        userId: 'test-user-logging',
-        date: today,
-        totalSales: 5000,
-        totalExpense: 3000,
-        createdAt: new Date().toISOString(),
-      };
-
-      (DynamoDBService.queryByPK as jest.Mock).mockResolvedValue([dailyEntry]);
       (DynamoDBService.putItem as jest.Mock).mockResolvedValue({});
 
       // Act: Call endpoint
       const request = new NextRequest('http://localhost:3000/api/reports/generate', {
         method: 'POST',
-        body: JSON.stringify({ userId: 'test-user-logging' }),
+        body: JSON.stringify({ userId: 'test-user-logging', dailyEntries: [createDailyEntry('test-user-logging')] }),
       });
 
       await generateReport(request);
@@ -558,25 +493,12 @@ describe('Preservation Tests: Non-Aggregation Logic Unchanged', () => {
    */
   describe('Response Structure', () => {
     it('SHOULD return consistent success response structure', async () => {
-      // Arrange: Create valid daily entry
-      const dailyEntry = {
-        PK: 'USER#test-user-response',
-        SK: 'ENTRY#2024-01-15',
-        entityType: 'DAILY_ENTRY',
-        userId: 'test-user-response',
-        date: today,
-        totalSales: 5000,
-        totalExpense: 3000,
-        createdAt: new Date().toISOString(),
-      };
-
-      (DynamoDBService.queryByPK as jest.Mock).mockResolvedValue([dailyEntry]);
       (DynamoDBService.putItem as jest.Mock).mockResolvedValue({});
 
       // Act: Call endpoint
       const request = new NextRequest('http://localhost:3000/api/reports/generate', {
         method: 'POST',
-        body: JSON.stringify({ userId: 'test-user-response' }),
+        body: JSON.stringify({ userId: 'test-user-response', dailyEntries: [createDailyEntry('test-user-response')] }),
       });
 
       const response = await generateReport(request);
