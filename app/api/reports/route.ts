@@ -6,7 +6,7 @@ import { DynamoDBService } from '@/lib/dynamodb-client';
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 import { Language } from '@/lib/types';
-import { getReportLocalizedContent, translateReportLocalizedContent, withReportLocalizedContent } from '@/lib/report-localization';
+import { getOriginalReportContent, translateReportContent } from '@/lib/report-localization';
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,36 +35,25 @@ export async function GET(request: NextRequest) {
         DynamoDBService.getItem(`USER#${userId}`, 'PREFERENCES'),
       ]);
 
-      // Sort by date descending (most recent first) and flatten structure
+      // Always translate fresh from the original stored content — no cache
       const localizedReports = await Promise.all(reports.map(async (item) => {
         const reportData = (item.reportData || {}) as Record<string, unknown>;
         const reportType = (item.reportType || 'daily') as 'daily' | 'weekly' | 'monthly';
         const periodStart = typeof reportData.periodStart === 'string' ? reportData.periodStart : item.date;
         const periodEnd = typeof reportData.periodEnd === 'string' ? reportData.periodEnd : item.date;
-        const localizedContentMap = reportData.localizedContent as Partial<Record<Language, ReturnType<typeof getReportLocalizedContent>>> | undefined;
+        const generatedLanguage = (reportData.generatedLanguage as Language | undefined) || 'en';
+        const periodLabel = periodStart && periodEnd && periodStart !== periodEnd
+          ? `${periodStart} to ${periodEnd}`
+          : periodEnd || item.date;
 
-        let localizedContent = localizedContentMap?.[language];
-        if (!localizedContent) {
-          const baseContent = getReportLocalizedContent(reportData, (reportData.generatedLanguage as Language | undefined) || 'en');
-          const periodLabel = periodStart && periodEnd && periodStart !== periodEnd
-            ? `${periodStart} to ${periodEnd}`
-            : periodEnd || item.date;
-
-          if (language === ((reportData.generatedLanguage as Language | undefined) || 'en')) {
-            localizedContent = baseContent;
-          } else {
-            localizedContent = await translateReportLocalizedContent({
-              reportType,
-              periodLabel,
-              targetLanguage: language,
-              base: baseContent,
-            });
-
-            await DynamoDBService.updateItem(item.PK, item.SK, {
-              reportData: withReportLocalizedContent(reportData, language, localizedContent),
-            });
-          }
-        }
+        const original = getOriginalReportContent(reportData);
+        const localizedContent = await translateReportContent({
+          reportType,
+          periodLabel,
+          generatedLanguage,
+          targetLanguage: language,
+          original,
+        });
 
         return {
           id: item.reportId,
@@ -88,7 +77,6 @@ export async function GET(request: NextRequest) {
           worstDay: reportData.worstDay || null,
           comparison: reportData.comparison || null,
           generatedLanguage: reportData.generatedLanguage || 'en',
-          localizedContent: (reportData.localizedContent as Partial<Record<Language, unknown>> | undefined) || {},
           summary: localizedContent?.summary || '',
           wins: localizedContent?.wins || [],
           risks: localizedContent?.risks || [],

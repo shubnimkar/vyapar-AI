@@ -280,7 +280,16 @@ async function existingReportForDate(userId, reportDate) {
 }
 
 function isDueNow(reportTime, currentIstTime) {
-  return typeof reportTime === 'string' && reportTime === currentIstTime;
+  if (typeof reportTime !== 'string' || typeof currentIstTime !== 'string') return false;
+  // Parse both times into minutes-since-midnight for window comparison
+  const toMinutes = (t) => {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  };
+  const target = toMinutes(reportTime);
+  const current = toMinutes(currentIstTime);
+  // Match within a 5-minute window to handle EventBridge delivery gaps
+  return Math.abs(current - target) <= 5;
 }
 
 function shouldProcessUser(user, options) {

@@ -19,6 +19,7 @@ const translations: Record<Language, Record<string, string>> = {
     subtitle: 'Generate period summaries, track performance trends, and review action-ready insights.',
     automation: 'Automated reports',
     automationHint: 'Store your preferred report time for scheduled delivery.',
+    automationNote: 'Report is generated only if you have daily entries for that day. If a report already exists for today, it won\'t be regenerated.',
     enabled: 'Enabled',
     disabled: 'Disabled',
     reportTime: 'Preferred report time',
@@ -80,6 +81,7 @@ const translations: Record<Language, Record<string, string>> = {
     subtitle: 'अवधि-आधारित सारांश बनाएं, प्रदर्शन रुझान देखें और तुरंत उपयोगी सुझाव पाएं।',
     automation: 'स्वचालित रिपोर्ट',
     automationHint: 'निर्धारित रिपोर्ट डिलीवरी के लिए अपना पसंदीदा समय सहेजें।',
+    automationNote: 'रिपोर्ट केवल तभी बनती है जब उस दिन की दैनिक प्रविष्टियां हों। यदि आज की रिपोर्ट पहले से मौजूद है, तो दोबारा नहीं बनेगी।',
     enabled: 'सक्षम',
     disabled: 'अक्षम',
     reportTime: 'पसंदीदा रिपोर्ट समय',
@@ -141,6 +143,7 @@ const translations: Record<Language, Record<string, string>> = {
     subtitle: 'कालावधी-आधारित सारांश तयार करा, कामगिरीचे ट्रेंड पाहा आणि लगेच वापरता येतील अशी निरीक्षणे मिळवा.',
     automation: 'स्वयंचलित अहवाल',
     automationHint: 'नियोजित अहवालासाठी तुमची आवडती वेळ जतन करा.',
+    automationNote: 'अहवाल फक्त तेव्हाच तयार होतो जेव्हा त्या दिवसाच्या दैनिक नोंदी असतात. आजचा अहवाल आधीच तयार असल्यास, पुन्हा तयार होणार नाही.',
     enabled: 'सक्रिय',
     disabled: 'निष्क्रिय',
     reportTime: 'अहवालाची पसंतीची वेळ',
@@ -533,6 +536,10 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             <h4 className="text-lg font-semibold">{t.automation}</h4>
           </div>
           <p className="mt-2 text-sm text-slate-600">{t.automationHint}</p>
+          <p className="mt-1 flex items-start gap-1.5 text-xs text-slate-500">
+            <span className="mt-0.5 shrink-0 text-blue-400">ℹ</span>
+            {t.automationNote}
+          </p>
 
           <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end">
             <div className="flex-1">

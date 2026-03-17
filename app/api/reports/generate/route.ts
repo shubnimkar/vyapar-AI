@@ -8,7 +8,7 @@ import { calculateExpenseRatio, calculateProfitMargin } from '@/lib/calculations
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 import { DailyEntry, DailyReport, Language } from '@/lib/types';
-import { withReportLocalizedContent } from '@/lib/report-localization';
+// report-localization not needed at generation time — content stored flat
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
@@ -422,7 +422,7 @@ export async function POST(request: NextRequest) {
         reportId: report.id,
         reportType: normalizedType,
         date: reportDate,
-        reportData: withReportLocalizedContent({
+        reportData: {
           periodStart: report.periodStart,
           periodEnd: report.periodEnd,
           entryCount: report.entryCount,
@@ -444,13 +444,8 @@ export async function POST(request: NextRequest) {
           nextSteps: report.nextSteps,
           topExpenseCategories: report.topExpenseCategories,
           insights: report.insights,
-        }, language, {
-          summary: report.summary || '',
-          wins: report.wins || [],
-          risks: report.risks || [],
-          nextSteps: report.nextSteps || [],
-          insights: report.insights || report.summary || '',
-        }),
+          generatedLanguage: language,
+        },
         createdAt: report.generatedAt,
         ttl,
       });

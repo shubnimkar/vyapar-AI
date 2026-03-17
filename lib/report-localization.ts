@@ -25,9 +25,7 @@ function fallbackNarrative(base: Partial<ReportLocalizedContent>): ReportLocaliz
 function parseLocalizedNarrative(rawText: string, base: ReportLocalizedContent): ReportLocalizedContent {
   try {
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('No JSON found in translation response');
-    }
+    if (!jsonMatch) throw new Error('No JSON found in translation response');
 
     const parsed = JSON.parse(jsonMatch[0]) as Partial<ReportLocalizedContent>;
     const normalized = fallbackNarrative(parsed);
@@ -44,16 +42,13 @@ function parseLocalizedNarrative(rawText: string, base: ReportLocalizedContent):
   }
 }
 
-export function getReportLocalizedContent(
-  reportData: Record<string, unknown> | undefined,
-  language: Language
+/**
+ * Extract the original (generation-language) content from stored reportData.
+ * Always reads from the flat top-level fields — never from any localizedContent cache.
+ */
+export function getOriginalReportContent(
+  reportData: Record<string, unknown> | undefined
 ): ReportLocalizedContent {
-  const localizedContent = reportData?.localizedContent as Partial<Record<Language, ReportLocalizedContent>> | undefined;
-  const variant = localizedContent?.[language];
-  if (variant) {
-    return fallbackNarrative(variant);
-  }
-
   return fallbackNarrative({
     summary: typeof reportData?.summary === 'string' ? reportData.summary : '',
     wins: Array.isArray(reportData?.wins) ? (reportData.wins as string[]) : [],
@@ -63,39 +58,22 @@ export function getReportLocalizedContent(
   });
 }
 
-export function withReportLocalizedContent(
-  reportData: Record<string, unknown> | undefined,
-  language: Language,
-  content: ReportLocalizedContent
-): Record<string, unknown> {
-  const current = (reportData || {}) as Record<string, unknown>;
-  const localizedContent = {
-    ...((current.localizedContent as Partial<Record<Language, ReportLocalizedContent>> | undefined) || {}),
-    [language]: content,
-  };
-
-  return {
-    ...current,
-    summary: content.summary,
-    wins: content.wins,
-    risks: content.risks,
-    nextSteps: content.nextSteps,
-    insights: content.insights,
-    generatedLanguage: language,
-    localizedContent,
-  };
-}
-
-export async function translateReportLocalizedContent(params: {
+/**
+ * Translate report narrative content into the target language via Bedrock.
+ * If the target language matches the generation language, returns the original as-is.
+ */
+export async function translateReportContent(params: {
   reportType: 'daily' | 'weekly' | 'monthly';
   periodLabel: string;
+  generatedLanguage: Language;
   targetLanguage: Language;
-  base: ReportLocalizedContent;
+  original: ReportLocalizedContent;
 }): Promise<ReportLocalizedContent> {
-  const { reportType, periodLabel, targetLanguage, base } = params;
+  const { reportType, periodLabel, generatedLanguage, targetLanguage, original } = params;
 
-  if (targetLanguage === 'en' && !base.summary.trim()) {
-    return base;
+  // No translation needed — already in the right language
+  if (targetLanguage === generatedLanguage) {
+    return original;
   }
 
   const prompt = `Translate this business report narrative into ${getLanguageName(targetLanguage)}.
@@ -114,22 +92,15 @@ Report type: ${reportType}
 Period: ${periodLabel}
 
 Content to translate:
-${JSON.stringify(base)}`;
+${JSON.stringify(original)}`;
 
   const command = new InvokeModelCommand({
     modelId: BEDROCK_MODEL_ID,
     contentType: 'application/json',
     accept: 'application/json',
     body: JSON.stringify({
-      messages: [
-        {
-          role: 'user',
-          content: [{ text: prompt }],
-        },
-      ],
-      inferenceConfig: {
-        max_new_tokens: 500,
-      },
+      messages: [{ role: 'user', content: [{ text: prompt }] }],
+      inferenceConfig: { max_new_tokens: 500 },
     }),
   });
 
@@ -137,5 +108,5 @@ ${JSON.stringify(base)}`;
   const responseBody = JSON.parse(new TextDecoder().decode(response.body));
   const extractedText = responseBody.output?.message?.content?.[0]?.text || '';
 
-  return parseLocalizedNarrative(extractedText, base);
+  return parseLocalizedNarrative(extractedText, original);
 }
