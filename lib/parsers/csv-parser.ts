@@ -93,11 +93,11 @@ function detectHeaders(headers: string[]): Map<string, string> {
   const headerMap = new Map<string, string>();
 
   const mappings: Record<string, string[]> = {
-    date: ['date', 'transaction date', 'txn_date', 'transaction_date', 'txndate'],
-    amount: ['amount', 'value', 'total', 'price', 'sum'],
-    type: ['type', 'transaction_type', 'txn_type', 'transaction type'],
-    vendor_name: ['vendor', 'merchant', 'shop', 'vendor_name', 'merchant_name', 'vendor name', 'merchant name'],
-    category: ['category', 'expense_category', 'expense_type', 'expense category']
+    date: ['date', 'transaction date', 'txn_date', 'transaction_date', 'txndate', 'date (yyyy-mm-dd)', 'date (e.g. 2024-01-15)'],
+    amount: ['amount', 'value', 'total', 'price', 'sum', 'amount (e.g. 5000)', 'amount (in rupees)'],
+    type: ['type', 'transaction_type', 'txn_type', 'transaction type', 'type (sale or expense)', 'type (sale/expense)'],
+    vendor_name: ['vendor', 'merchant', 'shop', 'vendor_name', 'merchant_name', 'vendor name', 'merchant name', 'vendor_name (e.g. ramesh traders)', 'vendor / customer name', 'vendor_name (supplier or payee)'],
+    category: ['category', 'expense_category', 'expense_type', 'expense category', 'category (e.g. grocery)', 'category (e.g. inventory)', 'category (e.g. inventory / rent / utilities)']
   };
 
   for (const header of headers) {

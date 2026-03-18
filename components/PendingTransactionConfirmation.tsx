@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { InferredTransaction, Language } from '@/lib/types';
 import {
   getLocalPendingTransactions,
   removePendingTransaction,
   updatePendingTransaction,
 } from '@/lib/pending-transaction-store';
-import { Receipt, FileText, Calendar, DollarSign, Tag, User, X, Check, Clock, Trash2, Edit2, Mic } from 'lucide-react';
+import { Receipt, FileText, Calendar, DollarSign, Tag, User, Clock, Trash2, Check, Mic } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -20,23 +20,6 @@ interface PendingTransactionConfirmationProps {
   onDiscard?: (transaction: InferredTransaction) => void;
 }
 
-/**
- * PendingTransactionConfirmation Component
- * 
- * Displays pending inferred transactions from receipt OCR or CSV uploads
- * for user confirmation. Provides Add, Later, and Discard actions with
- * inline editing capabilities.
- * 
- * Features:
- * - Display transaction details with all fields
- * - Transaction counter (X of Y)
- * - Three action buttons: Add, Later, Discard
- * - Inline field editing before adding
- * - Source indicator badge (receipt/CSV)
- * - Empty state message
- * - Loading states for async operations
- * - Multi-language support (en, hi, mr)
- */
 export default function PendingTransactionConfirmation({
   language,
   onAdd,
@@ -44,144 +27,44 @@ export default function PendingTransactionConfirmation({
   onDiscard,
 }: PendingTransactionConfirmationProps) {
   const [transactions, setTransactions] = useState<InferredTransaction[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  
-  // Editable fields
-  const [editedDate, setEditedDate] = useState('');
-  const [editedAmount, setEditedAmount] = useState('');
-  const [editedType, setEditedType] = useState<'expense' | 'sale'>('expense');
-  const [editedVendor, setEditedVendor] = useState('');
-  const [editedCategory, setEditedCategory] = useState('');
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const loadTransactions = useCallback(() => {
+    setTransactions(getLocalPendingTransactions());
+  }, []);
 
   useEffect(() => {
     loadTransactions();
-  }, []);
+    // Re-load whenever savePendingTransaction fires the custom event
+    window.addEventListener('pendingTransactionsUpdated', loadTransactions);
+    return () => window.removeEventListener('pendingTransactionsUpdated', loadTransactions);
+  }, [loadTransactions]);
 
-  const loadTransactions = () => {
-    const pending = getLocalPendingTransactions();
-    setTransactions(pending);
-    
-    // Reset to first transaction if current index is out of bounds
-    if (currentIndex >= pending.length) {
-      setCurrentIndex(0);
-    }
-    
-    // Initialize edit fields with current transaction
-    if (pending.length > 0 && pending[currentIndex]) {
-      initializeEditFields(pending[currentIndex]);
-    }
-  };
-
-  const initializeEditFields = (transaction: InferredTransaction) => {
-    setEditedDate(transaction.date);
-    setEditedAmount(transaction.amount.toString());
-    setEditedType(transaction.type);
-    setEditedVendor(transaction.vendor_name || '');
-    setEditedCategory(transaction.category || '');
-  };
-
-  const currentTransaction = transactions[currentIndex];
-
-  useEffect(() => {
-    if (currentTransaction) {
-      initializeEditFields(currentTransaction);
-    }
-  }, [currentIndex, currentTransaction]);
-
-  const handleAdd = async () => {
-    if (!currentTransaction) return;
-    
-    setLoading(true);
+  const handleAdd = async (transaction: InferredTransaction) => {
+    setLoadingId(transaction.id);
     try {
-      // Create updated transaction with edited fields
-      const updatedTransaction: InferredTransaction = {
-        ...currentTransaction,
-        date: editedDate,
-        amount: parseFloat(editedAmount),
-        type: editedType,
-        vendor_name: editedVendor || undefined,
-        category: editedCategory || undefined,
-      };
-      
-      // Call parent callback if provided and WAIT for it to complete
-      if (onAdd) {
-        await onAdd(updatedTransaction);
-      }
-      
-      // Only remove from pending store AFTER successfully adding to daily entry
-      removePendingTransaction(currentTransaction.id);
-      
-      // Reload and move to next
+      if (onAdd) await onAdd(transaction);
+      removePendingTransaction(transaction.id);
       loadTransactions();
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to add transaction:', error);
+    } catch {
+      // error handled by parent
     } finally {
-      setLoading(false);
+      setLoadingId(null);
     }
   };
 
-  const handleLater = async () => {
-    if (!currentTransaction) return;
-    
-    setLoading(true);
-    try {
-      // Mark as deferred
-      updatePendingTransaction(currentTransaction.id, {
-        deferred_at: new Date().toISOString(),
-      });
-      
-      // Call parent callback if provided
-      if (onLater) {
-        onLater(currentTransaction);
-      }
-      
-      // Reload and move to next
-      loadTransactions();
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to defer transaction:', error);
-    } finally {
-      setLoading(false);
-    }
+  const handleLater = (transaction: InferredTransaction) => {
+    updatePendingTransaction(transaction.id, { deferred_at: new Date().toISOString() });
+    if (onLater) onLater(transaction);
+    loadTransactions();
   };
 
-  const handleDiscard = async () => {
-    if (!currentTransaction) return;
-    
-    setLoading(true);
-    try {
-      // Call parent callback if provided
-      if (onDiscard) {
-        onDiscard(currentTransaction);
-      }
-      
-      // Remove from pending store
-      removePendingTransaction(currentTransaction.id);
-      
-      // Reload and move to next
-      loadTransactions();
-      setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to discard transaction:', error);
-    } finally {
-      setLoading(false);
-    }
+  const handleDiscard = (transaction: InferredTransaction) => {
+    if (onDiscard) onDiscard(transaction);
+    removePendingTransaction(transaction.id);
+    loadTransactions();
   };
 
-  const toggleEdit = () => {
-    if (isEditing) {
-      // Cancel edit - reset to original values
-      if (currentTransaction) {
-        initializeEditFields(currentTransaction);
-      }
-    }
-    setIsEditing(!isEditing);
-  };
-
-  // Empty state
   if (transactions.length === 0) {
     return (
       <Card className="text-center">
@@ -189,270 +72,129 @@ export default function PendingTransactionConfirmation({
           <Receipt className="w-8 h-8 text-neutral-400" />
         </div>
         <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-          {language === 'hi' 
-            ? 'कोई लंबित लेनदेन नहीं'
-            : language === 'mr'
-            ? 'कोणतेही प्रलंबित व्यवहार नाहीत'
-            : 'No Pending Transactions'}
+          {language === 'hi' ? 'कोई लंबित लेनदेन नहीं' : language === 'mr' ? 'कोणतेही प्रलंबित व्यवहार नाहीत' : 'No Pending Transactions'}
         </h3>
         <p className="text-neutral-500 text-sm">
-          {language === 'hi'
-            ? 'रसीद या CSV फ़ाइल अपलोड करें'
-            : language === 'mr'
-            ? 'पावती किंवा CSV फाइल अपलोड करा'
-            : 'Upload a receipt or CSV file to get started'}
+          {language === 'hi' ? 'रसीद या CSV फ़ाइल अपलोड करें' : language === 'mr' ? 'पावती किंवा CSV फाइल अपलोड करा' : 'Upload a receipt or CSV file to get started'}
         </p>
       </Card>
     );
   }
 
-  // Source icon and label
-  const sourceConfig: Record<string, { icon: any; label: string; color: string }> = {
-    receipt: {
-      icon: Receipt,
-      label: language === 'hi' ? 'रसीद' : language === 'mr' ? 'पावती' : 'Receipt',
-      color: 'bg-blue-100 text-blue-700',
-    },
-    csv: {
-      icon: FileText,
-      label: 'CSV',
-      color: 'bg-green-100 text-green-700',
-    },
-    voice: {
-      icon: Mic,
-      label: language === 'hi' ? 'वॉइस' : language === 'mr' ? 'व्हॉइस' : 'Voice',
-      color: 'bg-purple-100 text-purple-700',
-    },
+  const sourceConfig: Record<string, { icon: typeof Receipt; label: string }> = {
+    receipt: { icon: Receipt, label: language === 'hi' ? 'रसीद' : language === 'mr' ? 'पावती' : 'Receipt' },
+    csv: { icon: FileText, label: 'CSV' },
+    voice: { icon: Mic, label: language === 'hi' ? 'वॉइस' : language === 'mr' ? 'व्हॉइस' : 'Voice' },
   };
 
-  const source = sourceConfig[currentTransaction.source] || sourceConfig.receipt;
-  const SourceIcon = source.icon;
-
   return (
-    <Card className="overflow-hidden" density="compact">
-      {/* Header with counter */}
-      <div className="bg-gradient-to-r from-info-50 to-primary-50 px-6 py-4 border-b border-neutral-200 -m-4 mb-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-neutral-900">
-            {language === 'hi'
-              ? 'लेनदेन की समीक्षा करें'
-              : language === 'mr'
-              ? 'व्यवहाराचे पुनरावलोकन करा'
-              : 'Review Transaction'}
-          </h2>
-          
-          {/* Counter */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-neutral-600">
-              {currentIndex + 1} {language === 'hi' ? 'का' : language === 'mr' ? 'चा' : 'of'} {transactions.length}
-            </span>
-            
-            {/* Source badge */}
-            <Badge variant={
-              currentTransaction.source === 'receipt' ? 'info' : 
-              currentTransaction.source === 'voice' ? 'warning' : 
-              'success'
-            }>
-              <SourceIcon className="w-3 h-3 mr-1" />
-              {source.label}
-            </Badge>
-          </div>
-        </div>
+    <div className="space-y-3">
+      {/* Count header */}
+      <div className="flex items-center justify-between px-1">
+        <span className="text-sm font-medium text-neutral-600">
+          {transactions.length} {transactions.length === 1
+            ? (language === 'hi' ? 'लंबित लेनदेन' : language === 'mr' ? 'प्रलंबित व्यवहार' : 'pending transaction')
+            : (language === 'hi' ? 'लंबित लेनदेन' : language === 'mr' ? 'प्रलंबित व्यवहार' : 'pending transactions')}
+        </span>
       </div>
 
-      {/* Transaction details */}
-      <div className="space-y-4">
-        {/* Date */}
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-            <Calendar className="w-5 h-5 text-neutral-600" />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              {language === 'hi' ? 'तिथि' : language === 'mr' ? 'तारीख' : 'Date'}
-            </label>
-            {isEditing ? (
-              <input
-                type="date"
-                value={editedDate}
-                onChange={(e) => setEditedDate(e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
-              />
-            ) : (
-              <p className="text-neutral-900 font-medium">
-                {new Date(currentTransaction.date).toLocaleDateString(
-                  language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN',
-                  { day: 'numeric', month: 'long', year: 'numeric' }
+      {/* Transaction list */}
+      {transactions.map((txn) => {
+        const src = sourceConfig[txn.source] || sourceConfig.receipt;
+        const SrcIcon = src.icon;
+        const isLoading = loadingId === txn.id;
+        const isDeferred = !!txn.deferred_at;
+
+        return (
+          <div
+            key={txn.id}
+            className={`bg-white rounded-xl border shadow-sm overflow-hidden ${isDeferred ? 'opacity-60' : 'border-gray-200'}`}
+          >
+            {/* Card header */}
+            <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <Badge variant={txn.source === 'receipt' ? 'info' : txn.source === 'voice' ? 'warning' : 'success'}>
+                  <SrcIcon className="w-3 h-3 mr-1" />
+                  {src.label}
+                </Badge>
+                {isDeferred && (
+                  <span className="text-xs text-amber-600 font-medium">
+                    {language === 'hi' ? 'बाद के लिए' : language === 'mr' ? 'नंतरसाठी' : 'Deferred'}
+                  </span>
                 )}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Amount */}
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-            <DollarSign className="w-5 h-5 text-neutral-600" />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              {language === 'hi' ? 'राशि' : language === 'mr' ? 'रक्कम' : 'Amount'}
-            </label>
-            {isEditing ? (
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500">₹</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={editedAmount}
-                  onChange={(e) => setEditedAmount(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
-                />
               </div>
-            ) : (
-              <p className="text-2xl font-bold text-neutral-900">
-                {formatCurrency(currentTransaction.amount)}
-              </p>
-            )}
-          </div>
-        </div>
+              <span className={`text-lg font-bold ${txn.type === 'sale' ? 'text-green-600' : 'text-red-600'}`}>
+                {txn.type === 'sale' ? '+' : '-'}{formatCurrency(txn.amount)}
+              </span>
+            </div>
 
-        {/* Type */}
-        <div className="flex items-start gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-            currentTransaction.type === 'expense' ? 'bg-error-100' : 'bg-success-100'
-          }`}>
-            <Tag className={`w-5 h-5 ${currentTransaction.type === 'expense' ? 'text-error-600' : 'text-success-600'}`} />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
-              {language === 'hi' ? 'प्रकार' : language === 'mr' ? 'प्रकार' : 'Type'}
-            </label>
-            {isEditing ? (
-              <select
-                value={editedType}
-                onChange={(e) => setEditedType(e.target.value as 'expense' | 'sale')}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
+            {/* Card body */}
+            <div className="px-4 py-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <div className="flex items-center gap-2 text-gray-600">
+                <Calendar className="w-4 h-4 flex-shrink-0" />
+                <span>{new Date(txn.date).toLocaleDateString(
+                  language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN',
+                  { day: 'numeric', month: 'short', year: 'numeric' }
+                )}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600">
+                <Tag className="w-4 h-4 flex-shrink-0" />
+                <Badge variant={txn.type === 'expense' ? 'error' : 'success'}>
+                  {txn.type === 'expense'
+                    ? (language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense')
+                    : (language === 'hi' ? 'बिक्री' : language === 'mr' ? 'विक्री' : 'Sale')}
+                </Badge>
+              </div>
+              {txn.vendor_name && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <User className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{txn.vendor_name}</span>
+                </div>
+              )}
+              {txn.category && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <DollarSign className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{txn.category}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
+              <button
+                onClick={() => handleDiscard(txn)}
+                disabled={isLoading}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
               >
-                <option value="expense">
-                  {language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense'}
-                </option>
-                <option value="sale">
-                  {language === 'hi' ? 'बिक्री' : language === 'mr' ? 'विक्री' : 'Sale'}
-                </option>
-              </select>
-            ) : (
-              <Badge variant={currentTransaction.type === 'expense' ? 'error' : 'success'}>
-                {currentTransaction.type === 'expense'
-                  ? (language === 'hi' ? 'खर्च' : language === 'mr' ? 'खर्च' : 'Expense')
-                  : (language === 'hi' ? 'बिक्री' : language === 'mr' ? 'विक्री' : 'Sale')}
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Vendor */}
-        {(currentTransaction.vendor_name || isEditing) && (
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-neutral-600" />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                {language === 'hi' ? 'विक्रेता' : language === 'mr' ? 'विक्रेता' : 'Vendor'}
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editedVendor}
-                  onChange={(e) => setEditedVendor(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
-                  placeholder={language === 'hi' ? 'विक्रेता का नाम' : language === 'mr' ? 'विक्रेत्याचे नाव' : 'Vendor name'}
-                />
-              ) : (
-                <p className="text-neutral-900">{currentTransaction.vendor_name}</p>
-              )}
+                <Trash2 className="w-3.5 h-3.5" />
+                {language === 'hi' ? 'हटाएं' : language === 'mr' ? 'टाकून द्या' : 'Discard'}
+              </button>
+              <button
+                onClick={() => handleLater(txn)}
+                disabled={isLoading || isDeferred}
+                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <Clock className="w-3.5 h-3.5" />
+                {language === 'hi' ? 'बाद में' : language === 'mr' ? 'नंतर' : 'Later'}
+              </button>
+              <button
+                onClick={() => handleAdd(txn)}
+                disabled={isLoading}
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <span className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                {isLoading
+                  ? (language === 'hi' ? 'जोड़ रहे हैं...' : language === 'mr' ? 'जोडत आहे...' : 'Adding...')
+                  : (language === 'hi' ? 'जोड़ें' : language === 'mr' ? 'जोडा' : 'Add')}
+              </button>
             </div>
           </div>
-        )}
-
-        {/* Category */}
-        {(currentTransaction.category || isEditing) && (
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-              <Tag className="w-5 h-5 text-neutral-600" />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                {language === 'hi' ? 'श्रेणी' : language === 'mr' ? 'श्रेणी' : 'Category'}
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editedCategory}
-                  onChange={(e) => setEditedCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[44px]"
-                  placeholder={language === 'hi' ? 'श्रेणी' : language === 'mr' ? 'श्रेणी' : 'Category'}
-                />
-              ) : (
-                <p className="text-neutral-900">{currentTransaction.category}</p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      <div className="mt-6 pt-4 border-t border-neutral-200 -mx-4 px-4 -mb-4 pb-4 bg-neutral-50">
-        <div className="flex gap-3">
-          {/* Edit/Cancel Edit button */}
-          <Button
-            onClick={toggleEdit}
-            disabled={loading}
-            variant="outline"
-            icon={isEditing ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
-          >
-            {isEditing 
-              ? (language === 'hi' ? 'रद्द करें' : language === 'mr' ? 'रद्द करा' : 'Cancel')
-              : (language === 'hi' ? 'संपादित करें' : language === 'mr' ? 'संपादित करा' : 'Edit')}
-          </Button>
-
-          {/* Discard button */}
-          <Button
-            onClick={handleDiscard}
-            disabled={loading}
-            variant="danger"
-            icon={<Trash2 className="w-4 h-4" />}
-          >
-            {language === 'hi' ? 'हटाएं' : language === 'mr' ? 'टाकून द्या' : 'Discard'}
-          </Button>
-
-          {/* Later button */}
-          <Button
-            onClick={handleLater}
-            disabled={loading}
-            variant="secondary"
-            icon={<Clock className="w-4 h-4" />}
-          >
-            {language === 'hi' ? 'बाद में' : language === 'mr' ? 'नंतर' : 'Later'}
-          </Button>
-
-          {/* Add button */}
-          <Button
-            onClick={handleAdd}
-            disabled={loading}
-            loading={loading}
-            variant="primary"
-            fullWidth
-            icon={<Check className="w-5 h-5" />}
-          >
-            {loading 
-              ? (language === 'hi' ? 'जोड़ रहे हैं...' : language === 'mr' ? 'जोडत आहे...' : 'Adding...')
-              : (language === 'hi' ? 'जोड़ें' : language === 'mr' ? 'जोडा' : 'Add')}
-          </Button>
-        </div>
-      </div>
-    </Card>
+        );
+      })}
+    </div>
   );
 }

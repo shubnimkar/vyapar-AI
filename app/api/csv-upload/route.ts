@@ -3,8 +3,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { parseCSV } from '@/lib/parsers/csv-parser';
-import { isDuplicate } from '@/lib/duplicate-detector';
-import { savePendingTransaction } from '@/lib/pending-transaction-store';
 import { logger } from '@/lib/logger';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -93,41 +91,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for duplicates and save non-duplicate transactions
-    let savedCount = 0;
-    let duplicateCount = 0;
-
-    for (const transaction of parseResult.transactions) {
-      // Check if duplicate
-      if (isDuplicate(transaction)) {
-        duplicateCount++;
-        continue;
-      }
-
-      // Save to pending store
-      const saved = savePendingTransaction(transaction);
-      if (saved) {
-        savedCount++;
-      }
-    }
-
     logger.info('CSV upload processed', {
       filename: file.name,
       totalRows: parseResult.summary.totalRows,
       validRows: parseResult.summary.validRows,
-      savedCount,
-      duplicateCount
+      savedCount: parseResult.transactions.length,
+      duplicateCount: 0
     });
 
+    // Return transactions to client — client saves to localStorage (offline-first)
     return NextResponse.json({
       success: true,
       summary: {
         totalRows: parseResult.summary.totalRows,
-        validTransactions: parseResult.summary.validRows,
-        duplicatesSkipped: duplicateCount,
+        validRows: parseResult.summary.validRows,
         invalidRows: parseResult.summary.invalidRows,
-        saved: savedCount
       },
+      transactions: parseResult.transactions,
       errors: parseResult.summary.errors
     });
   } catch (error) {

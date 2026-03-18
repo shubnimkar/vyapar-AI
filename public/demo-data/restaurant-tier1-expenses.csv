@@ -1,0 +1,51 @@
+date,category,amount,description
+2024-01-01,rent,27586,Monthly shop rent
+2024-01-01,electricity,2360,Electricity bill
+2024-02-01,rent,27586,Monthly shop rent
+2024-02-01,electricity,2360,Electricity bill
+2024-01-02,raw_materials,3851,raw materials expense
+2024-01-03,raw_materials,9389,raw materials expense
+2024-01-04,maintenance,9838,maintenance expense
+2024-01-05,gas_cylinder,4381,gas cylinder expense
+2024-01-06,raw_materials,4330,raw materials expense
+2024-01-07,raw_materials,10165,raw materials expense
+2024-01-08,raw_materials,10629,raw materials expense
+2024-01-09,packaging,10499,packaging expense
+2024-01-10,raw_materials,7026,raw materials expense
+2024-01-11,gas_cylinder,9901,gas cylinder expense
+2024-01-12,wages,8011,wages expense
+2024-01-13,packaging,4954,packaging expense
+2024-01-14,gas_cylinder,4770,gas cylinder expense
+2024-01-15,maintenance,8645,maintenance expense
+2024-01-16,wages,4293,wages expense
+2024-01-17,packaging,9566,packaging expense
+2024-01-18,raw_materials,4080,raw materials expense
+2024-01-19,wages,5027,wages expense
+2024-01-20,maintenance,5493,maintenance expense
+2024-01-21,maintenance,9128,maintenance expense
+2024-01-22,wages,9629,wages expense
+2024-01-23,raw_materials,7106,raw materials expense
+2024-01-24,wages,8917,wages expense
+2024-01-25,gas_cylinder,8088,gas cylinder expense
+2024-01-26,wages,4821,wages expense
+2024-01-27,raw_materials,6701,raw materials expense
+2024-01-28,gas_cylinder,4803,gas cylinder expense
+2024-01-29,maintenance,8171,maintenance expense
+2024-01-30,raw_materials,10288,raw materials expense
+2024-01-31,packaging,4117,packaging expense
+2024-02-01,maintenance,5098,maintenance expense
+2024-02-02,gas_cylinder,5440,gas cylinder expense
+2024-02-03,raw_materials,5477,raw materials expense
+2024-02-04,raw_materials,3245,raw materials expense
+2024-02-05,gas_cylinder,6485,gas cylinder expense
+2024-02-06,raw_materials,9771,raw materials expense
+2024-02-07,raw_materials,7824,raw materials expense
+2024-02-08,maintenance,4821,maintenance expense
+2024-02-09,raw_materials,9229,raw materials expense
+2024-02-10,wages,11168,wages expense
+2024-02-11,raw_materials,8056,raw materials expense
+2024-02-12,wages,4709,wages expense
+2024-02-13,packaging,9032,packaging expense
+2024-02-14,wages,7302,wages expense
+2024-02-15,packaging,5803,packaging expense
+2024-02-16,wages,9965,wages expense

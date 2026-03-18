@@ -89,6 +89,9 @@ export function deleteLocalEntry(date: string): void {
   const entries = getLocalEntries();
   const filtered = entries.filter(e => e.date !== date);
   saveLocalEntries(filtered);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('vyapar-daily-entries-changed', { detail: { action: 'deleted', date } }));
+  }
 }
 
 /**

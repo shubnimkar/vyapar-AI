@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Papa from 'papaparse';
+import { Download } from 'lucide-react';
 import { FileType, Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 
@@ -39,6 +40,13 @@ export default function FileUpload({
     sales: '📊',
     expenses: '💰',
     inventory: '📦',
+  };
+
+  const handleDownloadTemplate = () => {
+    const a = document.createElement('a');
+    a.href = `/templates/vyapar-${fileType}-template.csv`;
+    a.download = `vyapar-${fileType}-template.csv`;
+    a.click();
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,6 +126,14 @@ export default function FileUpload({
           onChange={handleFileSelect}
           className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer"
         />
+
+        <button
+          onClick={handleDownloadTemplate}
+          className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+        >
+          <Download size={14} />
+          Download {fileType}-template.csv
+        </button>
 
         {preview && (
           <div className="mt-3">

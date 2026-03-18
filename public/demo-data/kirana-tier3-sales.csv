@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Tea Powder 250g,2384,Ramesh Stores,Groceries
+2024-01-02,Sugar 1kg,3676,Walk-in Customer,Groceries
+2024-01-03,Salt 1kg,2109,Lakshmi Store,Groceries
+2024-01-04,Rice 1kg,1804,Lakshmi Store,Groceries
+2024-01-05,Salt 1kg,2861,Ramesh Stores,Groceries
+2024-01-06,Wheat Flour 1kg,2298,Mahesh Shop,Groceries
+2024-01-07,Milk 500ml,3070,Mahesh Shop,Groceries
+2024-01-08,Cooking Oil 1L,4323,Walk-in Customer,Groceries
+2024-01-09,Soap Bar,2739,Ramesh Stores,Groceries
+2024-01-10,Cooking Oil 1L,3299,Mahesh Shop,Groceries
+2024-01-11,Cooking Oil 1L,3289,Lakshmi Store,Groceries
+2024-01-12,Biscuits Pack,3067,Suresh Traders,Groceries
+2024-01-13,Toothpaste 100g,1879,Suresh Traders,Groceries
+2024-01-14,Milk 500ml,2383,Ramesh Stores,Groceries
+2024-01-15,Milk 500ml,3411,Mahesh Shop,Groceries
+2024-01-16,Rice 1kg,3975,Ramesh Stores,Groceries
+2024-01-17,Sugar 1kg,3032,Suresh Traders,Groceries
+2024-01-18,Pulses 500g,3567,Mahesh Shop,Groceries
+2024-01-19,Wheat Flour 1kg,2218,Walk-in Customer,Groceries
+2024-01-20,Detergent 500g,3244,Ramesh Stores,Groceries
+2024-01-21,Salt 1kg,4475,Ramesh Stores,Groceries
+2024-01-22,Biscuits Pack,1715,Suresh Traders,Groceries
+2024-01-23,Butter 100g,4116,Lakshmi Store,Groceries
+2024-01-24,Soap Bar,2430,Mahesh Shop,Groceries
+2024-01-25,Salt 1kg,4046,Walk-in Customer,Groceries
+2024-01-26,Wheat Flour 1kg,2366,Mahesh Shop,Groceries
+2024-01-27,Tea Powder 250g,2193,Lakshmi Store,Groceries
+2024-01-28,Wheat Flour 1kg,3882,Walk-in Customer,Groceries
+2024-01-29,Biscuits Pack,4308,Suresh Traders,Groceries
+2024-01-30,Bread Loaf,2718,Lakshmi Store,Groceries
+2024-01-31,Pulses 500g,3310,Lakshmi Store,Groceries
+2024-02-01,Wheat Flour 1kg,3857,Ramesh Stores,Groceries
+2024-02-02,Milk 500ml,4532,Ramesh Stores,Groceries
+2024-02-03,Rice 1kg,2458,Ramesh Stores,Groceries
+2024-02-04,Butter 100g,2129,Lakshmi Store,Groceries
+2024-02-05,Cooking Oil 1L,3357,Ramesh Stores,Groceries
+2024-02-06,Sugar 1kg,4414,Lakshmi Store,Groceries
+2024-02-07,Biscuits Pack,1724,Lakshmi Store,Groceries
+2024-02-08,Sugar 1kg,2059,Mahesh Shop,Groceries
+2024-02-09,Biscuits Pack,4371,Ramesh Stores,Groceries
+2024-02-10,Soap Bar,3315,Mahesh Shop,Groceries
+2024-02-11,Butter 100g,2907,Ramesh Stores,Groceries
+2024-02-12,Cooking Oil 1L,1670,Mahesh Shop,Groceries
+2024-02-13,Cooking Oil 1L,3352,Suresh Traders,Groceries
+2024-02-14,Cooking Oil 1L,1791,Lakshmi Store,Groceries
+2024-02-15,Detergent 500g,1632,Ramesh Stores,Groceries
+2024-02-16,Toothpaste 100g,3351,Mahesh Shop,Groceries
+2024-02-17,Tea Powder 250g,1738,Suresh Traders,Groceries
+2024-02-18,Wheat Flour 1kg,1723,Ramesh Stores,Groceries
+2024-02-19,Cooking Oil 1L,4215,Walk-in Customer,Groceries

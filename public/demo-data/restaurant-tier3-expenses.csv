@@ -1,0 +1,51 @@
+date,category,amount,description
+2024-01-01,rent,9627,Monthly shop rent
+2024-01-01,electricity,788,Electricity bill
+2024-02-01,rent,9627,Monthly shop rent
+2024-02-01,electricity,788,Electricity bill
+2024-01-02,maintenance,1454,maintenance expense
+2024-01-03,packaging,4131,packaging expense
+2024-01-04,wages,1897,wages expense
+2024-01-05,packaging,1373,packaging expense
+2024-01-06,packaging,2412,packaging expense
+2024-01-07,wages,3257,wages expense
+2024-01-08,packaging,2463,packaging expense
+2024-01-09,packaging,3028,packaging expense
+2024-01-10,maintenance,2293,maintenance expense
+2024-01-11,maintenance,3731,maintenance expense
+2024-01-12,raw_materials,2702,raw materials expense
+2024-01-13,wages,3632,wages expense
+2024-01-14,gas_cylinder,3002,gas cylinder expense
+2024-01-15,packaging,3433,packaging expense
+2024-01-16,wages,3481,wages expense
+2024-01-17,gas_cylinder,4320,gas cylinder expense
+2024-01-18,gas_cylinder,3251,gas cylinder expense
+2024-01-19,maintenance,1447,maintenance expense
+2024-01-20,wages,2543,wages expense
+2024-01-21,packaging,1846,packaging expense
+2024-01-22,gas_cylinder,1845,gas cylinder expense
+2024-01-23,gas_cylinder,3672,gas cylinder expense
+2024-01-24,raw_materials,1305,raw materials expense
+2024-01-25,gas_cylinder,2675,gas cylinder expense
+2024-01-26,wages,3011,wages expense
+2024-01-27,raw_materials,2339,raw materials expense
+2024-01-28,maintenance,2231,maintenance expense
+2024-01-29,maintenance,3279,maintenance expense
+2024-01-30,packaging,4024,packaging expense
+2024-01-31,raw_materials,2489,raw materials expense
+2024-02-01,wages,4502,wages expense
+2024-02-02,packaging,3716,packaging expense
+2024-02-03,gas_cylinder,1639,gas cylinder expense
+2024-02-04,raw_materials,1499,raw materials expense
+2024-02-05,packaging,1625,packaging expense
+2024-02-06,packaging,2970,packaging expense
+2024-02-07,wages,2184,wages expense
+2024-02-08,maintenance,3901,maintenance expense
+2024-02-09,wages,2579,wages expense
+2024-02-10,gas_cylinder,2686,gas cylinder expense
+2024-02-11,maintenance,2610,maintenance expense
+2024-02-12,wages,3236,wages expense
+2024-02-13,raw_materials,2797,raw materials expense
+2024-02-14,packaging,2682,packaging expense
+2024-02-15,wages,2926,wages expense
+2024-02-16,gas_cylinder,3210,gas cylinder expense

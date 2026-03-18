@@ -60,6 +60,12 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
     checkAndSync();
   }, []);
 
+  useEffect(() => {
+    const handler = () => loadEntries();
+    window.addEventListener('vyapar-daily-entries-changed', handler);
+    return () => window.removeEventListener('vyapar-daily-entries-changed', handler);
+  }, []);
+
   // Update form when initialData changes (e.g., from voice input)
   useEffect(() => {
     if (initialData) {

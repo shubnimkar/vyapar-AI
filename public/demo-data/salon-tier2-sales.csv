@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Threading,4165,Sunita Devi,Beauty Services
+2024-01-02,Haircut,1502,Regular Client,Beauty Services
+2024-01-03,Beard Trim,4061,Regular Client,Beauty Services
+2024-01-04,Threading,3098,Regular Client,Beauty Services
+2024-01-05,Head Massage,3859,Sunita Devi,Beauty Services
+2024-01-06,Haircut,3520,Rahul Verma,Beauty Services
+2024-01-07,Haircut,2952,Sunita Devi,Beauty Services
+2024-01-08,Keratin Treatment,2908,Priya Sharma,Beauty Services
+2024-01-09,Hair Spa,1885,Regular Client,Beauty Services
+2024-01-10,Head Massage,3157,Sunita Devi,Beauty Services
+2024-01-11,Straightening,4645,Rahul Verma,Beauty Services
+2024-01-12,Manicure,1680,Regular Client,Beauty Services
+2024-01-13,Facial,2788,Regular Client,Beauty Services
+2024-01-14,Shave,4110,Sunita Devi,Beauty Services
+2024-01-15,Haircut,2003,Walk-in Customer,Beauty Services
+2024-01-16,Beard Trim,4345,Priya Sharma,Beauty Services
+2024-01-17,Waxing,2436,Rahul Verma,Beauty Services
+2024-01-18,Head Massage,2546,Priya Sharma,Beauty Services
+2024-01-19,Straightening,4839,Sunita Devi,Beauty Services
+2024-01-20,Threading,2732,Rahul Verma,Beauty Services
+2024-01-21,Pedicure,4462,Walk-in Customer,Beauty Services
+2024-01-22,Beard Trim,2521,Sunita Devi,Beauty Services
+2024-01-23,Hair Color,4126,Regular Client,Beauty Services
+2024-01-24,Haircut,1580,Sunita Devi,Beauty Services
+2024-01-25,Manicure,1738,Sunita Devi,Beauty Services
+2024-01-26,Keratin Treatment,3293,Regular Client,Beauty Services
+2024-01-27,Beard Trim,3700,Rahul Verma,Beauty Services
+2024-01-28,Hair Spa,3997,Sunita Devi,Beauty Services
+2024-01-29,Head Massage,3731,Priya Sharma,Beauty Services
+2024-01-30,Shave,4795,Priya Sharma,Beauty Services
+2024-01-31,Threading,2666,Priya Sharma,Beauty Services
+2024-02-01,Pedicure,3552,Rahul Verma,Beauty Services
+2024-02-02,Head Massage,4252,Walk-in Customer,Beauty Services
+2024-02-03,Threading,4038,Regular Client,Beauty Services
+2024-02-04,Blow Dry,4174,Sunita Devi,Beauty Services
+2024-02-05,Hair Spa,1750,Rahul Verma,Beauty Services
+2024-02-06,Threading,2317,Walk-in Customer,Beauty Services
+2024-02-07,Hair Color,3351,Sunita Devi,Beauty Services
+2024-02-08,Manicure,2807,Rahul Verma,Beauty Services
+2024-02-09,Blow Dry,4570,Sunita Devi,Beauty Services
+2024-02-10,Keratin Treatment,2534,Walk-in Customer,Beauty Services
+2024-02-11,Hair Wash,4044,Rahul Verma,Beauty Services
+2024-02-12,Head Massage,3691,Rahul Verma,Beauty Services
+2024-02-13,Hair Color,4213,Sunita Devi,Beauty Services
+2024-02-14,Beard Trim,4866,Regular Client,Beauty Services
+2024-02-15,Hair Color,3497,Rahul Verma,Beauty Services
+2024-02-16,Manicure,4071,Sunita Devi,Beauty Services
+2024-02-17,Straightening,2445,Sunita Devi,Beauty Services
+2024-02-18,Hair Color,4653,Regular Client,Beauty Services
+2024-02-19,Waxing,2545,Rahul Verma,Beauty Services

@@ -2,12 +2,17 @@
 
 import { FileType } from './types';
 
-// Required columns for each file type
+// Required columns for each file type — must match template headers
 const REQUIRED_COLUMNS: Record<FileType, string[]> = {
-  sales: ['date', 'product', 'quantity', 'amount'],
-  expenses: ['date', 'category', 'amount', 'description'],
-  inventory: ['product', 'quantity', 'cost_price', 'selling_price'],
+  sales: ['date', 'item_name', 'amount'],
+  expenses: ['date', 'category', 'amount'],
+  inventory: ['item_name', 'quantity', 'unit_price'],
 };
+
+// Normalize a descriptive header like "date (YYYY-MM-DD)" → "date"
+function normalizeHeader(header: string): string {
+  return header.toLowerCase().trim().replace(/\s*\(.*?\)\s*/g, '').trim();
+}
 
 export interface ValidationResult {
   valid: boolean;
@@ -24,7 +29,7 @@ export function validateCSVHeaders(
   fileType: FileType
 ): ValidationResult {
   const requiredColumns = REQUIRED_COLUMNS[fileType];
-  const normalizedHeaders = headers.map(h => h.toLowerCase().trim());
+  const normalizedHeaders = headers.map(h => normalizeHeader(h));
   
   const missingColumns = requiredColumns.filter(
     col => !normalizedHeaders.includes(col)

@@ -1,0 +1,51 @@
+date,category,amount,description
+2024-01-01,rent,31437,Monthly shop rent
+2024-01-01,electricity,2261,Electricity bill
+2024-02-01,rent,31437,Monthly shop rent
+2024-02-01,electricity,2261,Electricity bill
+2024-01-02,wages,7354,wages expense
+2024-01-03,cold_storage,5328,cold storage expense
+2024-01-04,cold_storage,6350,cold storage expense
+2024-01-05,license_fee,3902,license fee expense
+2024-01-06,packaging,9435,packaging expense
+2024-01-07,wages,8059,wages expense
+2024-01-08,medicine_purchase,4085,medicine purchase expense
+2024-01-09,license_fee,5522,license fee expense
+2024-01-10,cold_storage,4235,cold storage expense
+2024-01-11,packaging,7490,packaging expense
+2024-01-12,medicine_purchase,2870,medicine purchase expense
+2024-01-13,wages,8901,wages expense
+2024-01-14,license_fee,3840,license fee expense
+2024-01-15,wages,9213,wages expense
+2024-01-16,cold_storage,4002,cold storage expense
+2024-01-17,license_fee,5304,license fee expense
+2024-01-18,medicine_purchase,4712,medicine purchase expense
+2024-01-19,license_fee,6438,license fee expense
+2024-01-20,packaging,4355,packaging expense
+2024-01-21,license_fee,4947,license fee expense
+2024-01-22,medicine_purchase,2782,medicine purchase expense
+2024-01-23,medicine_purchase,7430,medicine purchase expense
+2024-01-24,license_fee,8443,license fee expense
+2024-01-25,packaging,5669,packaging expense
+2024-01-26,packaging,8168,packaging expense
+2024-01-27,license_fee,9325,license fee expense
+2024-01-28,cold_storage,6144,cold storage expense
+2024-01-29,license_fee,7379,license fee expense
+2024-01-30,wages,5357,wages expense
+2024-01-31,license_fee,5920,license fee expense
+2024-02-01,cold_storage,5731,cold storage expense
+2024-02-02,wages,5398,wages expense
+2024-02-03,license_fee,4602,license fee expense
+2024-02-04,medicine_purchase,6400,medicine purchase expense
+2024-02-05,license_fee,7574,license fee expense
+2024-02-06,cold_storage,3858,cold storage expense
+2024-02-07,cold_storage,9206,cold storage expense
+2024-02-08,packaging,6467,packaging expense
+2024-02-09,wages,6682,wages expense
+2024-02-10,license_fee,6944,license fee expense
+2024-02-11,license_fee,7832,license fee expense
+2024-02-12,packaging,9392,packaging expense
+2024-02-13,license_fee,4053,license fee expense
+2024-02-14,wages,2802,wages expense
+2024-02-15,wages,9254,wages expense
+2024-02-16,medicine_purchase,5200,medicine purchase expense

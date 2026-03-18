@@ -2,7 +2,7 @@
 
 # Seed Benchmark Data to DynamoDB
 # This script populates DynamoDB with demo segment benchmark data
-# for all 15 segment combinations (3 city tiers × 5 business types)
+# for all 20 segment combinations (4 city tiers × 5 business types)
 
 set -e
 
@@ -77,6 +77,15 @@ seed_segment "tier3" "salon" "50" "0.250" "110"
 seed_segment "tier3" "pharmacy" "50" "0.150" "110"
 seed_segment "tier3" "restaurant" "50" "0.100" "110"
 seed_segment "tier3" "other" "50" "0.175" "110"
+
+# Rural (Village/rural markets) - Health scores: 35-55
+echo ""
+echo "Seeding Rural segments..."
+seed_segment "rural" "kirana" "45" "0.200" "70"
+seed_segment "rural" "salon" "45" "0.250" "70"
+seed_segment "rural" "pharmacy" "45" "0.150" "70"
+seed_segment "rural" "restaurant" "45" "0.100" "70"
+seed_segment "rural" "other" "45" "0.175" "70"
 
 echo ""
 echo "✅ Benchmark data seeded successfully!"

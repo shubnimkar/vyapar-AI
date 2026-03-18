@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Antiseptic Cream,2369,Monthly Subscriber,Medicines
+2024-01-02,Vitamin C Tablets,2010,Monthly Subscriber,Medicines
+2024-01-03,Bandage Roll,3307,Dr. Sharma Prescription,Medicines
+2024-01-04,Eye Drops,3315,Dr. Sharma Prescription,Medicines
+2024-01-05,Vitamin C Tablets,2524,Regular Patient,Medicines
+2024-01-06,Multivitamin Bottle,2253,Walk-in Customer,Medicines
+2024-01-07,Diabetes Strips,3468,Monthly Subscriber,Medicines
+2024-01-08,Protein Powder 500g,2925,Monthly Subscriber,Medicines
+2024-01-09,Vitamin C Tablets,2227,Elderly Customer,Medicines
+2024-01-10,Antibiotic Course,2366,Monthly Subscriber,Medicines
+2024-01-11,Paracetamol Strip,3958,Walk-in Customer,Medicines
+2024-01-12,Antacid Tablets,2663,Monthly Subscriber,Medicines
+2024-01-13,Eye Drops,3413,Monthly Subscriber,Medicines
+2024-01-14,Eye Drops,2539,Monthly Subscriber,Medicines
+2024-01-15,Eye Drops,3990,Dr. Sharma Prescription,Medicines
+2024-01-16,Bandage Roll,1377,Dr. Sharma Prescription,Medicines
+2024-01-17,Eye Drops,2858,Elderly Customer,Medicines
+2024-01-18,Bandage Roll,1373,Dr. Sharma Prescription,Medicines
+2024-01-19,Antiseptic Cream,3610,Dr. Sharma Prescription,Medicines
+2024-01-20,Nasal Spray,2905,Monthly Subscriber,Medicines
+2024-01-21,Iron Supplement,3562,Elderly Customer,Medicines
+2024-01-22,Calcium Tablets,3493,Walk-in Customer,Medicines
+2024-01-23,Iron Supplement,1696,Dr. Sharma Prescription,Medicines
+2024-01-24,Cough Syrup,1504,Monthly Subscriber,Medicines
+2024-01-25,Antibiotic Course,3722,Dr. Sharma Prescription,Medicines
+2024-01-26,Bandage Roll,1503,Monthly Subscriber,Medicines
+2024-01-27,Paracetamol Strip,3218,Regular Patient,Medicines
+2024-01-28,Diabetes Strips,3626,Regular Patient,Medicines
+2024-01-29,Vitamin C Tablets,2727,Monthly Subscriber,Medicines
+2024-01-30,Paracetamol Strip,2720,Walk-in Customer,Medicines
+2024-01-31,BP Tablets,3720,Dr. Sharma Prescription,Medicines
+2024-02-01,Bandage Roll,2278,Dr. Sharma Prescription,Medicines
+2024-02-02,BP Tablets,3200,Dr. Sharma Prescription,Medicines
+2024-02-03,Diabetes Strips,1619,Elderly Customer,Medicines
+2024-02-04,Vitamin C Tablets,3184,Monthly Subscriber,Medicines
+2024-02-05,Antiseptic Cream,3654,Regular Patient,Medicines
+2024-02-06,Protein Powder 500g,1353,Regular Patient,Medicines
+2024-02-07,Iron Supplement,3972,Monthly Subscriber,Medicines
+2024-02-08,Antacid Tablets,2025,Dr. Sharma Prescription,Medicines
+2024-02-09,Nasal Spray,1457,Regular Patient,Medicines
+2024-02-10,Vitamin C Tablets,2211,Walk-in Customer,Medicines
+2024-02-11,Cough Syrup,2900,Monthly Subscriber,Medicines
+2024-02-12,Protein Powder 500g,1487,Dr. Sharma Prescription,Medicines
+2024-02-13,Cough Syrup,3800,Monthly Subscriber,Medicines
+2024-02-14,Protein Powder 500g,2700,Walk-in Customer,Medicines
+2024-02-15,Calcium Tablets,3131,Regular Patient,Medicines
+2024-02-16,Bandage Roll,1964,Elderly Customer,Medicines
+2024-02-17,Eye Drops,2397,Dr. Sharma Prescription,Medicines
+2024-02-18,Iron Supplement,3855,Walk-in Customer,Medicines
+2024-02-19,Iron Supplement,3983,Regular Patient,Medicines

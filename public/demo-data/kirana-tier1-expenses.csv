@@ -1,0 +1,51 @@
+date,category,amount,description
+2024-01-01,rent,25741,Monthly shop rent
+2024-01-01,electricity,2589,Electricity bill
+2024-02-01,rent,25741,Monthly shop rent
+2024-02-01,electricity,2589,Electricity bill
+2024-01-02,transport,4040,transport expense
+2024-01-03,transport,4406,transport expense
+2024-01-04,packaging,1731,packaging expense
+2024-01-05,wages,1638,wages expense
+2024-01-06,inventory_purchase,2949,inventory purchase expense
+2024-01-07,wages,5576,wages expense
+2024-01-08,inventory_purchase,2982,inventory purchase expense
+2024-01-09,packaging,2890,packaging expense
+2024-01-10,transport,3875,transport expense
+2024-01-11,inventory_purchase,2763,inventory purchase expense
+2024-01-12,packaging,1435,packaging expense
+2024-01-13,packaging,2182,packaging expense
+2024-01-14,maintenance,2230,maintenance expense
+2024-01-15,maintenance,6117,maintenance expense
+2024-01-16,packaging,4462,packaging expense
+2024-01-17,inventory_purchase,4541,inventory purchase expense
+2024-01-18,packaging,3085,packaging expense
+2024-01-19,maintenance,5555,maintenance expense
+2024-01-20,inventory_purchase,4310,inventory purchase expense
+2024-01-21,inventory_purchase,5766,inventory purchase expense
+2024-01-22,packaging,5059,packaging expense
+2024-01-23,wages,5170,wages expense
+2024-01-24,transport,2005,transport expense
+2024-01-25,packaging,4525,packaging expense
+2024-01-26,transport,1318,transport expense
+2024-01-27,maintenance,6160,maintenance expense
+2024-01-28,maintenance,1693,maintenance expense
+2024-01-29,packaging,5890,packaging expense
+2024-01-30,wages,4750,wages expense
+2024-01-31,transport,6582,transport expense
+2024-02-01,maintenance,6784,maintenance expense
+2024-02-02,inventory_purchase,4512,inventory purchase expense
+2024-02-03,packaging,1334,packaging expense
+2024-02-04,packaging,2450,packaging expense
+2024-02-05,inventory_purchase,6194,inventory purchase expense
+2024-02-06,transport,6290,transport expense
+2024-02-07,wages,6547,wages expense
+2024-02-08,wages,3800,wages expense
+2024-02-09,inventory_purchase,1781,inventory purchase expense
+2024-02-10,maintenance,1413,maintenance expense
+2024-02-11,transport,6606,transport expense
+2024-02-12,inventory_purchase,6166,inventory purchase expense
+2024-02-13,wages,1528,wages expense
+2024-02-14,wages,4426,wages expense
+2024-02-15,transport,5538,transport expense
+2024-02-16,transport,4206,transport expense

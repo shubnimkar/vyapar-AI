@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Dal Makhani,5277,Delivery Order,Food & Beverages
+2024-01-02,Dosa,2462,Regular Diner,Food & Beverages
+2024-01-03,Upma,3232,Office Lunch Order,Food & Beverages
+2024-01-04,Chai,6156,Party Booking,Food & Beverages
+2024-01-05,Idli Plate,3117,Delivery Order,Food & Beverages
+2024-01-06,Thali (Non-Veg),5265,Party Booking,Food & Beverages
+2024-01-07,Thali (Veg),4612,Office Lunch Order,Food & Beverages
+2024-01-08,Upma,4088,Delivery Order,Food & Beverages
+2024-01-09,Dosa,2881,Office Lunch Order,Food & Beverages
+2024-01-10,Lassi,5459,Office Lunch Order,Food & Beverages
+2024-01-11,Sandwich,3080,Walk-in Customer,Food & Beverages
+2024-01-12,Juice,4483,Walk-in Customer,Food & Beverages
+2024-01-13,Dosa,3101,Office Lunch Order,Food & Beverages
+2024-01-14,Juice,2316,Office Lunch Order,Food & Beverages
+2024-01-15,Dal Makhani,3203,Regular Diner,Food & Beverages
+2024-01-16,Dal Makhani,5697,Regular Diner,Food & Beverages
+2024-01-17,Sandwich,4545,Party Booking,Food & Beverages
+2024-01-18,Sandwich,5259,Walk-in Customer,Food & Beverages
+2024-01-19,Upma,4218,Party Booking,Food & Beverages
+2024-01-20,Dal Makhani,2302,Delivery Order,Food & Beverages
+2024-01-21,Biryani,2641,Party Booking,Food & Beverages
+2024-01-22,Poha,6009,Delivery Order,Food & Beverages
+2024-01-23,Lassi,6382,Regular Diner,Food & Beverages
+2024-01-24,Poha,2307,Regular Diner,Food & Beverages
+2024-01-25,Biryani,3446,Party Booking,Food & Beverages
+2024-01-26,Dosa,2744,Office Lunch Order,Food & Beverages
+2024-01-27,Paneer Butter Masala,5378,Delivery Order,Food & Beverages
+2024-01-28,Poha,2447,Walk-in Customer,Food & Beverages
+2024-01-29,Juice,5074,Office Lunch Order,Food & Beverages
+2024-01-30,Samosa,3498,Delivery Order,Food & Beverages
+2024-01-31,Samosa,3650,Regular Diner,Food & Beverages
+2024-02-01,Upma,2386,Walk-in Customer,Food & Beverages
+2024-02-02,Dal Makhani,2752,Walk-in Customer,Food & Beverages
+2024-02-03,Sandwich,5531,Office Lunch Order,Food & Beverages
+2024-02-04,Juice,5993,Delivery Order,Food & Beverages
+2024-02-05,Dosa,3943,Delivery Order,Food & Beverages
+2024-02-06,Biryani,2332,Regular Diner,Food & Beverages
+2024-02-07,Thali (Non-Veg),5844,Delivery Order,Food & Beverages
+2024-02-08,Upma,4460,Party Booking,Food & Beverages
+2024-02-09,Biryani,2671,Regular Diner,Food & Beverages
+2024-02-10,Samosa,5729,Regular Diner,Food & Beverages
+2024-02-11,Biryani,2536,Office Lunch Order,Food & Beverages
+2024-02-12,Poha,4783,Walk-in Customer,Food & Beverages
+2024-02-13,Upma,4324,Delivery Order,Food & Beverages
+2024-02-14,Samosa,2424,Regular Diner,Food & Beverages
+2024-02-15,Thali (Non-Veg),4532,Walk-in Customer,Food & Beverages
+2024-02-16,Chai,5424,Party Booking,Food & Beverages
+2024-02-17,Thali (Non-Veg),2570,Regular Diner,Food & Beverages
+2024-02-18,Juice,5097,Walk-in Customer,Food & Beverages
+2024-02-19,Sandwich,5774,Delivery Order,Food & Beverages

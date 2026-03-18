@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Biryani,3386,Walk-in Customer,Food & Beverages
+2024-01-02,Biryani,2916,Office Lunch Order,Food & Beverages
+2024-01-03,Paratha,3011,Office Lunch Order,Food & Beverages
+2024-01-04,Sandwich,3760,Regular Diner,Food & Beverages
+2024-01-05,Upma,2840,Regular Diner,Food & Beverages
+2024-01-06,Paratha,2113,Regular Diner,Food & Beverages
+2024-01-07,Sandwich,3993,Party Booking,Food & Beverages
+2024-01-08,Dosa,2978,Walk-in Customer,Food & Beverages
+2024-01-09,Dal Makhani,3392,Office Lunch Order,Food & Beverages
+2024-01-10,Thali (Non-Veg),3755,Regular Diner,Food & Beverages
+2024-01-11,Chai,3776,Delivery Order,Food & Beverages
+2024-01-12,Juice,2308,Delivery Order,Food & Beverages
+2024-01-13,Juice,1804,Walk-in Customer,Food & Beverages
+2024-01-14,Upma,2955,Party Booking,Food & Beverages
+2024-01-15,Upma,2044,Delivery Order,Food & Beverages
+2024-01-16,Lassi,3347,Walk-in Customer,Food & Beverages
+2024-01-17,Idli Plate,2631,Party Booking,Food & Beverages
+2024-01-18,Sandwich,1576,Regular Diner,Food & Beverages
+2024-01-19,Thali (Veg),4176,Delivery Order,Food & Beverages
+2024-01-20,Lassi,3964,Walk-in Customer,Food & Beverages
+2024-01-21,Juice,1640,Regular Diner,Food & Beverages
+2024-01-22,Poha,3772,Regular Diner,Food & Beverages
+2024-01-23,Poha,2916,Party Booking,Food & Beverages
+2024-01-24,Upma,2523,Regular Diner,Food & Beverages
+2024-01-25,Sandwich,3359,Delivery Order,Food & Beverages
+2024-01-26,Lassi,2345,Walk-in Customer,Food & Beverages
+2024-01-27,Paratha,3395,Delivery Order,Food & Beverages
+2024-01-28,Biryani,3629,Delivery Order,Food & Beverages
+2024-01-29,Biryani,2381,Regular Diner,Food & Beverages
+2024-01-30,Upma,4490,Delivery Order,Food & Beverages
+2024-01-31,Idli Plate,2827,Party Booking,Food & Beverages
+2024-02-01,Samosa,1671,Office Lunch Order,Food & Beverages
+2024-02-02,Sandwich,3806,Regular Diner,Food & Beverages
+2024-02-03,Paneer Butter Masala,2515,Delivery Order,Food & Beverages
+2024-02-04,Thali (Non-Veg),2306,Regular Diner,Food & Beverages
+2024-02-05,Paneer Butter Masala,2135,Walk-in Customer,Food & Beverages
+2024-02-06,Upma,2167,Delivery Order,Food & Beverages
+2024-02-07,Thali (Veg),2386,Delivery Order,Food & Beverages
+2024-02-08,Biryani,2151,Office Lunch Order,Food & Beverages
+2024-02-09,Upma,2323,Regular Diner,Food & Beverages
+2024-02-10,Thali (Non-Veg),1584,Party Booking,Food & Beverages
+2024-02-11,Lassi,4469,Regular Diner,Food & Beverages
+2024-02-12,Sandwich,1973,Delivery Order,Food & Beverages
+2024-02-13,Thali (Non-Veg),2931,Walk-in Customer,Food & Beverages
+2024-02-14,Lassi,4193,Delivery Order,Food & Beverages
+2024-02-15,Thali (Non-Veg),1643,Walk-in Customer,Food & Beverages
+2024-02-16,Dal Makhani,4022,Delivery Order,Food & Beverages
+2024-02-17,Idli Plate,1801,Walk-in Customer,Food & Beverages
+2024-02-18,Sandwich,3658,Party Booking,Food & Beverages
+2024-02-19,Paneer Butter Masala,3988,Regular Diner,Food & Beverages

@@ -2,6 +2,17 @@
 
 This directory contains comprehensive demo CSV files that showcase the full power of Vyapar AI's Advanced Analysis feature.
 
+## Coverage
+
+The demo CSV set now includes:
+
+- **5 business types**: kirana, salon, pharmacy, restaurant, other
+- **4 city tiers**: tier1, tier2, tier3, rural
+- **3 file types per combination**: sales, expenses, inventory
+
+That gives a total of **60 business/tier-specific demo CSV files**, plus the generic
+`sample-sales.csv`, `sample-expenses.csv`, and `sample-inventory.csv` starter files.
+
 ## Files
 
 ### 1. sample-sales.csv
@@ -105,7 +116,9 @@ The AI should suggest:
 ## Usage
 
 ### Option 1: Try Sample Data Button
-Click the "Try Sample Data" button in the CSV Upload component. This will automatically load all three files.
+Click the "Try Sample Data" button in the CSV Upload component. This will automatically load the
+matching sales, expenses, and inventory files for the selected business type and city tier,
+including `rural` profiles.
 
 ### Option 2: Manual Upload
 1. Download the CSV files from this directory
@@ -177,7 +190,8 @@ Use this data to test:
 
 To update the demo data:
 1. Edit the CSV files directly
-2. Or regenerate using `scripts/load-csv-demo-data.ts`
+2. Or regenerate the business/tier CSV set using `scripts/generate-demo-data.js`
+3. Use `scripts/load-csv-demo-data.ts` if you want the generic sample CSV pack
 3. Ensure patterns remain realistic and insightful
 4. Update this README with any changes
 

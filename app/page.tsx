@@ -51,6 +51,7 @@ import { getLocalEntries as getLocalCreditEntries, fullSync as creditFullSync } 
 import { getLocalPendingTransactions } from '@/lib/pending-transaction-store';
 import { calculateCreditSummary, calculateHealthScore } from '@/lib/calculations';
 import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
+import { resolveProfileForDemoData } from '@/lib/demo-profile-resolver';
 import IndicesDashboard from '@/components/IndicesDashboard';
 import BenchmarkDisplay from '@/components/BenchmarkDisplay';
 import CashFlowPredictor from '@/components/CashFlowPredictor';
@@ -120,7 +121,16 @@ export default function Home() {
   const [healthBreakdown, setHealthBreakdown] = useState<HealthBreakdown | null>(null);
   const [user, setUser] = useState<{ userId: string; username: string } | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [activeSection, setActiveSection] = useState<AppSection>('dashboard');
+  const [activeSection, setActiveSection] = useState<AppSection>(() => {
+    // Restore last active section from sessionStorage on reload
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('vyapar-active-section') as AppSection | null;
+      if (saved && ['dashboard','health','entries','credit','pending','analysis','chat','account','reports'].includes(saved)) {
+        return saved;
+      }
+    }
+    return 'dashboard';
+  });
 
   // Segment Benchmark state
   const [benchmarkComparison, setBenchmarkComparison] = useState<BenchmarkComparison | null>(null);
@@ -267,16 +277,6 @@ export default function Home() {
       setLanguage(savedLang);
     }
 
-    // Load demo segment data to cache on first load (for offline benchmark)
-    if (typeof window !== 'undefined') {
-      const { loadDemoDataToCache } = require('@/lib/demoSegmentData');
-      try {
-        loadDemoDataToCache();
-        logger.debug('Demo segment data loaded to cache');
-      } catch (error) {
-        logger.error('Failed to load demo segment data', { error });
-      }
-    }
   }, []);
 
   useEffect(() => {
@@ -370,7 +370,13 @@ export default function Home() {
     };
   }, [user]);
 
-  // Refresh data when switching to dashboard section
+  // Persist active section so reload returns to the same page
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('vyapar-active-section', activeSection);
+    }
+  }, [activeSection]);
+
   useEffect(() => {
     if (activeSection === 'dashboard' && user) {
       logger.debug('Switched to dashboard, refreshing data');
@@ -415,6 +421,19 @@ export default function Home() {
     return () => {
       window.removeEventListener('vyapar-daily-entries-changed', handleDailyEntriesChanged);
     };
+  }, [user]);
+
+  // Listen for credit entries changes (same-tab)
+  useEffect(() => {
+    const handleCreditEntriesChanged = () => {
+      if (user) {
+        refreshHealthScore();
+        recalculateIndices();
+        fetchBenchmarkData();
+      }
+    };
+    window.addEventListener('vyapar-credit-entries-changed', handleCreditEntriesChanged);
+    return () => window.removeEventListener('vyapar-credit-entries-changed', handleCreditEntriesChanged);
   }, [user]);
 
   const loadUserProfile = async () => {
@@ -504,25 +523,12 @@ export default function Home() {
     }
   };
 
-  // Retained for backward compatibility with other callers if any
+  // Retained for backward compatibility — re-applies cached insights for the given language
   const regenerateAIContent = async (lang: Language) => {
-    try {
-      const { generateMockRecommendations, generateMockAlerts } = await import('@/lib/bedrock-client-mock');
-
-      setInsights(prev => {
-        if (!prev) return prev;
-
-        return {
-          ...prev,
-          recommendations: generateMockRecommendations(lang),
-          alerts: generateMockAlerts(lang),
-        };
-      });
-
-      logger.debug('AI content regenerated for language', { language: lang });
-    } catch (error) {
-      logger.warn('Failed to regenerate AI content', { error });
+    if (insightsCache[lang]) {
+      setInsights(insightsCache[lang]);
     }
+    // No mock data — alerts/recommendations come from the analyze API response
   };
 
   const handleUploadComplete = (newSessionId: string, fileType: FileType) => {
@@ -903,12 +909,27 @@ export default function Home() {
   };
 
   const handleLoadSampleData = async () => {
-    const { sampleSalesData, sampleExpensesData, sampleInventoryData, createSampleFile } =
-      await import('@/lib/sample-data');
+    const { getDemoDataPaths } = await import('@/lib/demo-data-index');
+    const resolvedProfile = await resolveProfileForDemoData(userProfile);
 
-    const salesFile = createSampleFile(sampleSalesData, 'sample-sales.csv');
-    const expensesFile = createSampleFile(sampleExpensesData, 'sample-expenses.csv');
-    const inventoryFile = createSampleFile(sampleInventoryData, 'sample-inventory.csv');
+    // Pick demo data based on user's profile
+    const paths = getDemoDataPaths(
+      resolvedProfile?.business_type || resolvedProfile?.businessType,
+      resolvedProfile?.city_tier
+    );
+
+    const fetchFile = async (url: string, name: string) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+      const text = await res.text();
+      return new File([text], name, { type: 'text/csv' });
+    };
+
+    const [salesFile, expensesFile, inventoryFile] = await Promise.all([
+      fetchFile(paths.sales, 'sample-sales.csv'),
+      fetchFile(paths.expenses, 'sample-expenses.csv'),
+      fetchFile(paths.inventory, 'sample-inventory.csv'),
+    ]);
 
     const files = [
       { file: salesFile, type: 'sales' as FileType },
@@ -1111,7 +1132,7 @@ export default function Home() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ShareWhatsApp insights={insights} language={language} />
-                <ExportPDF insights={insights} language={language} />
+                <ExportPDF insights={insights} language={language} benchmark={benchmark} />
               </div>
 
               {insights.alerts && insights.alerts.length > 0 && <Alerts alerts={insights.alerts} language={language} />}

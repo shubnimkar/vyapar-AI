@@ -46,6 +46,7 @@ export function saveLocalEntries(entries: LocalCreditEntry[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
     logger.debug('Saved entries to localStorage', { count: entries.length });
+    window.dispatchEvent(new CustomEvent('vyapar-credit-entries-changed', { detail: { count: entries.length } }));
   } catch (error) {
     logger.error('Failed to save local entries', { error });
   }

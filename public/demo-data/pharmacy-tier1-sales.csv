@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Nasal Spray,12805,Elderly Customer,Medicines
+2024-01-02,Paracetamol Strip,11640,Dr. Sharma Prescription,Medicines
+2024-01-03,Paracetamol Strip,5605,Elderly Customer,Medicines
+2024-01-04,Cough Syrup,8272,Walk-in Customer,Medicines
+2024-01-05,Diabetes Strips,9570,Regular Patient,Medicines
+2024-01-06,Diabetes Strips,7198,Walk-in Customer,Medicines
+2024-01-07,Cough Syrup,6533,Monthly Subscriber,Medicines
+2024-01-08,Nasal Spray,12510,Monthly Subscriber,Medicines
+2024-01-09,Iron Supplement,8997,Walk-in Customer,Medicines
+2024-01-10,Diabetes Strips,12509,Regular Patient,Medicines
+2024-01-11,Antacid Tablets,12869,Dr. Sharma Prescription,Medicines
+2024-01-12,Eye Drops,13491,Dr. Sharma Prescription,Medicines
+2024-01-13,Nasal Spray,6818,Dr. Sharma Prescription,Medicines
+2024-01-14,Antacid Tablets,8984,Regular Patient,Medicines
+2024-01-15,Antacid Tablets,13878,Dr. Sharma Prescription,Medicines
+2024-01-16,Bandage Roll,13418,Dr. Sharma Prescription,Medicines
+2024-01-17,Eye Drops,4942,Dr. Sharma Prescription,Medicines
+2024-01-18,Nasal Spray,10984,Elderly Customer,Medicines
+2024-01-19,Bandage Roll,11293,Dr. Sharma Prescription,Medicines
+2024-01-20,Iron Supplement,8419,Elderly Customer,Medicines
+2024-01-21,Antibiotic Course,5061,Elderly Customer,Medicines
+2024-01-22,Antibiotic Course,5691,Elderly Customer,Medicines
+2024-01-23,Eye Drops,12000,Walk-in Customer,Medicines
+2024-01-24,Eye Drops,4941,Elderly Customer,Medicines
+2024-01-25,Nasal Spray,13382,Regular Patient,Medicines
+2024-01-26,Diabetes Strips,7630,Regular Patient,Medicines
+2024-01-27,Antibiotic Course,6837,Elderly Customer,Medicines
+2024-01-28,Antiseptic Cream,13578,Monthly Subscriber,Medicines
+2024-01-29,Diabetes Strips,10907,Walk-in Customer,Medicines
+2024-01-30,Protein Powder 500g,7130,Dr. Sharma Prescription,Medicines
+2024-01-31,Cough Syrup,8829,Elderly Customer,Medicines
+2024-02-01,Cough Syrup,8226,Elderly Customer,Medicines
+2024-02-02,Multivitamin Bottle,6202,Elderly Customer,Medicines
+2024-02-03,Iron Supplement,12427,Dr. Sharma Prescription,Medicines
+2024-02-04,Antibiotic Course,11598,Walk-in Customer,Medicines
+2024-02-05,Nasal Spray,5906,Dr. Sharma Prescription,Medicines
+2024-02-06,Iron Supplement,8280,Walk-in Customer,Medicines
+2024-02-07,Multivitamin Bottle,9360,Regular Patient,Medicines
+2024-02-08,Antiseptic Cream,7501,Walk-in Customer,Medicines
+2024-02-09,Eye Drops,13573,Elderly Customer,Medicines
+2024-02-10,Nasal Spray,7208,Monthly Subscriber,Medicines
+2024-02-11,Iron Supplement,11760,Elderly Customer,Medicines
+2024-02-12,Bandage Roll,13526,Monthly Subscriber,Medicines
+2024-02-13,Eye Drops,13646,Dr. Sharma Prescription,Medicines
+2024-02-14,Vitamin C Tablets,13326,Elderly Customer,Medicines
+2024-02-15,BP Tablets,5523,Monthly Subscriber,Medicines
+2024-02-16,Vitamin C Tablets,8595,Regular Patient,Medicines
+2024-02-17,Antacid Tablets,11520,Monthly Subscriber,Medicines
+2024-02-18,Paracetamol Strip,7232,Walk-in Customer,Medicines
+2024-02-19,Antacid Tablets,11216,Elderly Customer,Medicines

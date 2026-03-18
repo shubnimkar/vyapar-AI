@@ -356,6 +356,7 @@ export interface UserProfile {
   id: string;
   phoneNumber: string;
   email?: string;
+  avatarUrl?: string;
   deviceId?: string;
   shopName: string;
   userName: string;
@@ -387,6 +388,7 @@ export interface ProfileSetupData {
   shopName: string;
   userName: string;
   email?: string;
+  avatarUrl?: string;
   language: Language;
   businessType?: BusinessType;
   city?: CityTier;

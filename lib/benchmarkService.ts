@@ -131,7 +131,7 @@ export class BenchmarkService {
             this.seedingInProgress = true;
             
             try {
-              logger.info('No benchmark data found, auto-seeding all 15 segment combinations...');
+              logger.info('No benchmark data found, auto-seeding all 20 segment combinations...');
               await seedDemoData();
               logger.info('Auto-seeding completed successfully');
               

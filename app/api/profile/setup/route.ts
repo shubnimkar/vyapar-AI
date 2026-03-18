@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     logger.info('Profile setup request received', { path: '/api/profile/setup' });
     
     const body = await request.json();
-    const { shopName, userName, email, username, language, businessType, city, userId, phoneNumber, business_type, city_tier, explanation_mode } = body;
+    const { shopName, userName, email, username, language, businessType, city, userId, phoneNumber, avatarUrl, business_type, city_tier, explanation_mode } = body;
 
     // Validate required fields
     const errors: ValidationError[] = [];
@@ -81,11 +81,11 @@ export async function POST(request: NextRequest) {
 
     // city_tier is optional, but validate if provided
     if (city_tier !== undefined && city_tier !== null) {
-      const validTiers = ['tier1', 'tier2', 'tier3'];
+      const validTiers = ['tier1', 'tier2', 'tier3', 'rural'];
       if (!validTiers.includes(city_tier)) {
         errors.push({
           field: 'city_tier',
-          message: 'Must be one of: tier1, tier2, tier3, or null',
+          message: 'Must be one of: tier1, tier2, tier3, rural, or null',
           code: 'invalid_enum',
         });
       }
@@ -155,6 +155,7 @@ export async function POST(request: NextRequest) {
         shopName: shopName.trim(),
         userName: userName.trim(),
         email: normalizedEmail || undefined,
+        avatarUrl: typeof avatarUrl === 'string' ? avatarUrl : undefined,
         language,
         businessType: businessType?.trim(),
         city: city?.trim(),
@@ -180,6 +181,7 @@ export async function POST(request: NextRequest) {
       const profile: UserProfile = {
         id: userId,
         phoneNumber: phoneNumber || '',
+        avatarUrl: dynamoProfile.avatarUrl,
         email: dynamoProfile.email,
         deviceId: undefined,
         shopName: dynamoProfile.shopName,

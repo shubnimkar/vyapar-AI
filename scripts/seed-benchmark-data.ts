@@ -4,7 +4,7 @@
  * Seed Demo Benchmark Data to DynamoDB
  * 
  * This script populates DynamoDB with demo segment benchmark data
- * for all 15 segment combinations (3 city tiers × 5 business types)
+ * for all 20 segment combinations (4 city tiers × 5 business types)
  * 
  * Usage:
  *   npm run seed-benchmark

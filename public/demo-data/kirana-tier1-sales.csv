@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Cooking Oil 1L,4869,Suresh Traders,Groceries
+2024-01-02,Toothpaste 100g,10914,Walk-in Customer,Groceries
+2024-01-03,Wheat Flour 1kg,8424,Mahesh Shop,Groceries
+2024-01-04,Wheat Flour 1kg,4576,Ramesh Stores,Groceries
+2024-01-05,Detergent 500g,5754,Ramesh Stores,Groceries
+2024-01-06,Soap Bar,5798,Suresh Traders,Groceries
+2024-01-07,Bread Loaf,8750,Ramesh Stores,Groceries
+2024-01-08,Shampoo Sachet,7941,Suresh Traders,Groceries
+2024-01-09,Rice 1kg,4645,Lakshmi Store,Groceries
+2024-01-10,Biscuits Pack,5326,Ramesh Stores,Groceries
+2024-01-11,Butter 100g,6672,Lakshmi Store,Groceries
+2024-01-12,Sugar 1kg,6710,Lakshmi Store,Groceries
+2024-01-13,Salt 1kg,9947,Suresh Traders,Groceries
+2024-01-14,Cooking Oil 1L,4694,Suresh Traders,Groceries
+2024-01-15,Milk 500ml,6286,Suresh Traders,Groceries
+2024-01-16,Butter 100g,4888,Lakshmi Store,Groceries
+2024-01-17,Bread Loaf,9042,Suresh Traders,Groceries
+2024-01-18,Bread Loaf,5205,Ramesh Stores,Groceries
+2024-01-19,Cooking Oil 1L,8466,Mahesh Shop,Groceries
+2024-01-20,Pulses 500g,4802,Suresh Traders,Groceries
+2024-01-21,Biscuits Pack,4882,Suresh Traders,Groceries
+2024-01-22,Butter 100g,10749,Walk-in Customer,Groceries
+2024-01-23,Cooking Oil 1L,9093,Walk-in Customer,Groceries
+2024-01-24,Rice 1kg,4826,Ramesh Stores,Groceries
+2024-01-25,Toothpaste 100g,7896,Suresh Traders,Groceries
+2024-01-26,Pulses 500g,11109,Mahesh Shop,Groceries
+2024-01-27,Shampoo Sachet,8670,Lakshmi Store,Groceries
+2024-01-28,Toothpaste 100g,10285,Walk-in Customer,Groceries
+2024-01-29,Detergent 500g,11048,Lakshmi Store,Groceries
+2024-01-30,Bread Loaf,10448,Lakshmi Store,Groceries
+2024-01-31,Cooking Oil 1L,9891,Ramesh Stores,Groceries
+2024-02-01,Milk 500ml,6798,Lakshmi Store,Groceries
+2024-02-02,Detergent 500g,8334,Suresh Traders,Groceries
+2024-02-03,Soap Bar,10661,Walk-in Customer,Groceries
+2024-02-04,Salt 1kg,8216,Suresh Traders,Groceries
+2024-02-05,Milk 500ml,4021,Walk-in Customer,Groceries
+2024-02-06,Shampoo Sachet,10917,Suresh Traders,Groceries
+2024-02-07,Wheat Flour 1kg,7997,Walk-in Customer,Groceries
+2024-02-08,Wheat Flour 1kg,7302,Lakshmi Store,Groceries
+2024-02-09,Pulses 500g,7573,Suresh Traders,Groceries
+2024-02-10,Cooking Oil 1L,9070,Ramesh Stores,Groceries
+2024-02-11,Shampoo Sachet,8858,Suresh Traders,Groceries
+2024-02-12,Wheat Flour 1kg,10110,Suresh Traders,Groceries
+2024-02-13,Rice 1kg,5784,Ramesh Stores,Groceries
+2024-02-14,Milk 500ml,6226,Ramesh Stores,Groceries
+2024-02-15,Salt 1kg,8117,Lakshmi Store,Groceries
+2024-02-16,Salt 1kg,4918,Ramesh Stores,Groceries
+2024-02-17,Cooking Oil 1L,9765,Lakshmi Store,Groceries
+2024-02-18,Wheat Flour 1kg,9115,Mahesh Shop,Groceries
+2024-02-19,Rice 1kg,8525,Walk-in Customer,Groceries

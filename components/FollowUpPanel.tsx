@@ -134,6 +134,12 @@ export default function FollowUpPanel({
   }, [userId, overdueThreshold]);
 
   useEffect(() => {
+    const handler = () => { loadCredits(); loadSyncStatus(); };
+    window.addEventListener('vyapar-credit-entries-changed', handler);
+    return () => window.removeEventListener('vyapar-credit-entries-changed', handler);
+  }, []);
+
+  useEffect(() => {
     const loadShopName = async () => {
       try {
         const response = await fetch(`/api/profile?userId=${userId}`);

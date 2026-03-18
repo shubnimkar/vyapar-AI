@@ -34,8 +34,8 @@ export default function SeedDataPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Seed Benchmark Data</h1>
           
           <p className="text-gray-600 mb-6">
-            This will populate DynamoDB with demo benchmark data for all 15 segment combinations
-            (3 city tiers × 5 business types).
+            This will populate DynamoDB with demo benchmark data for all 20 segment combinations
+            (4 city tiers including rural × 5 business types).
           </p>
 
           <button

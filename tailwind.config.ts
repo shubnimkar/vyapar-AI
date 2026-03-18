@@ -1,5 +1,8 @@
 import type { Config } from "tailwindcss";
-import { tokens } from "./lib/design-system/tokens";
+// Turbopack resolves the explicit .ts path here during build, but TS config files
+// are typechecked without allowImportingTsExtensions enabled.
+// @ts-ignore
+import { tokens } from "./lib/design-system/tokens.ts";
 
 const config: Config = {
   content: [

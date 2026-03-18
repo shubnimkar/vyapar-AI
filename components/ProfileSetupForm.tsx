@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Language, ProfileSetupData, CityTier, BusinessType } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { logger } from '@/lib/logger';
+import ProfileAvatar from './ui/ProfileAvatar';
 
 interface ProfileSetupFormProps {
   phoneNumber: string;
@@ -40,12 +41,83 @@ export default function ProfileSetupForm({
   const [phoneNumberValue, setPhoneNumberValue] = useState(phoneNumber || '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   
   const shopNameRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     shopNameRef.current?.focus();
   }, []);
+
+  const processProfileImage = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      if (!file.type.startsWith('image/')) {
+        reject(new Error(t('profile.photo.invalid', language)));
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = new Image();
+        image.onload = () => {
+          const maxSize = 256;
+          const scale = Math.min(maxSize / image.width, maxSize / image.height, 1);
+          const width = Math.max(1, Math.round(image.width * scale));
+          const height = Math.max(1, Math.round(image.height * scale));
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const context = canvas.getContext('2d');
+
+          if (!context) {
+            reject(new Error('Canvas not supported'));
+            return;
+          }
+
+          context.drawImage(image, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+
+        image.onerror = () => reject(new Error(t('profile.photo.invalid', language)));
+        image.src = reader.result as string;
+      };
+
+      reader.onerror = () => reject(new Error(t('profile.photo.invalid', language)));
+      reader.readAsDataURL(file);
+    });
+
+  const handlePhotoSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setErrors((prev) => ({ ...prev, avatarUrl: '' }));
+    setIsProcessingPhoto(true);
+
+    try {
+      const avatarUrl = await processProfileImage(file);
+      setFormData((prev) => ({ ...prev, avatarUrl }));
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        avatarUrl: error instanceof Error ? error.message : t('profile.photo.invalid', language),
+      }));
+    } finally {
+      setIsProcessingPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setFormData((prev) => ({ ...prev, avatarUrl: undefined }));
+    setErrors((prev) => ({ ...prev, avatarUrl: '' }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -113,13 +185,14 @@ export default function ProfileSetupForm({
       const response = await fetch('/api/profile/setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          userId,
-          username,
-          email: formData.email?.trim()?.toLowerCase() || undefined,
-          phoneNumber: phoneNumberValue || undefined,
-          businessType: skipOptional ? undefined : formData.businessType,
+          body: JSON.stringify({
+            ...formData,
+            userId,
+            username,
+            email: formData.email?.trim()?.toLowerCase() || undefined,
+            avatarUrl: formData.avatarUrl,
+            phoneNumber: phoneNumberValue || undefined,
+            businessType: skipOptional ? undefined : formData.businessType,
           business_type: skipOptional ? formData.business_type ?? 'other' : formData.businessType ?? 'other',
           city: skipOptional ? undefined : formData.city,
           city_tier: skipOptional ? formData.city_tier ?? null : (formData.city_tier ?? null),
@@ -195,6 +268,79 @@ export default function ProfileSetupForm({
           )}
 
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(false); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+
+            <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5">
+              <div className="flex flex-col gap-5 md:flex-row md:items-center">
+                <div className="flex flex-col items-center gap-3 md:w-40">
+                  <div className="relative">
+                    <ProfileAvatar
+                      src={formData.avatarUrl}
+                      name={formData.shopName || formData.userName || username || phoneNumber}
+                      size="lg"
+                      className="shadow-md ring-4 ring-white"
+                    />
+                    <div className="absolute -bottom-1 -right-1 rounded-full border border-white bg-slate-900 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                      {formData.avatarUrl ? t('profile.photo.badgeUploaded', language) : t('profile.photo.badgeDefault', language)}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-slate-900">{t('profile.photo.title', language)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {isProcessingPhoto ? t('profile.photo.processing', language) : t('profile.photo.subtitle', language)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex-1 rounded-xl border border-dashed border-slate-300 bg-white/80 p-4">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/heif"
+                    className="hidden"
+                    onChange={handlePhotoSelected}
+                  />
+
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isProcessingPhoto}
+                        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-3-3m3 3l3-3" />
+                        </svg>
+                        {formData.avatarUrl ? t('profile.photo.change', language) : t('profile.photo.upload', language)}
+                      </button>
+
+                      {formData.avatarUrl && (
+                        <button
+                          type="button"
+                          onClick={handleRemovePhoto}
+                          disabled={isProcessingPhoto}
+                          className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          {t('profile.photo.remove', language)}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                      <span className="rounded-full bg-slate-100 px-3 py-1">PNG / JPG / WEBP / HEIC</span>
+                      <span className="rounded-full bg-slate-100 px-3 py-1">Auto resized for profile use</span>
+                    </div>
+
+                    {errors.avatarUrl && (
+                      <p className="text-xs text-red-600">{errors.avatarUrl}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Shop Name */}
             <div className="flex flex-col gap-1.5">

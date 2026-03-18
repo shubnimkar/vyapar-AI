@@ -7,18 +7,21 @@
 
 import React from 'react';
 import { cn } from '@/lib/design-system/utils';
-import { User, Store } from 'lucide-react';
+import { Store } from 'lucide-react';
 import Link from 'next/link';
+import ProfileAvatar from './ProfileAvatar';
 
 interface UserProfileCardProps {
   userName: string;
   shopName?: string;
+  avatarUrl?: string;
   className?: string;
 }
 
 export function UserProfileCard({
   userName,
   shopName,
+  avatarUrl,
   className,
 }: UserProfileCardProps) {
   return (
@@ -32,9 +35,7 @@ export function UserProfileCard({
       )}
     >
       {/* Avatar */}
-      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-        <User className="w-5 h-5 text-primary-600" />
-      </div>
+      <ProfileAvatar src={avatarUrl} name={userName} size="sm" className="flex-shrink-0" />
       
       {/* User info */}
       <div className="flex-1 min-w-0">

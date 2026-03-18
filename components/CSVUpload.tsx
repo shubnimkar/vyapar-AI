@@ -2,7 +2,12 @@
 
 import { useState, useRef } from 'react';
 import { Language } from '@/lib/types';
-import { Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileText, CheckCircle, XCircle, Download } from 'lucide-react';
+import { savePendingTransaction } from '@/lib/pending-transaction-store';
+import { isDuplicate } from '@/lib/duplicate-detector';
+import { InferredTransaction } from '@/lib/types';
+import { getDemoDataPaths } from '@/lib/demo-data-index';
+import { resolveProfileForDemoData } from '@/lib/demo-profile-resolver';
 
 interface CSVUploadProps {
   language: Language;
@@ -61,6 +66,7 @@ export default function CSVUpload({
       tryAgain: 'Try Again',
       trySampleData: 'Try Sample Data',
       sampleDataDesc: 'Load 90 days of realistic demo data to see AI insights',
+      downloadTemplate: 'Download CSV Template',
     },
     hi: {
       title: 'CSV फ़ाइल अपलोड करें',
@@ -77,6 +83,7 @@ export default function CSVUpload({
       tryAgain: 'पुनः प्रयास करें',
       trySampleData: 'नमूना डेटा आज़माएं',
       sampleDataDesc: 'AI इनसाइट्स देखने के लिए 90 दिनों का डेमो डेटा लोड करें',
+      downloadTemplate: 'CSV टेम्पलेट डाउनलोड करें',
     },
     mr: {
       title: 'CSV फाइल अपलोड करा',
@@ -93,6 +100,7 @@ export default function CSVUpload({
       tryAgain: 'पुन्हा प्रयत्न करा',
       trySampleData: 'नमुना डेटा वापरा',
       sampleDataDesc: 'AI इनसाइट्स पाहण्यासाठी 90 दिवसांचा डेमो डेटा लोड करा',
+      downloadTemplate: 'CSV टेम्पलेट डाउनलोड करा',
     },
   };
 
@@ -168,14 +176,33 @@ export default function CSVUpload({
         throw new Error(result.message || 'Upload failed');
       }
 
+      // Save transactions to localStorage (client-side, offline-first)
+      let savedCount = 0;
+      if (result.transactions && Array.isArray(result.transactions)) {
+        for (const txn of result.transactions as InferredTransaction[]) {
+          if (!isDuplicate(txn)) {
+            const saved = savePendingTransaction(txn);
+            if (saved) savedCount++;
+          }
+        }
+      }
+
       // Success
       setUploadResult({
         success: true,
-        summary: result.summary,
+        summary: {
+          totalRows: result.summary.totalRows,
+          validRows: savedCount,
+          invalidRows: result.summary.invalidRows,
+        },
       });
 
-      if (onUploadSuccess && result.summary) {
-        onUploadSuccess(result.summary);
+      if (onUploadSuccess) {
+        onUploadSuccess({
+          totalRows: result.summary.totalRows,
+          validRows: savedCount,
+          invalidRows: result.summary.invalidRows,
+        });
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -203,16 +230,29 @@ export default function CSVUpload({
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const a = document.createElement('a');
+    a.href = '/templates/vyapar-transactions-template.csv';
+    a.download = 'vyapar-transactions-template.csv';
+    a.click();
+  };
+
   const handleLoadSampleData = async () => {
     setUploading(true);
     setUploadResult(null);
 
     try {
-      // Fetch sample CSV files from public directory
+      const profile = await resolveProfileForDemoData();
+
+      const paths = getDemoDataPaths(
+        profile?.business_type || profile?.businessType,
+        profile?.city_tier
+      );
+
       const [salesRes, expensesRes, inventoryRes] = await Promise.all([
-        fetch('/demo-data/sample-sales.csv'),
-        fetch('/demo-data/sample-expenses.csv'),
-        fetch('/demo-data/sample-inventory.csv')
+        fetch(paths.sales),
+        fetch(paths.expenses),
+        fetch(paths.inventory),
       ]);
 
       if (!salesRes.ok || !expensesRes.ok || !inventoryRes.ok) {
@@ -250,8 +290,16 @@ export default function CSVUpload({
         }
 
         if (result.summary) {
-          totalValid += result.summary.validRows;
-          totalInvalid += result.summary.invalidRows;
+          // Save transactions to localStorage client-side
+          if (result.transactions && Array.isArray(result.transactions)) {
+            for (const txn of result.transactions as InferredTransaction[]) {
+              if (!isDuplicate(txn)) {
+                const saved = savePendingTransaction(txn);
+                if (saved) totalValid++;
+              }
+            }
+          }
+          totalInvalid += result.summary.invalidRows ?? 0;
         }
       }
 
@@ -382,8 +430,15 @@ export default function CSVUpload({
             />
           </div>
 
-          {/* Try Sample Data Button */}
-          <div className="mt-4">
+          {/* Template Download + Try Sample Data */}
+          <div className="mt-4 flex flex-col gap-2">
+            <button
+              onClick={handleDownloadTemplate}
+              className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              {t.downloadTemplate}
+            </button>
             <button
               onClick={handleLoadSampleData}
               className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"

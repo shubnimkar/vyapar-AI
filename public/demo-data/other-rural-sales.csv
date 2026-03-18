@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Wholesale,1257,Walk-in Customer,General
+2024-01-02,Installation,1837,Corporate Order,General
+2024-01-03,Custom Order,2918,Wholesale Buyer,General
+2024-01-04,Repair Work,3321,Wholesale Buyer,General
+2024-01-05,Repair Work,2321,Corporate Order,General
+2024-01-06,Service Charge,1429,Online Order,General
+2024-01-07,Item Pack,1317,Wholesale Buyer,General
+2024-01-08,Retail Sale,3123,Corporate Order,General
+2024-01-09,Retail Sale,1449,Online Order,General
+2024-01-10,Delivery Charge,2766,Online Order,General
+2024-01-11,Delivery Charge,1527,Corporate Order,General
+2024-01-12,Installation,1323,Regular Client,General
+2024-01-13,Bulk Supply,931,Wholesale Buyer,General
+2024-01-14,Retail Sale,3168,Regular Client,General
+2024-01-15,Repair Work,2708,Regular Client,General
+2024-01-16,Spare Part,3524,Regular Client,General
+2024-01-17,Delivery Charge,3499,Wholesale Buyer,General
+2024-01-18,Installation,1082,Wholesale Buyer,General
+2024-01-19,Product A,975,Walk-in Customer,General
+2024-01-20,Wholesale,1376,Wholesale Buyer,General
+2024-01-21,Item Pack,2205,Corporate Order,General
+2024-01-22,Repair Work,2690,Corporate Order,General
+2024-01-23,Item Pack,2418,Online Order,General
+2024-01-24,Repair Work,3311,Regular Client,General
+2024-01-25,Custom Order,2764,Walk-in Customer,General
+2024-01-26,Repair Work,3177,Walk-in Customer,General
+2024-01-27,Service Charge,3236,Wholesale Buyer,General
+2024-01-28,Custom Order,1312,Online Order,General
+2024-01-29,Standard Service,2682,Corporate Order,General
+2024-01-30,Custom Order,970,Corporate Order,General
+2024-01-31,Retail Sale,3231,Online Order,General
+2024-02-01,Spare Part,3024,Wholesale Buyer,General
+2024-02-02,Premium Service,1259,Wholesale Buyer,General
+2024-02-03,Spare Part,3269,Corporate Order,General
+2024-02-04,Wholesale,1438,Online Order,General
+2024-02-05,Item Pack,1853,Walk-in Customer,General
+2024-02-06,Product A,2424,Wholesale Buyer,General
+2024-02-07,Consultation,999,Walk-in Customer,General
+2024-02-08,Consultation,1120,Walk-in Customer,General
+2024-02-09,Spare Part,3145,Online Order,General
+2024-02-10,Spare Part,1220,Walk-in Customer,General
+2024-02-11,Bulk Supply,2615,Wholesale Buyer,General
+2024-02-12,Installation,3235,Regular Client,General
+2024-02-13,Custom Order,1354,Wholesale Buyer,General
+2024-02-14,Installation,3499,Corporate Order,General
+2024-02-15,Wholesale,2884,Walk-in Customer,General
+2024-02-16,Custom Order,2869,Walk-in Customer,General
+2024-02-17,Installation,1049,Wholesale Buyer,General
+2024-02-18,Bulk Supply,990,Online Order,General
+2024-02-19,Delivery Charge,1569,Corporate Order,General

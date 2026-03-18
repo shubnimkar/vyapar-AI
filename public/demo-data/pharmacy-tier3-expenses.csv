@@ -1,0 +1,51 @@
+date,category,amount,description
+2024-01-01,rent,11820,Monthly shop rent
+2024-01-01,electricity,1351,Electricity bill
+2024-02-01,rent,11820,Monthly shop rent
+2024-02-01,electricity,1351,Electricity bill
+2024-01-02,cold_storage,2001,cold storage expense
+2024-01-03,medicine_purchase,3728,medicine purchase expense
+2024-01-04,cold_storage,2924,cold storage expense
+2024-01-05,wages,2141,wages expense
+2024-01-06,wages,1724,wages expense
+2024-01-07,medicine_purchase,1167,medicine purchase expense
+2024-01-08,wages,3533,wages expense
+2024-01-09,packaging,3622,packaging expense
+2024-01-10,cold_storage,3890,cold storage expense
+2024-01-11,packaging,3730,packaging expense
+2024-01-12,wages,1960,wages expense
+2024-01-13,license_fee,3642,license fee expense
+2024-01-14,license_fee,2833,license fee expense
+2024-01-15,cold_storage,1706,cold storage expense
+2024-01-16,cold_storage,1268,cold storage expense
+2024-01-17,medicine_purchase,2978,medicine purchase expense
+2024-01-18,medicine_purchase,3879,medicine purchase expense
+2024-01-19,wages,1407,wages expense
+2024-01-20,wages,2979,wages expense
+2024-01-21,packaging,3464,packaging expense
+2024-01-22,wages,2750,wages expense
+2024-01-23,wages,2329,wages expense
+2024-01-24,wages,3154,wages expense
+2024-01-25,cold_storage,3831,cold storage expense
+2024-01-26,cold_storage,3502,cold storage expense
+2024-01-27,license_fee,1942,license fee expense
+2024-01-28,license_fee,1405,license fee expense
+2024-01-29,medicine_purchase,1468,medicine purchase expense
+2024-01-30,license_fee,1297,license fee expense
+2024-01-31,packaging,2621,packaging expense
+2024-02-01,wages,3695,wages expense
+2024-02-02,packaging,2014,packaging expense
+2024-02-03,license_fee,2410,license fee expense
+2024-02-04,packaging,3195,packaging expense
+2024-02-05,medicine_purchase,1460,medicine purchase expense
+2024-02-06,cold_storage,3160,cold storage expense
+2024-02-07,license_fee,1333,license fee expense
+2024-02-08,medicine_purchase,3505,medicine purchase expense
+2024-02-09,cold_storage,3791,cold storage expense
+2024-02-10,license_fee,1677,license fee expense
+2024-02-11,cold_storage,1096,cold storage expense
+2024-02-12,medicine_purchase,2294,medicine purchase expense
+2024-02-13,cold_storage,2018,cold storage expense
+2024-02-14,packaging,1296,packaging expense
+2024-02-15,medicine_purchase,1281,medicine purchase expense
+2024-02-16,cold_storage,3138,cold storage expense

@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
       const apiProfile: UserProfile = {
         id: profile.userId,
         phoneNumber: profile.phoneNumber || '',
+        avatarUrl: profile.avatarUrl,
         email: profile.email,
         shopName: profile.shopName,
         userName: profile.userName,
@@ -135,7 +136,7 @@ export async function PUT(request: NextRequest) {
     logger.info('Profile PUT request received', { path: '/api/profile' });
     
     const body = await request.json();
-    const { userId, shopName, userName, language, businessType, city, phoneNumber, preferences, business_type, city_tier, explanation_mode } = body;
+    const { userId, shopName, userName, language, businessType, city, phoneNumber, avatarUrl, preferences, business_type, city_tier, explanation_mode } = body;
 
     if (!userId) {
       logger.warn('Profile PUT request missing userId', { path: '/api/profile' });
@@ -233,6 +234,7 @@ export async function PUT(request: NextRequest) {
         businessType: businessType?.trim() || existingProfile?.businessType,
         city: city?.trim() || existingProfile?.city,
         phoneNumber: phoneNumber?.trim() || existingProfile?.phoneNumber, // Allow phone number updates
+        avatarUrl: typeof avatarUrl === 'string' ? avatarUrl : existingProfile?.avatarUrl,
         business_type: business_type !== undefined ? business_type : existingProfile?.business_type,
         city_tier: city_tier !== undefined ? city_tier : existingProfile?.city_tier,
         explanation_mode: explanation_mode !== undefined ? explanation_mode : existingProfile?.explanation_mode,
@@ -247,6 +249,7 @@ export async function PUT(request: NextRequest) {
       const apiProfile: UserProfile = {
         id: userId,
         phoneNumber: dynamoProfile.phoneNumber || existingProfile?.phoneNumber || '',
+        avatarUrl: dynamoProfile.avatarUrl,
         email: dynamoProfile.email,
         shopName: dynamoProfile.shopName,
         userName: dynamoProfile.userName,

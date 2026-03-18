@@ -7,7 +7,7 @@ import { logger } from '@/lib/logger';
  * 
  * POST /api/admin/seed-benchmark
  * 
- * Seeds all 15 segment combinations (3 city tiers × 5 business types)
+ * Seeds all 20 segment combinations (4 city tiers × 5 business types)
  * with realistic demo data
  */
 export async function POST() {
@@ -21,7 +21,7 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       message: 'Benchmark data seeded successfully',
-      segments: 15
+      segments: 20  // 4 tiers (tier1/tier2/tier3/rural) × 5 business types
     });
   } catch (error) {
     logger.error('Failed to seed benchmark data', { error });

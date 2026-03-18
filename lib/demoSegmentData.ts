@@ -7,13 +7,13 @@ import { logger } from './logger';
 /**
  * Generate realistic demo segment data for all combinations
  * 
- * Creates data for all 15 segment combinations (3 tiers × 5 business types)
+ * Creates data for all 20 segment combinations (4 tiers × 5 business types)
  * with realistic ranges based on city tier and business type
  * 
  * Follows requirements 5.1-5.4 from segment-benchmark spec
  */
 export function generateDemoSegmentData(): SegmentData[] {
-  const cityTiers: CityTier[] = ['tier1', 'tier2', 'tier3'];
+  const cityTiers: CityTier[] = ['tier1', 'tier2', 'tier3', 'rural'];
   const businessTypes: BusinessType[] = ['kirana', 'salon', 'pharmacy', 'restaurant', 'other'];
   
   const demoData: SegmentData[] = [];
@@ -73,7 +73,7 @@ export function generateDemoSegmentData(): SegmentData[] {
 /**
  * Seed demo data to DynamoDB (for development/demo)
  * 
- * Saves all 15 segment combinations to DynamoDB
+ * Saves all 20 segment combinations to DynamoDB
  * Logs progress and errors for visibility
  */
 export async function seedDemoData(): Promise<void> {

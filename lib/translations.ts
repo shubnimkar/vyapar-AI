@@ -810,6 +810,156 @@ export const translations: Translations = {
     hi: 'प्रोफ़ाइल पूरी करें',
     mr: 'प्रोफाइल पूर्ण करा',
   },
+  'profile.title': {
+    en: 'My Profile',
+    hi: 'मेरा प्रोफ़ाइल',
+    mr: 'माझे प्रोफाइल',
+  },
+  'profile.loading': {
+    en: 'Loading...',
+    hi: 'लोड हो रहा है...',
+    mr: 'लोड होत आहे...',
+  },
+  'profile.edit': {
+    en: 'Edit Profile',
+    hi: 'प्रोफ़ाइल संपादित करें',
+    mr: 'प्रोफाइल संपादित करा',
+  },
+  'profile.businessInformation': {
+    en: 'Business Information',
+    hi: 'व्यवसाय की जानकारी',
+    mr: 'व्यवसाय माहिती',
+  },
+  'profile.contactDetails': {
+    en: 'Contact Details',
+    hi: 'संपर्क विवरण',
+    mr: 'संपर्क तपशील',
+  },
+  'profile.appPreferences': {
+    en: 'App Preferences',
+    hi: 'ऐप प्राथमिकताएं',
+    mr: 'अॅप प्राधान्ये',
+  },
+  'profile.owner': {
+    en: 'Owner',
+    hi: 'मालिक',
+    mr: 'मालक',
+  },
+  'profile.tierLevel': {
+    en: 'Tier Level',
+    hi: 'टियर स्तर',
+    mr: 'टियर स्तर',
+  },
+  'profile.mobileNumber': {
+    en: 'Mobile Number',
+    hi: 'मोबाइल नंबर',
+    mr: 'मोबाइल नंबर',
+  },
+  'profile.emailAddress': {
+    en: 'Email Address',
+    hi: 'ईमेल पता',
+    mr: 'ईमेल पत्ता',
+  },
+  'profile.notProvided': {
+    en: 'Not provided',
+    hi: 'प्रदान नहीं किया गया',
+    mr: 'प्रदान केले नाही',
+  },
+  'profile.appLanguage': {
+    en: 'App Language',
+    hi: 'ऐप भाषा',
+    mr: 'अॅप भाषा',
+  },
+  'profile.chooseDisplayLanguage': {
+    en: 'Choose your preferred display language',
+    hi: 'अपनी पसंदीदा प्रदर्शन भाषा चुनें',
+    mr: 'तुमची पसंतीची प्रदर्शन भाषा निवडा',
+  },
+  'profile.incompleteTitle': {
+    en: 'Profile Incomplete',
+    hi: 'प्रोफ़ाइल अधूरा है',
+    mr: 'प्रोफाइल अपूर्ण आहे',
+  },
+  'profile.incompleteDescription': {
+    en: 'Complete your business profile to get the most out of Vyapar AI',
+    hi: 'अपने व्यवसाय की पूरी जानकारी जोड़कर Vyapar AI का अधिकतम लाभ उठाएं',
+    mr: 'तुमच्या व्यवसायाची संपूर्ण माहिती जोडून Vyapar AI चा जास्तीत जास्त फायदा घ्या',
+  },
+  'profile.fetchErrorTitle': {
+    en: 'Unable to load profile',
+    hi: 'प्रोफ़ाइल लोड नहीं हो सकी',
+    mr: 'प्रोफाइल लोड करता आली नाही',
+  },
+  'profile.fetchErrorDescription': {
+    en: 'We could not fetch your profile details right now. Please try again.',
+    hi: 'हम अभी आपकी प्रोफ़ाइल जानकारी प्राप्त नहीं कर सके। कृपया पुनः प्रयास करें।',
+    mr: 'आम्हाला सध्या तुमची प्रोफाइल माहिती मिळू शकली नाही. कृपया पुन्हा प्रयत्न करा.',
+  },
+  'profile.retry': {
+    en: 'Retry',
+    hi: 'पुनः प्रयास करें',
+    mr: 'पुन्हा प्रयत्न करा',
+  },
+  'profile.photo.title': {
+    en: 'Profile Picture',
+    hi: 'प्रोफ़ाइल फोटो',
+    mr: 'प्रोफाइल फोटो',
+  },
+  'profile.photo.subtitle': {
+    en: 'Upload a profile picture for your account.',
+    hi: 'अपने खाते के लिए प्रोफ़ाइल फोटो अपलोड करें।',
+    mr: 'तुमच्या खात्यासाठी प्रोफाइल फोटो अपलोड करा.',
+  },
+  'profile.photo.upload': {
+    en: 'Upload Photo',
+    hi: 'फोटो अपलोड करें',
+    mr: 'फोटो अपलोड करा',
+  },
+  'profile.photo.change': {
+    en: 'Change Photo',
+    hi: 'फोटो बदलें',
+    mr: 'फोटो बदला',
+  },
+  'profile.photo.remove': {
+    en: 'Remove Photo',
+    hi: 'फोटो हटाएं',
+    mr: 'फोटो हटवा',
+  },
+  'profile.photo.invalid': {
+    en: 'Please choose a PNG, JPG, WEBP, or HEIC image.',
+    hi: 'कृपया PNG, JPG, WEBP, या HEIC इमेज चुनें।',
+    mr: 'कृपया PNG, JPG, WEBP, किंवा HEIC प्रतिमा निवडा.',
+  },
+  'profile.photo.processing': {
+    en: 'Processing image...',
+    hi: 'इमेज तैयार की जा रही है...',
+    mr: 'प्रतिमा प्रक्रिया सुरू आहे...',
+  },
+  'profile.photo.badgeDefault': {
+    en: 'Default',
+    hi: 'डिफ़ॉल्ट',
+    mr: 'डीफॉल्ट',
+  },
+  'profile.photo.badgeUploaded': {
+    en: 'Photo',
+    hi: 'फोटो',
+    mr: 'फोटो',
+  },
+  'profile.language.en': {
+    en: 'English',
+    hi: 'अंग्रेज़ी',
+    mr: 'इंग्रजी',
+  },
+  'profile.language.hi': {
+    en: 'Hindi',
+    hi: 'हिंदी',
+    mr: 'हिंदी',
+  },
+  'profile.language.mr': {
+    en: 'Marathi',
+    hi: 'मराठी',
+    mr: 'मराठी',
+  },
 
   // Settings
   'settings.title': {
@@ -1053,6 +1203,21 @@ export const translations: Translations = {
   },
 
   // Business types
+  'businessType.kirana': {
+    en: 'Kirana',
+    hi: 'किराना',
+    mr: 'किराणा',
+  },
+  'businessType.salon': {
+    en: 'Salon',
+    hi: 'सैलून',
+    mr: 'सलून',
+  },
+  'businessType.pharmacy': {
+    en: 'Pharmacy',
+    hi: 'फार्मेसी',
+    mr: 'फार्मसी',
+  },
   'businessType.retail': {
     en: 'Retail',
     hi: 'खुदरा',

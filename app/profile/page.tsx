@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 import ProfileContent from '@/components/ProfileContent';
+import { t } from '@/lib/translations';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -31,7 +32,9 @@ export default function ProfilePage() {
     setUser(currentUser);
 
     // Load language preference
-    const savedLanguage = localStorage.getItem('vyapar-language') as Language;
+    const savedLanguage =
+      (localStorage.getItem('vyapar-lang') as Language) ||
+      (localStorage.getItem('vyapar-language') as Language);
     if (savedLanguage) {
       setLanguage(savedLanguage);
     }
@@ -45,7 +48,7 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center gap-3">
           <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
           <p className="text-gray-600 font-medium">
-            {language === 'hi' ? 'लोड हो रहा है...' : language === 'mr' ? 'लोड होत आहे...' : 'Loading...'}
+            {t('profile.loading', language)}
           </p>
         </div>
       </div>
@@ -61,7 +64,7 @@ export default function ProfilePage() {
             <div className="w-24"></div>
             
             <h1 className="text-xl font-bold text-gray-900">
-              {language === 'hi' ? 'मेरा प्रोफ़ाइल' : language === 'mr' ? 'माझे प्रोफाइल' : 'My Profile'}
+              {t('profile.title', language)}
             </h1>
             
             <div className="w-24"></div>

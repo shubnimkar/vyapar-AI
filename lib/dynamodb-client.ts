@@ -286,6 +286,7 @@ export interface UserProfile {
   shopName: string;
   userName: string;
   email?: string;
+  avatarUrl?: string;
   businessType?: string;
   city?: string;
   phoneNumber?: string;
@@ -328,6 +329,7 @@ export class ProfileService {
       shopName: item.shopName as string,
       userName: item.userName as string,
       email: item.email as string | undefined,
+      avatarUrl: item.avatarUrl as string | undefined,
       phoneNumber: item.phoneNumber as string | undefined,
       language: item.language as string,
       businessType: item.businessType as string | undefined,

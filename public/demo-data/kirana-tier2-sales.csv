@@ -1,0 +1,51 @@
+date,item_name,amount,customer_name,category
+2024-01-01,Wheat Flour 1kg,6546,Ramesh Stores,Groceries
+2024-01-02,Soap Bar,4251,Walk-in Customer,Groceries
+2024-01-03,Detergent 500g,2642,Ramesh Stores,Groceries
+2024-01-04,Cooking Oil 1L,4078,Mahesh Shop,Groceries
+2024-01-05,Pulses 500g,6566,Suresh Traders,Groceries
+2024-01-06,Shampoo Sachet,6076,Ramesh Stores,Groceries
+2024-01-07,Pulses 500g,2987,Mahesh Shop,Groceries
+2024-01-08,Soap Bar,3997,Walk-in Customer,Groceries
+2024-01-09,Shampoo Sachet,6305,Ramesh Stores,Groceries
+2024-01-10,Bread Loaf,3441,Walk-in Customer,Groceries
+2024-01-11,Tea Powder 250g,6458,Walk-in Customer,Groceries
+2024-01-12,Milk 500ml,3391,Walk-in Customer,Groceries
+2024-01-13,Rice 1kg,4816,Lakshmi Store,Groceries
+2024-01-14,Milk 500ml,3966,Mahesh Shop,Groceries
+2024-01-15,Shampoo Sachet,3812,Ramesh Stores,Groceries
+2024-01-16,Biscuits Pack,4089,Mahesh Shop,Groceries
+2024-01-17,Wheat Flour 1kg,4658,Ramesh Stores,Groceries
+2024-01-18,Shampoo Sachet,5739,Ramesh Stores,Groceries
+2024-01-19,Bread Loaf,4755,Ramesh Stores,Groceries
+2024-01-20,Wheat Flour 1kg,2692,Walk-in Customer,Groceries
+2024-01-21,Pulses 500g,3026,Mahesh Shop,Groceries
+2024-01-22,Detergent 500g,4850,Suresh Traders,Groceries
+2024-01-23,Milk 500ml,3111,Walk-in Customer,Groceries
+2024-01-24,Pulses 500g,3194,Lakshmi Store,Groceries
+2024-01-25,Biscuits Pack,6729,Ramesh Stores,Groceries
+2024-01-26,Soap Bar,4846,Lakshmi Store,Groceries
+2024-01-27,Sugar 1kg,6082,Mahesh Shop,Groceries
+2024-01-28,Shampoo Sachet,4392,Walk-in Customer,Groceries
+2024-01-29,Toothpaste 100g,5441,Mahesh Shop,Groceries
+2024-01-30,Detergent 500g,4903,Mahesh Shop,Groceries
+2024-01-31,Milk 500ml,3624,Suresh Traders,Groceries
+2024-02-01,Sugar 1kg,6504,Mahesh Shop,Groceries
+2024-02-02,Shampoo Sachet,4492,Walk-in Customer,Groceries
+2024-02-03,Salt 1kg,5095,Ramesh Stores,Groceries
+2024-02-04,Sugar 1kg,3705,Mahesh Shop,Groceries
+2024-02-05,Salt 1kg,3750,Walk-in Customer,Groceries
+2024-02-06,Salt 1kg,3952,Mahesh Shop,Groceries
+2024-02-07,Toothpaste 100g,3219,Walk-in Customer,Groceries
+2024-02-08,Tea Powder 250g,5375,Lakshmi Store,Groceries
+2024-02-09,Sugar 1kg,6062,Lakshmi Store,Groceries
+2024-02-10,Soap Bar,5718,Mahesh Shop,Groceries
+2024-02-11,Detergent 500g,4596,Ramesh Stores,Groceries
+2024-02-12,Milk 500ml,2595,Ramesh Stores,Groceries
+2024-02-13,Salt 1kg,4043,Mahesh Shop,Groceries
+2024-02-14,Pulses 500g,3029,Ramesh Stores,Groceries
+2024-02-15,Toothpaste 100g,4891,Lakshmi Store,Groceries
+2024-02-16,Shampoo Sachet,2738,Lakshmi Store,Groceries
+2024-02-17,Tea Powder 250g,5240,Ramesh Stores,Groceries
+2024-02-18,Salt 1kg,3810,Mahesh Shop,Groceries
+2024-02-19,Biscuits Pack,5329,Ramesh Stores,Groceries

@@ -43,6 +43,12 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     checkAndSync();
   }, [userId]);
 
+  useEffect(() => {
+    const handler = () => loadEntries();
+    window.addEventListener('vyapar-credit-entries-changed', handler);
+    return () => window.removeEventListener('vyapar-credit-entries-changed', handler);
+  }, []);
+
   const loadEntries = () => {
     const localEntries = getLocalEntries();
     setEntries(localEntries);
