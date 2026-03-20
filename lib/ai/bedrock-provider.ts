@@ -43,7 +43,7 @@ export class BedrockProvider implements AIProvider {
       },
     });
     
-    this.modelId = modelId || process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0';
+    this.modelId = modelId || process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
   }
   
   /**

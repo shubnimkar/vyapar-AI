@@ -21,7 +21,7 @@ const client = new BedrockRuntimeClient({
   },
 });
 
-const MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0';
+const MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 
 // Detect model type from model ID
 function getModelType(modelId: string): 'claude' | 'nova' {

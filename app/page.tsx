@@ -1380,6 +1380,7 @@ export default function Home() {
                   {user && <VoiceRecorder onDataExtracted={handleVoiceDataExtracted} language={language === 'mr' ? 'hi' : language} />}
                   <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
                   {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
+                  <CSVUpload language={language} />
                 </>
               )}
 
@@ -1429,7 +1430,6 @@ export default function Home() {
                     language={language}
                     onAdd={handleAddTransaction}
                   />
-                  <CSVUpload language={language} />
                 </div>
               )}
 

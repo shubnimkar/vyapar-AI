@@ -45,7 +45,7 @@ export const LAMBDA_FUNCTIONS = {
 };
 
 // Bedrock model ID
-export const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0';
+export const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 
 // Error handling utilities
 export interface LambdaErrorResponse {

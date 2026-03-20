@@ -3,6 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { logger } from '@/lib/logger';
 
+function getModelType(modelId: string): 'claude' | 'nova' {
+  if (modelId.includes('anthropic') || modelId.includes('claude')) {
+    return 'claude';
+  }
+  if (modelId.includes('nova')) {
+    return 'nova';
+  }
+  return 'nova';
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { testType = 'basic' } = await request.json();
@@ -38,6 +48,7 @@ export async function POST(request: NextRequest) {
     });
     
     const modelId = config.modelId || 'global.amazon.nova-2-lite-v1:0';
+    const modelType = getModelType(modelId);
     
     // Test prompts
     const testPrompts: Record<string, string> = {
@@ -48,21 +59,40 @@ export async function POST(request: NextRequest) {
     
     const prompt = testPrompts[testType] || testPrompts.basic;
     
+    const requestBody = modelType === 'nova'
+      ? {
+          messages: [
+            {
+              role: 'user',
+              content: [{ text: prompt }],
+            },
+          ],
+          inferenceConfig: {
+            max_new_tokens: 500,
+          },
+        }
+      : {
+          anthropic_version: 'bedrock-2023-05-31',
+          max_tokens: 500,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+        };
+
     // Prepare request
     const input = {
       modelId,
       contentType: 'application/json',
       accept: 'application/json',
-      body: JSON.stringify({
-        anthropic_version: 'bedrock-2023-05-31',
-        max_tokens: 500,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     };
     
     // Invoke model
@@ -73,7 +103,9 @@ export async function POST(request: NextRequest) {
     
     // Parse response
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    const content = responseBody.content?.[0]?.text || '';
+    const content = modelType === 'nova'
+      ? (responseBody.output?.message?.content?.[0]?.text || '')
+      : (responseBody.content?.[0]?.text || '');
     
     return NextResponse.json({
       success: true,
@@ -82,9 +114,10 @@ export async function POST(request: NextRequest) {
       response: content,
       metadata: {
         modelId,
+        modelType,
         region: config.region,
         duration: `${duration}ms`,
-        stopReason: responseBody.stop_reason,
+        stopReason: responseBody.stopReason || responseBody.stop_reason,
         usage: responseBody.usage,
       }
     });
