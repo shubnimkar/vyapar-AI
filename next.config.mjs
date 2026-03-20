@@ -27,9 +27,12 @@ const nextConfig = {
 
 const pwaConfig = withPWA({
   dest: 'public',
-  register: true,
+  register: true, // Auto-register service worker
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
+  cacheOnFrontEndNav: true,
+  // Offline fallback page - Workbox will serve /offline when a navigation fails offline
+  navigateFallback: '/offline',
+  navigateFallbackDenylist: [/^\/api/, /\\.png$/, /\\.jpg$/, /\\.jpeg$/],
   // Workbox options
   runtimeCaching: [
     {
