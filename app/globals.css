@@ -1,6 +1,12 @@
 /* Import Google Fonts - Noto Sans Devanagari for Hindi/Marathi support */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap');
 
+/* Geist Sans optimization for better performance */
+@font-face {
+  font-family: 'Geist Sans';
+  font-display: swap; /* Show fallback text immediately, swap when ready */
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,18 +48,27 @@
   --spacing-12: 3rem;    /* 48px */
   
   /* Typography */
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
-  --font-devanagari: 'Noto Sans Devanagari', system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-devanagari: 'Noto Sans Devanagari', var(--font-geist-sans), system-ui, sans-serif;
   
-  /* Font sizes */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
+  /* Font sizes — Material Design 3 Standard (Google) */
+  --font-size-xs: 0.75rem;    /* 12px — captions, badges */
+  --font-size-sm: 0.875rem;   /* 14px — body small, labels */
+  --font-size-base: 1rem;     /* 16px — body text (standard) */
+  --font-size-lg: 1.25rem;    /* 20px — body large / subheadings */
+  --font-size-xl: 1.375rem;   /* 22px — headline small */
+  --font-size-2xl: 1.5rem;    /* 24px — headline */
+  --font-size-3xl: 1.75rem;   /* 28px — headline large */
+  --font-size-4xl: 2rem;      /* 32px — display small */
+  --font-size-5xl: 2.25rem;   /* 36px — display medium */
+  --font-size-6xl: 2.875rem;  /* 46px — display large */
+  
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
   
   /* Line heights */
   --line-height-tight: 1.25;
@@ -100,7 +115,9 @@ body {
   background: var(--background);
   font-family: var(--font-sans);
   font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
   line-height: var(--line-height-normal);
+  letter-spacing: 0.3px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -110,20 +127,20 @@ body {
   html {
     font-size: 16px;
   }
-  
+
   body {
     font-size: 1rem; /* 16px */
+    line-height: 1.6; /* Improved readability from 1.5 */
   }
 }
 
 /* Devanagari font rendering for Hindi and Marathi */
 :lang(hi), :lang(mr) {
   font-family: var(--font-devanagari);
-  line-height: var(--line-height-relaxed); /* Increased line height for better readability */
+  line-height: var(--line-height-relaxed);
   letter-spacing: 0.01em;
 }
 
-/* Apply Devanagari font to elements with lang attribute */
 [lang="hi"], [lang="mr"] {
   font-family: var(--font-devanagari);
   line-height: var(--line-height-relaxed);
@@ -305,6 +322,80 @@ button, a, input, select, textarea {
   }
 }
 
+/* Typography scale — Material Design 3 Standard (Google) */
+@layer components {
+  /* Page title — e.g. "Daily Entry", "Credit Tracking" */
+  .text-page-title {
+    font-size: var(--font-size-3xl);     /* 28px (was 24px) */
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    color: var(--color-neutral-900);
+  }
+
+  /* Section heading — e.g. card titles, panel headers */
+  .text-section-heading {
+    font-size: var(--font-size-xl);      /* 22px (was 18px) */
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--color-neutral-900);
+  }
+
+  /* Subsection heading — e.g. form group labels, table headers */
+  .text-subsection-heading {
+    font-size: var(--font-size-lg);      /* 20px (was 16px) */
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    color: var(--color-neutral-700);
+  }
+
+  /* Body text — default paragraph / description */
+  .text-body {
+    font-size: var(--font-size-base);    /* 16px */
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    color: var(--color-neutral-700);
+  }
+
+  /* Secondary body — supporting text, hints */
+  .text-body-sm {
+    font-size: var(--font-size-sm);      /* 14px */
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    color: var(--color-neutral-500);
+  }
+
+  /* Label — form labels, input labels */
+  .text-label {
+    font-size: var(--font-size-sm);      /* 14px */
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+    color: var(--color-neutral-700);
+  }
+
+  /* Caption — badges, timestamps, footnotes */
+  .text-caption {
+    font-size: var(--font-size-xs);      /* 12px */
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    color: var(--color-neutral-500);
+  }
+
+  /* Numeric display — amounts, scores, big numbers */
+  .text-numeric {
+    font-size: var(--font-size-2xl);     /* 24px */
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-numeric-lg {
+    font-size: var(--font-size-3xl);     /* 28px (was 30px) */
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 /* Component layer for reusable patterns */
 @layer components {
   /* Card base styles */
@@ -379,4 +470,61 @@ button, a, input, select, textarea {
   text-rendering: optimizeLegibility;
   font-feature-settings: 'liga';
   vertical-align: middle;
+}
+
+/* Responsive typography scaling for tablet and desktop */
+@media (min-width: 640px) {
+  .text-page-title {
+    font-size: var(--font-size-4xl); /* 32px on tablet+ */
+  }
+
+  .text-section-heading {
+    font-size: 1.375rem; /* 22px → 26px on tablet */
+  }
+
+  .text-numeric-lg {
+    font-size: var(--font-size-4xl); /* 32px on larger screens */
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-page-title {
+    font-size: var(--font-size-5xl); /* 36px on desktop */
+  }
+
+  .text-section-heading {
+    font-size: 1.5rem; /* 28px on desktop */
+  }
+
+  .text-subsection-heading {
+    font-size: 1.25rem; /* 20px → 22px on desktop */
+  }
+}
+
+/* Dark mode typography adjustments */
+@media (prefers-color-scheme: dark) {
+  body {
+    font-weight: 450; /* Slightly bolder text in dark mode for better contrast */
+    letter-spacing: 0.4px; /* Increase letter spacing slightly */
+  }
+
+  .text-page-title,
+  .text-section-heading,
+  .text-subsection-heading {
+    letter-spacing: 0.2px; /* Subtle letter spacing for headings */
+  }
+}
+
+/* Support for high contrast mode (accessibility) */
+@media (prefers-contrast: more) {
+  body {
+    font-weight: 500; /* Slightly bolder for better readability */
+    letter-spacing: 0.5px;
+  }
+
+  .text-page-title,
+  .text-section-heading,
+  .text-subsection-heading {
+    font-weight: 700; /* Ensure bold weight for headings */
+  }
 }

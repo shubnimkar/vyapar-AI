@@ -273,10 +273,10 @@ export default function IndicesDashboard({
     return (
       <Card className="text-center">
         <div className="text-6xl mb-4">📊</div>
-        <h3 className="text-lg font-semibold text-neutral-800 mb-2">
+        <h3 className="text-section-heading text-neutral-800 mb-2">
           {t('indices.insufficientData', language)}
         </h3>
-        <p className="text-neutral-600 mb-4">
+        <p className="text-body-sm text-neutral-600 mb-4">
           {t('indices.addMoreData', language)}
         </p>
         {renderSyncStatus()}
@@ -303,10 +303,10 @@ export default function IndicesDashboard({
     return (
       <Card className="text-center">
         <div className="text-6xl mb-4">📊</div>
-        <h3 className="text-lg font-semibold text-neutral-800 mb-2">
+        <h3 className="text-section-heading text-neutral-800 mb-2">
           {t('indices.insufficientData', language)}
         </h3>
-        <p className="text-neutral-600 mb-4">
+        <p className="text-body-sm text-neutral-600 mb-4">
           {t('indices.addMoreData', language)}
         </p>
         {renderSyncStatus()}
@@ -320,10 +320,10 @@ export default function IndicesDashboard({
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+            <h2 className="text-page-title text-slate-800">
               {t('indices.stressIndex', language)} &amp; {t('indices.affordabilityIndex', language)}
             </h2>
-            <p className="text-slate-500 text-sm mt-1">
+            <p className="text-body-sm text-slate-500 mt-1">
               {language === 'hi'
                 ? 'आपके व्यवसाय के तनाव और बड़ी खरीद क्षमता का त्वरित सारांश'
                 : language === 'mr'

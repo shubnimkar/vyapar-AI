@@ -77,9 +77,9 @@ export default function BenchmarkDisplay({
           <div className="bg-gray-100 p-2 rounded-lg">
             <BarChart3 className="w-5 h-5 text-gray-500" />
           </div>
-          <h3 className="text-base font-semibold text-gray-900">{t('benchmark.title', language)}</h3>
+          <h3 className="text-section-heading text-gray-900">{t('benchmark.title', language)}</h3>
         </div>
-        <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+        <p className="text-body-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
           {normalized}
         </p>
       </Card>
@@ -94,9 +94,9 @@ export default function BenchmarkDisplay({
           <div className="bg-blue-50 p-2 rounded-lg">
             <BarChart3 className="w-5 h-5 text-blue-600" />
           </div>
-          <h3 className="text-base font-semibold text-gray-900">{t('benchmark.title', language)}</h3>
+          <h3 className="text-section-heading text-gray-900">{t('benchmark.title', language)}</h3>
         </div>
-        <p className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+        <p className="text-body-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
           {t('benchmark.noData', language)}
         </p>
       </Card>
@@ -205,8 +205,8 @@ export default function BenchmarkDisplay({
           <BarChart3 className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-gray-900">{t('benchmark.title', language)}</h3>
-          <p className="text-xs text-gray-500">
+          <h3 className="text-section-heading text-gray-900">{t('benchmark.title', language)}</h3>
+          <p className="text-caption text-gray-500">
             {t('benchmark.sampleSize', language).replace('{count}', comparison.segmentInfo.sampleSize.toString())}
           </p>
         </div>
@@ -253,10 +253,10 @@ export default function BenchmarkDisplay({
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold text-slate-800">
+                <span className="text-numeric text-slate-800">
                   {comparison.healthScoreComparison.userValue}
                 </span>
-                <span className="text-[10px] font-semibold text-gray-400 tracking-wider uppercase">
+                <span className="text-caption text-gray-400 tracking-wider uppercase">
                   {t('benchmark.healthScore', language)}
                 </span>
               </div>
@@ -277,18 +277,18 @@ export default function BenchmarkDisplay({
             {/* Health comparison numbers */}
             <div className="grid grid-cols-2 gap-4 mt-1">
               <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-caption text-gray-400 uppercase tracking-wider">
                   {t('benchmark.yourBusiness', language)}
                 </p>
-                <p className={`text-xl font-bold ${healthColors.text}`}>
+                <p className={`text-subsection-heading ${healthColors.text}`}>
                   {comparison.healthScoreComparison.userValue}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-caption text-gray-400 uppercase tracking-wider">
                   {t('benchmark.segmentAverage', language)}
                 </p>
-                <p className="text-xl font-bold text-gray-400">
+                <p className="text-subsection-heading text-gray-400">
                   {comparison.healthScoreComparison.segmentMedian}
                 </p>
               </div>
@@ -299,7 +299,7 @@ export default function BenchmarkDisplay({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${marginColors.dot}`} />
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-label text-slate-700">
                     {t('benchmark.profitMargin', language)}
                   </span>
                 </div>
@@ -312,18 +312,18 @@ export default function BenchmarkDisplay({
               </div>
               <div className="flex items-baseline justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase">
+                  <p className="text-caption text-gray-400 uppercase">
                     {t('benchmark.yourBusiness', language)}
                   </p>
-                  <p className="text-2xl font-bold text-slate-900">
+                  <p className="text-numeric text-slate-900">
                     {formatPercentage(comparison.marginComparison.userValue * 100)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-semibold text-gray-400 uppercase">
+                  <p className="text-caption text-gray-400 uppercase">
                     {t('benchmark.segmentAverage', language)}
                   </p>
-                  <p className="text-lg font-bold text-gray-400">
+                  <p className="text-subsection-heading text-gray-400">
                     {formatPercentage(comparison.marginComparison.segmentMedian * 100)}
                   </p>
                 </div>
@@ -352,7 +352,7 @@ export default function BenchmarkDisplay({
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <h4 className="text-label text-gray-700 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-blue-500" />
                 {t('benchmark.aiExplanation', language)}
               </h4>

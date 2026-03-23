@@ -388,10 +388,10 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
             {t('askQuestion', language)}
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="text-page-title text-slate-900">
               {t('askQuestion', language)}
             </h2>
-            <p className="max-w-3xl text-base leading-7 text-slate-500">
+            <p className="max-w-3xl text-body text-slate-500 leading-7">
               {t('qaScope', language)}
             </p>
           </div>

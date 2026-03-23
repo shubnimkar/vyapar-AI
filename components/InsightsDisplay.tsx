@@ -175,19 +175,19 @@ export default function InsightsDisplay({
   const renderContent = (content: string | string[]) => {
     if (Array.isArray(content)) {
       if (content.length === 0) {
-        return <p className="text-neutral-600 text-sm">No issues found</p>;
+        return <p className="text-body-sm text-neutral-600">No issues found</p>;
       }
       return (
         <ul className="list-disc list-inside space-y-1">
           {content.map((item, idx) => (
-            <li key={idx} className="text-neutral-700 text-sm">
+            <li key={idx} className="text-body-sm text-neutral-700">
               {item}
             </li>
           ))}
         </ul>
       );
     }
-    return <p className="text-neutral-700 text-sm whitespace-pre-wrap">{content}</p>;
+    return <p className="text-body-sm text-neutral-700 whitespace-pre-wrap">{content}</p>;
   };
 
   const getTextContent = (content: string | string[]): string => {
@@ -201,7 +201,7 @@ export default function InsightsDisplay({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-neutral-800 mb-4">
+      <h2 className="text-page-title text-neutral-800 mb-4">
         {t('insights', language)}
       </h2>
 
@@ -226,7 +226,7 @@ export default function InsightsDisplay({
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{section.icon}</span>
-                <h3 className="text-lg font-semibold text-neutral-800">
+                <h3 className="text-section-heading text-neutral-800">
                   {section.title}
                 </h3>
               </div>

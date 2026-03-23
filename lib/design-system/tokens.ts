@@ -106,30 +106,40 @@ export const tokens = {
   typography: {
     fontFamily: {
       sans: [
+        'var(--font-geist-sans)',
         'system-ui',
         '-apple-system',
         'BlinkMacSystemFont',
         'Segoe UI',
-        'Roboto',
-        'Noto Sans',
         'sans-serif',
+      ],
+      mono: [
+        'var(--font-geist-mono)',
+        'ui-monospace',
+        'SFMono-Regular',
+        'monospace',
       ],
       devanagari: [
         'Noto Sans Devanagari',
+        'var(--font-geist-sans)',
         'system-ui',
         'sans-serif',
       ],
     },
     
     fontSize: {
-      xs: ['0.75rem', { lineHeight: '1rem' }],      // 12px
-      sm: ['0.875rem', { lineHeight: '1.25rem' }],  // 14px
-      base: ['1rem', { lineHeight: '1.5rem' }],     // 16px
-      lg: ['1.125rem', { lineHeight: '1.75rem' }],  // 18px
-      xl: ['1.25rem', { lineHeight: '1.75rem' }],   // 20px
-      '2xl': ['1.5rem', { lineHeight: '2rem' }],    // 24px
-      '3xl': ['1.875rem', { lineHeight: '2.25rem' }], // 30px
-      '4xl': ['2.25rem', { lineHeight: '2.5rem' }], // 36px
+      // Material Design 3 Standard (Google's global standard - compact)
+      // RECOMMENDED for data-heavy business apps
+      xs: ['0.75rem', { lineHeight: '1rem' }],      // 12px — captions
+      sm: ['0.875rem', { lineHeight: '1.25rem' }],  // 14px — body small
+      base: ['1rem', { lineHeight: '1.5rem' }],     // 16px — body (standard)
+      lg: ['1.25rem', { lineHeight: '1.75rem' }],   // 20px — body large (was 18px)
+      xl: ['1.375rem', { lineHeight: '1.75rem' }],   // 22px — headline small (was 20px)
+      '2xl': ['1.5rem', { lineHeight: '2rem' }],    // 24px — headline (was 24px)
+      '3xl': ['1.75rem', { lineHeight: '2.25rem' }], // 28px — headline large (was 30px)
+      '4xl': ['2rem', { lineHeight: '2.5rem' }],    // 32px — display small (was 36px)
+      '5xl': ['2.25rem', { lineHeight: '2.75rem' }], // 36px — display medium
+      '6xl': ['2.875rem', { lineHeight: '3.5rem' }], // 46px — display large
     },
     
     fontWeight: {

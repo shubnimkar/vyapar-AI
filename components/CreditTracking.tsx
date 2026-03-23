@@ -318,9 +318,9 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <Landmark className="w-5 h-5 text-primary-600" />
               </div>
             </div>
-            <p className="mb-1 text-sm font-medium text-slate-500">{t('totalOutstanding', language)}</p>
-            <h3 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">₹{summary.totalOutstanding.toLocaleString('en-IN')}</h3>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+            <p className="mb-1 text-label text-slate-500">{t('totalOutstanding', language)}</p>
+            <h3 className="mb-2 text-numeric-lg text-slate-900">₹{summary.totalOutstanding.toLocaleString('en-IN')}</h3>
+            <p className="text-caption uppercase tracking-[0.18em] text-slate-500">
               {t('credit.updatedAgo', language)}
             </p>
           </CardBody>
@@ -335,9 +335,9 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <AlertCircle className="w-5 h-5 text-rose-600" />
               </div>
             </div>
-            <p className="mb-1 text-sm font-medium text-slate-500">{t('totalOverdue', language)}</p>
-            <h3 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">₹{summary.totalOverdue.toLocaleString('en-IN')}</h3>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
+            <p className="mb-1 text-label text-slate-500">{t('totalOverdue', language)}</p>
+            <h3 className="mb-2 text-numeric-lg text-slate-900">₹{summary.totalOverdue.toLocaleString('en-IN')}</h3>
+            <p className="text-caption uppercase tracking-[0.18em] text-rose-700">
               {t('credit.requiresAction', language)}
             </p>
           </CardBody>
@@ -352,11 +352,11 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
               </div>
             </div>
-            <p className="mb-1 text-sm font-medium text-slate-500">
+            <p className="mb-1 text-label text-slate-500">
               {t('credit.totalAlerts', language)}
             </p>
-            <h3 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">{summary.overdueCount}</h3>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-amber-700">
+            <h3 className="mb-2 text-numeric-lg text-slate-900">{summary.overdueCount}</h3>
+            <p className="text-caption uppercase tracking-[0.18em] text-amber-700">
               {t('credit.criticalCount', language)}
             </p>
           </CardBody>
@@ -367,7 +367,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       {showForm && (
         <Card className="mb-6">
           <CardHeader>
-            <h3 className="text-xl font-semibold text-slate-900">{t('addCredit', language)}</h3>
+            <h3 className="text-section-heading text-slate-900">{t('addCredit', language)}</h3>
           </CardHeader>
           <CardBody>
             <form onSubmit={handleAddEntry}>
@@ -431,7 +431,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       {/* Recent Activity Table */}
       <Card className="overflow-hidden p-0">
         <div className="px-6 py-5 bg-white border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-900">
+          <h2 className="text-section-heading text-slate-900">
             {t('credit.recentActivity', language)}
           </h2>
           <Button
@@ -451,11 +451,11 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('customerName', language)}</th>
-                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('amount', language)}</th>
-                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900">{t('dueDate', language)}</th>
-                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-center">{t('credit.status', language)}</th>
-                <th className="px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-900 text-right">{t('credit.action', language)}</th>
+                <th className="px-6 py-3 text-caption uppercase tracking-wider text-gray-900">{t('customerName', language)}</th>
+                <th className="px-6 py-3 text-caption uppercase tracking-wider text-gray-900">{t('amount', language)}</th>
+                <th className="px-6 py-3 text-caption uppercase tracking-wider text-gray-900">{t('dueDate', language)}</th>
+                <th className="px-6 py-3 text-caption uppercase tracking-wider text-gray-900 text-center">{t('credit.status', language)}</th>
+                <th className="px-6 py-3 text-caption uppercase tracking-wider text-gray-900 text-right">{t('credit.action', language)}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
@@ -475,10 +475,9 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                             {getInitials(entry.customerName)}
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-medium text-sm text-gray-900">{entry.customerName}</span>
-                            {/* Sync Status Labels */}
-                            {entry.syncStatus === 'pending' && <span className="text-[10px] text-orange-600 mt-0.5">{t('pending', language)}</span>}
-                            {entry.syncStatus === 'error' && <span className="text-[10px] text-red-600 mt-0.5">{t('error', language)}</span>}
+                            <span className="text-body-sm font-medium text-gray-900">{entry.customerName}</span>
+                            {entry.syncStatus === 'pending' && <span className="text-caption text-orange-600 mt-0.5">{t('pending', language)}</span>}
+                            {entry.syncStatus === 'error' && <span className="text-caption text-red-600 mt-0.5">{t('error', language)}</span>}
                           </div>
                         </div>
                       </td>

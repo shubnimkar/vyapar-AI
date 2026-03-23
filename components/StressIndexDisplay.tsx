@@ -86,7 +86,7 @@ export default function StressIndexDisplay({
   return (
     <article className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-between shadow-sm hover:shadow-md transition-shadow duration-300">
       <div className="w-full">
-        <h3 className="text-lg font-semibold text-slate-700 mb-6">
+        <h3 className="text-section-heading text-slate-700 mb-6">
           {t('indices.stressIndex', language)}
         </h3>
       </div>
@@ -128,8 +128,8 @@ export default function StressIndexDisplay({
 
         {/* Score Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center transform rotate-0">
-          <span className="text-5xl font-extrabold text-slate-800">{clampedScore}</span>
-          <span className="text-sm font-medium text-slate-400 uppercase tracking-widest">
+          <span className="text-numeric-lg text-slate-800">{clampedScore}</span>
+          <span className="text-caption text-slate-400 uppercase tracking-widest">
             {t('indices.score', language)}
           </span>
         </div>
@@ -162,13 +162,13 @@ export default function StressIndexDisplay({
 
         {showBreakdown && (
           <div className="w-full pt-4 border-t border-slate-100 space-y-3">
-            <h4 className="font-semibold text-slate-700 text-sm mb-1">
+            <h4 className="text-label text-slate-700 mb-1">
               {t('indices.breakdown', language)}
             </h4>
 
             {/* Credit Ratio Score */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-slate-600">
+              <span className="text-body-sm text-slate-600">
                 {t('indices.creditRatio', language)}
               </span>
               <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function StressIndexDisplay({
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium text-slate-800 w-12 text-right">
+                <span className="text-label text-slate-800 w-12 text-right">
                   {Math.round(stressIndex.breakdown.creditRatioScore)}/40
                 </span>
               </div>
@@ -189,7 +189,7 @@ export default function StressIndexDisplay({
 
             {/* Cash Buffer Score */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-slate-600">
+              <span className="text-body-sm text-slate-600">
                 {t('indices.cashBuffer', language)}
               </span>
               <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ export default function StressIndexDisplay({
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium text-slate-800 w-12 text-right">
+                <span className="text-label text-slate-800 w-12 text-right">
                   {Math.round(stressIndex.breakdown.cashBufferScore)}/35
                 </span>
               </div>
@@ -210,7 +210,7 @@ export default function StressIndexDisplay({
 
             {/* Expense Volatility Score */}
             <div className="flex justify-between items-center">
-              <span className="text-sm text-slate-600">
+              <span className="text-body-sm text-slate-600">
                 {t('indices.expenseVolatility', language)}
               </span>
               <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ export default function StressIndexDisplay({
                     }}
                   />
                 </div>
-                <span className="text-sm font-medium text-slate-800 w-12 text-right">
+                <span className="text-label text-slate-800 w-12 text-right">
                   {Math.round(stressIndex.breakdown.expenseVolatilityScore)}/25
                 </span>
               </div>
@@ -232,7 +232,7 @@ export default function StressIndexDisplay({
         )}
 
         <div className="w-full pt-6 border-t border-slate-100 flex justify-center">
-          <p className="text-slate-400 text-xs italic">
+          <p className="text-caption text-slate-400 italic">
             {t('indices.calculatedAt', language)}: {calculatedDate}
           </p>
         </div>

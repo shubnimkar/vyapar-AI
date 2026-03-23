@@ -499,8 +499,8 @@ export default function FollowUpPanel({
       <section className="mt-8">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
-            <p className="text-sm text-slate-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
+            <h2 className="text-section-heading text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
+            <p className="text-body-sm mt-1">{t('followUp.collectionsSubtitle', language)}</p>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200">
             <span className="size-2 rounded-full bg-slate-400 animate-pulse"></span>
@@ -522,8 +522,8 @@ export default function FollowUpPanel({
     <section className="mt-8">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
-          <p className="text-sm text-slate-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
+          <h2 className="text-section-heading text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
+          <p className="text-body-sm text-slate-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
         </div>
         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
           syncStatus.status === 'synced' ? 'bg-emerald-50 border-emerald-100' :
@@ -622,9 +622,9 @@ export default function FollowUpPanel({
                 <div className="p-6 border-b border-slate-200">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-3">
-                      <h4 className="text-2xl font-bold text-slate-900">{credit.customerName}</h4>
+                      <h4 className="text-section-heading text-slate-900">{credit.customerName}</h4>
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between min-w-[320px] text-sm text-slate-500">
+                        <div className="flex items-center justify-between min-w-[320px] text-caption text-slate-500">
                           <span>{t('entryDate', language)}: {formatDate(credit.dateGiven)}</span>
                           <span>{t('dueDate', language)}: {formatDate(credit.dueDate)}</span>
                         </div>
@@ -656,7 +656,7 @@ export default function FollowUpPanel({
                         )}
                       </div>
                     </div>
-                    <p className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                    <p className="text-numeric text-slate-900">
                       {formatAmount(credit.amount)}
                     </p>
                   </div>

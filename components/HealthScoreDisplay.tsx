@@ -123,7 +123,7 @@ export default function HealthScoreDisplay({
           <div className="bg-red-50 p-2 rounded-lg">
             <Heart className="w-5 h-5 text-red-600" />
           </div>
-          <h2 className="text-lg font-bold text-gray-900">
+          <h2 className="text-section-heading">
             {t('healthScore', language)}
           </h2>
         </div>
@@ -170,10 +170,10 @@ export default function HealthScoreDisplay({
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-4xl font-bold ${getScoreColor(score)}`}>
+            <span className={`text-numeric-lg ${getScoreColor(score)}`}>
               {score}
             </span>
-            <span className="text-sm text-gray-500">/100</span>
+            <span className="text-caption">/100</span>
           </div>
         </div>
       </div>
@@ -182,53 +182,41 @@ export default function HealthScoreDisplay({
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-500">{t('marginScore', language)}</span>
-            <span className="text-sm font-semibold text-slate-900">{breakdown.marginScore}/30</span>
+            <span className="text-label text-slate-500">{t('marginScore', language)}</span>
+            <span className="text-label font-semibold text-slate-900">{breakdown.marginScore}/30</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-500"
-              style={{ width: `${(breakdown.marginScore / 30) * 100}%` }}
-            />
+            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.marginScore / 30) * 100}%` }} />
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-500">{t('expenseScore', language)}</span>
-            <span className="text-sm font-semibold text-slate-900">{breakdown.expenseScore}/30</span>
+            <span className="text-label text-slate-500">{t('expenseScore', language)}</span>
+            <span className="text-label font-semibold text-slate-900">{breakdown.expenseScore}/30</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-500"
-              style={{ width: `${(breakdown.expenseScore / 30) * 100}%` }}
-            />
+            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.expenseScore / 30) * 100}%` }} />
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-500">{t('cashScore', language)}</span>
-            <span className="text-sm font-semibold text-slate-900">{breakdown.cashScore}/20</span>
+            <span className="text-label text-slate-500">{t('cashScore', language)}</span>
+            <span className="text-label font-semibold text-slate-900">{breakdown.cashScore}/20</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-500"
-              style={{ width: `${(breakdown.cashScore / 20) * 100}%` }}
-            />
+            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.cashScore / 20) * 100}%` }} />
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-500">{t('creditScore', language)}</span>
-            <span className="text-sm font-semibold text-slate-900">{breakdown.creditScore}/20</span>
+            <span className="text-label text-slate-500">{t('creditScore', language)}</span>
+            <span className="text-label font-semibold text-slate-900">{breakdown.creditScore}/20</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-500"
-              style={{ width: `${(breakdown.creditScore / 20) * 100}%` }}
-            />
+            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.creditScore / 20) * 100}%` }} />
           </div>
         </div>
       </div>

@@ -132,11 +132,11 @@ export default function AffordabilityPlanner({
   return (
     <article className="bg-slate-50 border border-slate-200 rounded-2xl p-8 flex flex-col shadow-sm h-full">
       <div className="mb-2">
-        <h3 className="text-lg font-semibold text-slate-700">
+        <h3 className="text-section-heading text-slate-700">
           {t('indices.affordabilityIndex', language)}
         </h3>
       </div>
-      <p className="text-slate-500 text-sm mb-8">
+      <p className="text-body-sm text-slate-500 mb-8">
         {language === 'hi'
           ? 'आपके नकदी प्रवाह और बचत लक्ष्यों के आधार पर बड़ी खरीद की क्षमता जांचें।'
           : language === 'mr'
@@ -149,7 +149,7 @@ export default function AffordabilityPlanner({
         <div className="space-y-2">
           <label
             htmlFor="plannedCost"
-            className="block text-sm font-semibold text-slate-600"
+            className="block text-label text-slate-600"
           >
             {t('indices.plannedExpense', language)}
           </label>
@@ -199,10 +199,10 @@ export default function AffordabilityPlanner({
             {/* Score & Category */}
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="text-xs uppercase tracking-widest text-slate-400">
+                <span className="text-caption uppercase tracking-widest text-slate-400">
                   {t('indices.score', language)}
                 </span>
-                <span className="text-3xl font-extrabold text-slate-800">
+                <span className="text-numeric-lg text-slate-800">
                   {Math.round(result.score)}/100
                 </span>
               </div>

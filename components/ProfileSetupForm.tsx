@@ -242,13 +242,13 @@ export default function ProfileSetupForm({
     <div className="w-full h-full flex flex-col">
       {/* Header Section */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-slate-900">
+        <h1 className="text-page-title text-slate-900">
           {isEditMode 
             ? (language === 'hi' ? 'प्रोफ़ाइल संपादित करें' : language === 'mr' ? 'प्रोफाइल संपादित करा' : 'Edit Profile')
             : t('profile.setup.title', language)
           }
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-body-sm text-slate-500 mt-1">
           {language === 'hi' 
             ? 'बेहतर AI इनसाइट्स पाने के लिए अपनी दुकान की जानकारी और व्यवसाय की प्राथमिकताएं अपडेट करें।'
             : language === 'mr'

@@ -30,8 +30,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: [...tokens.typography.fontFamily.sans],
+        mono: [...tokens.typography.fontFamily.mono],
         devanagari: [...tokens.typography.fontFamily.devanagari],
-        "display": ["Public Sans", "sans-serif"],
       },
       fontSize: {
         xs: [...tokens.typography.fontSize.xs],
@@ -42,6 +42,8 @@ const config: Config = {
         '2xl': [...tokens.typography.fontSize['2xl']],
         '3xl': [...tokens.typography.fontSize['3xl']],
         '4xl': [...tokens.typography.fontSize['4xl']],
+        '5xl': [...tokens.typography.fontSize['5xl']],
+        '6xl': [...tokens.typography.fontSize['6xl']],
       },
       fontWeight: tokens.typography.fontWeight,
       lineHeight: tokens.typography.lineHeight,

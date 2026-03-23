@@ -437,8 +437,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
               {t[selectedReport.reportType]}
             </div>
-            <h3 className="text-2xl font-bold text-slate-900">{formatPeriod(selectedReport)}</h3>
-            <p className="text-sm text-slate-500">
+            <h3 className="text-section-heading text-slate-900">{formatPeriod(selectedReport)}</h3>
+            <p className="text-body-sm text-slate-500">
               {t.generatedAt}: {formatDateTime(selectedReport.generatedAt)}
             </p>
           </div>
@@ -452,8 +452,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
           <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t.summary}</h4>
-            <p className="mt-3 text-base leading-7 text-slate-800">
+            <h4 className="text-label uppercase tracking-wide text-slate-500">{t.summary}</h4>
+            <p className="mt-3 text-body text-slate-800 leading-7">
               {selectedReport.summary || selectedReport.insights}
             </p>
 
@@ -466,8 +466,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
           <section className="space-y-4">
             <div className="rounded-2xl border border-slate-200 p-5">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t.period}</h4>
-              <div className="mt-4 space-y-3 text-sm text-slate-700">
+              <h4 className="text-label uppercase tracking-wide text-slate-500">{t.period}</h4>
+              <div className="mt-4 space-y-3 text-body-sm text-slate-700">
                 <DetailRow label={t.entries} value={`${selectedReport.entryCount || 0}`} />
                 <DetailRow label={t.expenses} value={formatCurrency(selectedReport.totalExpenses)} />
                 <DetailRow label={t.avgExpenses} value={formatCurrency(selectedReport.averageDailyExpenses)} />
@@ -478,9 +478,9 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             </div>
 
             <div className="rounded-2xl border border-slate-200 p-5">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t.comparison}</h4>
+              <h4 className="text-label uppercase tracking-wide text-slate-500">{t.comparison}</h4>
               {selectedReport.comparison ? (
-                <div className="mt-4 space-y-3 text-sm text-slate-700">
+                <div className="mt-4 space-y-3 text-body-sm text-slate-700">
                   <DetailRow label={t.sales} value={`${selectedReport.comparison.salesChangePct.toFixed(1)}%`} />
                   <DetailRow label={t.expenses} value={`${selectedReport.comparison.expenseChangePct.toFixed(1)}%`} />
                   <DetailRow label={selectedReport.netProfit >= 0 ? t.profit : t.loss} value={`${selectedReport.comparison.profitChangePct.toFixed(1)}%`} />
@@ -492,8 +492,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             </div>
 
             <div className="rounded-2xl border border-slate-200 p-5">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{t.insights}</h4>
-              <div className="mt-4 space-y-3 text-sm text-slate-700">
+              <h4 className="text-label uppercase tracking-wide text-slate-500">{t.insights}</h4>
+              <div className="mt-4 space-y-3 text-body-sm text-slate-700">
                 <DetailRow
                   label={t.bestDay}
                   value={selectedReport.bestDay ? `${formatDate(selectedReport.bestDay.date)} · ${formatCurrency(selectedReport.bestDay.profit)}` : '—'}
@@ -518,8 +518,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
     <Card className="space-y-8 rounded-3xl">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
-          <h3 className="text-3xl font-bold tracking-tight text-slate-900">{t.title}</h3>
-          <p className="max-w-3xl text-base leading-7 text-slate-500">{t.subtitle}</p>
+          <h3 className="text-page-title text-slate-900">{t.title}</h3>
+          <p className="max-w-3xl text-body text-slate-500 leading-7">{t.subtitle}</p>
         </div>
         <Button
           type="button"
@@ -540,9 +540,9 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
           <div className="flex items-center gap-2 text-slate-900">
             <CalendarClock className="h-5 w-5 text-blue-700" />
-            <h4 className="text-lg font-semibold">{t.automation}</h4>
+            <h4 className="text-section-heading text-slate-900">{t.automation}</h4>
           </div>
-          <p className="mt-2 text-sm text-slate-600">{t.automationHint}</p>
+          <p className="mt-2 text-body-sm text-slate-600">{t.automationHint}</p>
           <p className="mt-1 flex items-start gap-1.5 text-xs text-slate-500">
             <span className="mt-0.5 shrink-0 text-blue-400">ℹ</span>
             {t.automationNote}
@@ -595,9 +595,9 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         <section className="rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 text-slate-900">
             <Sparkles className="h-5 w-5 text-blue-700" />
-            <h4 className="text-lg font-semibold">{t.generateTitle}</h4>
+            <h4 className="text-section-heading text-slate-900">{t.generateTitle}</h4>
           </div>
-          <p className="mt-2 text-sm text-slate-600">{t.generateHint}</p>
+          <p className="mt-2 text-body-sm text-slate-600">{t.generateHint}</p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <select
               value={selectedGenerateType}
@@ -648,8 +648,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-lg font-semibold text-slate-900">{t.latestReports}</h4>
-          <span className="text-sm text-slate-500">{t.lastUpdated}: {reports[0] ? formatDateTime(reports[0].generatedAt) : '—'}</span>
+          <h4 className="text-section-heading text-slate-900">{t.latestReports}</h4>
+          <span className="text-body-sm text-slate-500">{t.lastUpdated}: {reports[0] ? formatDateTime(reports[0].generatedAt) : '—'}</span>
         </div>
 
         {reports.length === 0 ? (
@@ -783,8 +783,8 @@ function ListBlock({ title, items, emptyLabel }: { title: string; items: string[
 function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-12 text-center">
-      <p className="text-lg font-semibold text-slate-900">{title}</p>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">{subtitle}</p>
+      <p className="text-section-heading text-slate-900">{title}</p>
+      <p className="mx-auto mt-2 max-w-xl text-body-sm text-slate-500 leading-6">{subtitle}</p>
     </div>
   );
 }

@@ -143,7 +143,7 @@ export default function DailySuggestionCard({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className={`font-semibold text-base ${config.textColor}`}>
+                  <h3 className={`text-label ${config.textColor}`}>
                     {t('daily.todaysSuggestion', language)}
                   </h3>
                   <Badge variant={config.badgeVariant}>
@@ -156,10 +156,10 @@ export default function DailySuggestionCard({
           
           {/* Suggestion content */}
           <CardBody>
-            <h4 className={`font-medium mb-2 ${config.textColor}`}>
+            <h4 className={`text-body font-medium mb-2 ${config.textColor}`}>
               {translatedTitle}
             </h4>
-            <p className={`text-sm ${config.descColor}`}>
+            <p className={`text-body-sm ${config.descColor}`}>
               {translatedDescription}
             </p>
             

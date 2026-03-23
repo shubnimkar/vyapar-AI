@@ -314,7 +314,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
       <CardHeader className="border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-white pb-0 mb-0">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+            <h2 className="text-page-title flex items-center gap-2">
               <Calendar className="w-6 h-6 text-primary-600" />
               {t('daily.title', language)}
             </h2>
@@ -524,7 +524,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-lg font-semibold text-neutral-900">
+                        <h3 className="text-section-heading">
                           {formatDate(entry.date)}
                         </h3>
                         {entry.syncStatus === 'pending' && (
@@ -563,26 +563,26 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-3 bg-neutral-50 rounded-lg">
-                      <p className="text-xs text-neutral-500 mb-1">{t('totalSales', language)}</p>
-                      <p className="text-lg font-semibold text-neutral-900">₹{entry.totalSales.toLocaleString('en-IN')}</p>
+                      <p className="text-caption mb-1">{t('totalSales', language)}</p>
+                      <p className="text-numeric text-base font-semibold text-neutral-900">₹{entry.totalSales.toLocaleString('en-IN')}</p>
                     </div>
                     
                     <div className="p-3 bg-neutral-50 rounded-lg">
-                      <p className="text-xs text-neutral-500 mb-1">{t('totalExpenses', language)}</p>
-                      <p className="text-lg font-semibold text-neutral-900">₹{entry.totalExpense.toLocaleString('en-IN')}</p>
+                      <p className="text-caption mb-1">{t('totalExpenses', language)}</p>
+                      <p className="text-numeric text-base font-semibold text-neutral-900">₹{entry.totalExpense.toLocaleString('en-IN')}</p>
                     </div>
                     
                     <div className={`p-3 rounded-lg ${entry.estimatedProfit >= 0 ? 'bg-success-50' : 'bg-error-50'}`}>
-                      <p className="text-xs text-neutral-500 mb-1">{t('estimatedProfit', language)}</p>
-                      <p className={`text-lg font-semibold flex items-center gap-1 ${entry.estimatedProfit >= 0 ? 'text-success-700' : 'text-error-700'}`}>
+                      <p className="text-caption mb-1">{t('estimatedProfit', language)}</p>
+                      <p className={`text-numeric text-base font-semibold flex items-center gap-1 ${entry.estimatedProfit >= 0 ? 'text-success-700' : 'text-error-700'}`}>
                         {entry.estimatedProfit >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                         ₹{Math.abs(entry.estimatedProfit).toLocaleString('en-IN')}
                       </p>
                     </div>
                     
                     <div className="p-3 bg-primary-50 rounded-lg">
-                      <p className="text-xs text-neutral-500 mb-1">{t('profitMargin', language)}</p>
-                      <p className="text-lg font-semibold text-primary-700">{(entry.profitMargin * 100).toFixed(1)}%</p>
+                      <p className="text-caption mb-1">{t('profitMargin', language)}</p>
+                      <p className="text-numeric text-base font-semibold text-primary-700">{(entry.profitMargin * 100).toFixed(1)}%</p>
                     </div>
                   </div>
 
@@ -606,7 +606,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
               <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center">
                 <Trash2 className="w-6 h-6 text-error-600" />
               </div>
-              <h3 className="text-lg font-bold text-neutral-900">{t('daily.deleteEntry', language)}</h3>
+              <h3 className="text-section-heading">{t('daily.deleteEntry', language)}</h3>
             </div>
             
             <p className="text-neutral-600 mb-6">{t('daily.confirmDelete', language)}</p>
