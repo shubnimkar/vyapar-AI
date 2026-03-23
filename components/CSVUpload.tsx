@@ -332,14 +332,14 @@ export default function CSVUpload({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-          <FileText className="w-5 h-5 text-green-600" />
+    <div className="rounded-[28px] border border-[#d9e1ee] bg-white p-6 shadow-[0_16px_45px_rgba(15,23,42,0.04)]">
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#2563eb]">
+          <FileText className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{t.title}</h3>
-          <p className="text-sm text-gray-500">{t.description}</p>
+          <h3 className="text-lg font-bold tracking-tight text-slate-900">{t.title}</h3>
+          <p className="text-sm text-slate-500">{t.description}</p>
         </div>
       </div>
 
@@ -347,11 +347,11 @@ export default function CSVUpload({
       {uploadResult && (
         <div className="mb-4">
           {uploadResult.success && uploadResult.summary ? (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4">
               <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
                 <div className="flex-1">
-                  <h4 className="font-semibold text-green-900 mb-2">{t.successTitle}</h4>
+                  <h4 className="mb-2 font-semibold text-emerald-900">{t.successTitle}</h4>
                   {(() => {
                     const validRows = Number.isNaN(uploadResult.summary.validRows)
                       ? 0
@@ -361,13 +361,13 @@ export default function CSVUpload({
                       : uploadResult.summary.invalidRows;
                     return (
                       <>
-                        <p className="text-sm text-green-700 mb-3">
+                        <p className="mb-3 text-sm text-emerald-700">
                           {validRows} {t.successMessage}
                         </p>
                         <div className="flex gap-4 text-sm">
                           <div>
-                            <span className="font-medium text-green-900">{t.validRows}:</span>{' '}
-                            <span className="text-green-700">{validRows}</span>
+                            <span className="font-medium text-emerald-900">{t.validRows}:</span>{' '}
+                            <span className="text-emerald-700">{validRows}</span>
                           </div>
                           {invalidRows > 0 && (
                             <div>
@@ -383,12 +383,12 @@ export default function CSVUpload({
               </div>
             </div>
           ) : (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="rounded-2xl border border-rose-200 bg-rose-50/80 p-4">
               <div className="flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
                 <div className="flex-1">
-                  <h4 className="font-semibold text-red-900 mb-1">{t.errorTitle}</h4>
-                  <p className="text-sm text-red-700">{uploadResult.error}</p>
+                  <h4 className="mb-1 font-semibold text-rose-900">{t.errorTitle}</h4>
+                  <p className="text-sm text-rose-700">{uploadResult.error}</p>
                 </div>
               </div>
             </div>
@@ -400,27 +400,29 @@ export default function CSVUpload({
       {!uploading && (
         <>
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            className={`rounded-[24px] border-2 border-dashed p-8 text-center transition-colors ${
               dragActive
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-300 hover:border-gray-400'
+                ? 'border-[#2563eb] bg-[#eef4ff]'
+                : 'border-[#d9e1ee] bg-[#fbfcff] hover:border-slate-300'
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-700 mb-2">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+              <Upload className="h-7 w-7" />
+            </div>
+            <p className="mb-2 text-slate-700">
               {t.dragDrop}{' '}
               <button
                 onClick={handleBrowseClick}
-                className="text-blue-600 hover:text-blue-700 font-medium underline"
+                className="font-semibold text-[#2563eb] underline transition-colors hover:text-[#174ea6]"
               >
                 {t.browse}
               </button>
             </p>
-            <p className="text-sm text-gray-500">{t.maxSize}</p>
+            <p className="text-sm text-slate-500">{t.maxSize}</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -431,31 +433,31 @@ export default function CSVUpload({
           </div>
 
           {/* Template Download + Try Sample Data */}
-          <div className="mt-4 flex flex-col gap-2">
+          <div className="mt-4 flex flex-col gap-3">
             <button
               onClick={handleDownloadTemplate}
-              className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
             >
-              <Download className="w-4 h-4" />
+              <Download className="h-4 w-4" />
               {t.downloadTemplate}
             </button>
             <button
               onClick={handleLoadSampleData}
-              className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#005bbf] to-[#1a73e8] px-5 py-3 text-sm font-bold text-white shadow-[0_12px_24px_rgba(26,115,232,0.24)] transition-all hover:brightness-105"
             >
-              <FileText className="w-5 h-5" />
+              <FileText className="h-5 w-5" />
               {t.trySampleData}
             </button>
-            <p className="text-xs text-gray-500 text-center mt-2">{t.sampleDataDesc}</p>
+            <p className="mt-1 text-center text-xs leading-5 text-slate-500">{t.sampleDataDesc}</p>
           </div>
         </>
       )}
 
       {/* Uploading state */}
       {uploading && (
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-700 font-medium">{t.uploading}</p>
+        <div className="rounded-[24px] border-2 border-dashed border-[#d9e1ee] bg-[#fbfcff] p-8 text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#2563eb] border-t-transparent"></div>
+          <p className="font-medium text-slate-700">{t.uploading}</p>
         </div>
       )}
 
@@ -463,7 +465,7 @@ export default function CSVUpload({
       {uploadResult && !uploadResult.success && (
         <button
           onClick={handleReset}
-          className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          className="mt-4 w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
         >
           {t.tryAgain}
         </button>

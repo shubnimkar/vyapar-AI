@@ -233,24 +233,40 @@ export default function SyncStatus({ language }: SyncStatusProps) {
   };
 
   const getStatusColor = () => {
-    if (!online) return 'text-gray-600';
-    if (syncing) return 'text-blue-600';
+    if (!online) return 'text-slate-500';
+    if (syncing) return 'text-primary-600';
     
     switch (syncStatus) {
       case 'synced':
-        return 'text-green-600';
+        return 'text-success-700';
       case 'error':
-        return 'text-red-600';
+        return 'text-error-700';
       case 'pending':
-        return 'text-yellow-600';
+        return 'text-warning-700';
       default:
-        return 'text-gray-600';
+        return 'text-slate-500';
+    }
+  };
+
+  const getStatusBadgeClass = () => {
+    if (!online) return 'border border-slate-200 bg-slate-50';
+    if (syncing) return 'border border-primary-200 bg-primary-50';
+
+    switch (syncStatus) {
+      case 'synced':
+        return 'border border-success-200 bg-success-50';
+      case 'error':
+        return 'border border-error-200 bg-error-50';
+      case 'pending':
+        return 'border border-warning-200 bg-warning-50';
+      default:
+        return 'border border-slate-200 bg-slate-50';
     }
   };
 
   return (
     <div className="flex items-center gap-2">
-      <div className={`flex items-center gap-2 text-sm font-semibold ${getStatusColor()}`}>
+      <div className={`flex h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold ${getStatusColor()} ${getStatusBadgeClass()}`}>
         {getStatusIcon()}
         <span>{getStatusText()}</span>
       </div>
@@ -258,15 +274,15 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       {online && !syncing && syncStatus !== 'syncing' && (
         <button
           onClick={handleSync}
-          className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white transition-colors hover:bg-slate-50"
           title={language === 'hi' ? 'अभी सिंक करें' : language === 'mr' ? 'आता सिंक करा' : 'Sync now'}
         >
-          <RefreshCw className="w-4 h-4 text-gray-600" />
+          <RefreshCw className="h-4 w-4 text-slate-500" />
         </button>
       )}
       
       {lastSyncTime && syncStatus === 'synced' && (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-slate-500">
           {language === 'hi' 
             ? `अंतिम: ${lastSyncTime.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}` 
             : language === 'mr' 

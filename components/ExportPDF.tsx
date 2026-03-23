@@ -1,6 +1,7 @@
 'use client';
 
 import { BenchmarkData, BusinessInsights, Language, SeverityLevel } from '@/lib/types';
+import { Button } from './ui/Button';
 
 interface ExportPDFProps {
   insights: BusinessInsights;
@@ -861,12 +862,14 @@ export default function ExportPDF({ insights, language, benchmark }: ExportPDFPr
   };
 
   return (
-    <button
+    <Button
       onClick={handleExport}
-      className="w-full bg-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+      variant="secondary"
+      fullWidth
+      className="border-primary-200 text-primary-700 hover:bg-primary-50"
     >
       <span className="text-2xl">📥</span>
       <span>{LABELS[language].buttonText}</span>
-    </button>
+    </Button>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { Alert, Language } from '@/lib/types';
+import { Card } from './ui/Card';
 
 interface AlertsProps {
   alerts: Alert[];
@@ -31,19 +32,21 @@ export default function Alerts({ alerts, language }: AlertsProps) {
   if (alerts.length === 0) return null;
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-      {alerts.map((alert, idx) => (
-        <div
-          key={idx}
-          className={`border-l-4 rounded-r-lg p-3 ${getSeverityColor(alert.severity)}`}
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{alert.icon}</span>
-            <p className="text-sm font-medium">{alert.message}</p>
-          </div>
-        </div>
-      ))}
+    <div className="space-y-4">
+      <h3 className="text-2xl font-semibold text-slate-900">{title}</h3>
+      <div className="space-y-3">
+        {alerts.map((alert, idx) => (
+          <Card
+            key={idx}
+            className={`rounded-2xl border-l-4 p-4 ${getSeverityColor(alert.severity)}`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">{alert.icon}</span>
+              <p className="text-sm font-medium">{alert.message}</p>
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

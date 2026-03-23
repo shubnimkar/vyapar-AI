@@ -1,9 +1,9 @@
 /**
  * Fallback Orchestrator
  * 
- * Manages the fallback logic and provider selection for AI requests.
- * Maintains AWS Bedrock as the primary provider while providing Puter.js
- * as a transparent fallback when Bedrock is unavailable.
+ * Manages the Bedrock model-chain fallback logic for AI requests.
+ * Maintains AWS Bedrock as the only provider and falls through
+ * across configured Nova model chains when a model is unavailable.
  * 
  * This orchestrator ensures AI features remain operational during AWS service
  * disruptions, particularly critical during hackathon demos and presentations.
@@ -11,20 +11,27 @@
 
 import { AIProvider, AIProviderResponse, GenerateOptions } from './provider-abstraction';
 import { BedrockProvider } from './bedrock-provider';
-import { PuterProvider } from './puter-provider';
+import { getModelChain, AIModelRoute } from './model-routing';
 import { logger } from '../logger';
 import { getErrorMessage } from '../translations';
 import { Language } from '../types';
+import { shouldFallbackForError } from './bedrock-utils';
 
 /**
  * Configuration for the fallback orchestrator
  */
 export interface FallbackConfig {
-  /** Whether to enable automatic fallback to Puter when Bedrock fails */
+  /** Whether to enable automatic fallback across configured Bedrock models */
   enableFallback: boolean;
   
   /** Total timeout for all attempts in milliseconds */
   totalTimeout: number;
+
+  /** Feature/model routing key */
+  feature: AIModelRoute;
+
+  /** Ordered Bedrock model chain for the feature */
+  modelIds: string[];
 }
 
 /**
@@ -42,22 +49,21 @@ export interface RequestMetadata {
  * FallbackOrchestrator manages AI provider selection and fallback logic
  * 
  * The orchestrator:
- * - Attempts Bedrock (primary) first for all requests
- * - Falls back to Puter.js if Bedrock fails (when enabled)
- * - Logs provider usage for monitoring and demo purposes
+ * - Attempts the configured Bedrock model chain in order
+ * - Falls through to secondary/tertiary Bedrock models when enabled
+ * - Logs model usage for monitoring and debugging
  * - Supports dependency injection for testing
  * - Validates configuration on initialization
  */
 export class FallbackOrchestrator {
-  private primaryProvider: AIProvider;
-  private fallbackProvider: AIProvider;
+  private providers: AIProvider[];
   private config: FallbackConfig;
   
   /**
    * Create a new FallbackOrchestrator instance
    * 
-   * @param primaryProvider - Optional primary provider (defaults to BedrockProvider)
-   * @param fallbackProvider - Optional fallback provider (defaults to PuterProvider)
+   * @param primaryProvider - Optional primary provider (primarily used in tests)
+   * @param fallbackProvider - Optional fallback provider (primarily used in tests)
    * @param config - Optional configuration overrides
    */
   constructor(
@@ -65,16 +71,20 @@ export class FallbackOrchestrator {
     fallbackProvider?: AIProvider,
     config?: Partial<FallbackConfig>
   ) {
-    // Support dependency injection for testing
-    this.primaryProvider = primaryProvider || new BedrockProvider();
-    this.fallbackProvider = fallbackProvider || new PuterProvider();
-    
-    // Read configuration from environment
+    const feature = config?.feature ?? 'explain';
+    const modelIds = config?.modelIds ?? getModelChain(feature);
     const enableFallback = process.env.ENABLE_AI_FALLBACK !== 'false';
-    
+
+    // Support dependency injection for tests while defaulting runtime to model chains.
+    this.providers = primaryProvider || fallbackProvider
+      ? [primaryProvider, fallbackProvider].filter((provider): provider is AIProvider => Boolean(provider))
+      : modelIds.map((modelId) => new BedrockProvider(undefined, modelId));
+
     this.config = {
       enableFallback: config?.enableFallback ?? enableFallback,
       totalTimeout: config?.totalTimeout ?? 10000,
+      feature,
+      modelIds,
     };
     
     // Validate and log configuration
@@ -84,8 +94,7 @@ export class FallbackOrchestrator {
   /**
    * Generate AI response with automatic fallback
    * 
-   * Attempts primary provider (Bedrock) first, then falls back to
-   * secondary provider (Puter) if primary fails and fallback is enabled.
+   * Attempts the configured Bedrock model chain in order.
    * 
    * @param prompt - The prompt text to send to the AI
    * @param options - Optional generation options
@@ -106,62 +115,62 @@ export class FallbackOrchestrator {
       fallback_enabled: this.config.enableFallback,
     });
     
-    // Attempt primary provider (Bedrock)
     try {
-      const primaryResponse = await this.primaryProvider.generateResponse(prompt, options);
-      
-      if (primaryResponse.success) {
-        // Log success
-        logger.info('AI request handled by AWS Bedrock', {
+      let lastFailure: AIProviderResponse | null = null;
+
+      for (const [index, provider] of this.providers.entries()) {
+        const attemptResponse = await provider.generateResponse(prompt, options);
+
+        if (attemptResponse.success) {
+          logger.info('AI request handled by AWS Bedrock', {
+            endpoint: metadata?.endpoint,
+            userId: metadata?.userId,
+            duration_ms: Date.now() - startTime,
+            feature: this.config.feature,
+            model_id: attemptResponse.modelId,
+            attempt: index + 1,
+          });
+
+          return attemptResponse;
+        }
+
+        lastFailure = attemptResponse;
+
+        if (!this.config.enableFallback) {
+          logger.error('AI request failed, fallback disabled', {
+            endpoint: metadata?.endpoint,
+            userId: metadata?.userId,
+            error: attemptResponse.error,
+            errorType: attemptResponse.errorType,
+            feature: this.config.feature,
+            model_id: attemptResponse.modelId,
+          });
+
+          return attemptResponse;
+        }
+
+        logger.warn('AI request failed on Bedrock model, attempting next model', {
           endpoint: metadata?.endpoint,
           userId: metadata?.userId,
-          duration_ms: Date.now() - startTime,
+          bedrock_error: attemptResponse.error,
+          bedrock_error_type: attemptResponse.errorType,
+          feature: this.config.feature,
+          model_id: attemptResponse.modelId,
+          attempt: index + 1,
         });
-        
-        return primaryResponse;
+
+        if (!shouldFallbackForError(attemptResponse.errorType || 'unknown')) {
+          break;
+        }
       }
-      
-      // Primary failed, check if fallback is enabled
-      if (!this.config.enableFallback) {
-        logger.error('AI request failed, fallback disabled', {
-          endpoint: metadata?.endpoint,
-          userId: metadata?.userId,
-          error: primaryResponse.error,
-          errorType: primaryResponse.errorType,
-        });
-        
-        return primaryResponse;
-      }
-      
-      // Log fallback attempt
-      logger.warn('AI request failed on Bedrock, using Puter.js fallback', {
+
+      logger.error('AI request failed on all configured Bedrock models', {
         endpoint: metadata?.endpoint,
         userId: metadata?.userId,
-        bedrock_error: primaryResponse.error,
-        bedrock_error_type: primaryResponse.errorType,
-      });
-      
-      // Attempt fallback provider (Puter)
-      const fallbackResponse = await this.fallbackProvider.generateResponse(prompt, options);
-      
-      if (fallbackResponse.success) {
-        logger.info('AI request handled by Puter.js fallback', {
-          endpoint: metadata?.endpoint,
-          userId: metadata?.userId,
-          duration_ms: Date.now() - startTime,
-        });
-        
-        return fallbackResponse;
-      }
-      
-      // Both providers failed
-      logger.error('AI request failed on both providers', {
-        endpoint: metadata?.endpoint,
-        userId: metadata?.userId,
-        bedrock_error: primaryResponse.error,
-        bedrock_error_type: primaryResponse.errorType,
-        puter_error: fallbackResponse.error,
-        puter_error_type: fallbackResponse.errorType,
+        feature: this.config.feature,
+        model_chain: this.config.modelIds,
+        bedrock_error: lastFailure?.error,
+        bedrock_error_type: lastFailure?.errorType,
         duration_ms: Date.now() - startTime,
       });
       
@@ -174,7 +183,8 @@ export class FallbackOrchestrator {
         success: false,
         error: localizedError,
         errorType: 'service_error',
-        provider: 'bedrock', // Report primary provider in error
+        provider: 'bedrock',
+        modelId: lastFailure?.modelId,
       };
       
     } catch (error: any) {
@@ -183,7 +193,7 @@ export class FallbackOrchestrator {
         endpoint: metadata?.endpoint,
         userId: metadata?.userId,
         error: error.message,
-        // Don't log full stack trace with sensitive info
+        feature: this.config.feature,
       });
       
       // Get localized error message
@@ -238,8 +248,9 @@ export class FallbackOrchestrator {
     logger.info('Fallback orchestrator initialized', {
       fallback_enabled: this.config.enableFallback,
       total_timeout_ms: this.config.totalTimeout,
-      primary_provider: this.primaryProvider.getProviderName(),
-      fallback_provider: this.fallbackProvider.getProviderName(),
+      feature: this.config.feature,
+      model_ids: this.config.modelIds,
+      provider_chain_length: this.providers.length,
     });
   }
   
@@ -308,7 +319,7 @@ export class FallbackOrchestrator {
 /**
  * Singleton instance for application-wide use
  */
-let orchestratorInstance: FallbackOrchestrator | null = null;
+let orchestratorInstances: Partial<Record<AIModelRoute, FallbackOrchestrator>> = {};
 
 /**
  * Get the singleton FallbackOrchestrator instance
@@ -319,11 +330,14 @@ let orchestratorInstance: FallbackOrchestrator | null = null;
  * 
  * @returns Singleton FallbackOrchestrator instance
  */
-export function getFallbackOrchestrator(): FallbackOrchestrator {
-  if (!orchestratorInstance) {
-    orchestratorInstance = new FallbackOrchestrator();
+export function getFallbackOrchestrator(feature: AIModelRoute = 'explain'): FallbackOrchestrator {
+  if (!orchestratorInstances[feature]) {
+    orchestratorInstances[feature] = new FallbackOrchestrator(undefined, undefined, {
+      feature,
+      modelIds: getModelChain(feature),
+    });
   }
-  return orchestratorInstance;
+  return orchestratorInstances[feature]!;
 }
 
 /**
@@ -333,5 +347,5 @@ export function getFallbackOrchestrator(): FallbackOrchestrator {
  * test isolation by resetting the singleton between tests.
  */
 export function resetFallbackOrchestrator(): void {
-  orchestratorInstance = null;
+  orchestratorInstances = {};
 }

@@ -389,7 +389,12 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
 
           <div className="flex flex-col gap-3">
             <a
-              href="/pending-transactions"
+              href="/"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  sessionStorage.setItem('vyapar-active-section', 'pending');
+                }
+              }}
               className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md"
             >
               {t.viewPending}

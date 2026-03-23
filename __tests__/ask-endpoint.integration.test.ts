@@ -107,12 +107,13 @@ describe('/api/ask endpoint integration tests', () => {
     });
   });
 
-  describe('Fallback to Puter path', () => {
-    it('should return AI answer when Bedrock fails but Puter succeeds', async () => {
+  describe('Bedrock fallback model path', () => {
+    it('should return AI answer when the fallback Bedrock model succeeds', async () => {
       const mockResponse: AIProviderResponse = {
         success: true,
         content: 'Based on your data, your profit margin is healthy.',
-        provider: 'puter',
+        provider: 'bedrock',
+        modelId: 'apac.amazon.nova-lite-v1:0',
       };
       
       mockOrchestrator.generateResponse.mockResolvedValue(mockResponse);

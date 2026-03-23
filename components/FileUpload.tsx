@@ -3,6 +3,8 @@
 import { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import { Download } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { FileType, Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 
@@ -110,10 +112,10 @@ export default function FileUpload({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <Card className="h-full rounded-2xl">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-2xl">{fileTypeIcons[fileType]}</span>
-        <h3 className="text-lg font-semibold text-gray-800">
+        <h3 className="text-2xl font-semibold text-slate-900">
           {fileTypeLabels[fileType]}
         </h3>
       </div>
@@ -124,12 +126,12 @@ export default function FileUpload({
           type="file"
           accept=".csv"
           onChange={handleFileSelect}
-          className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer"
+          className="block w-full text-sm text-slate-600 file:mr-4 file:h-10 file:rounded-xl file:border-0 file:bg-primary-50 file:px-4 file:text-sm file:font-semibold file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer"
         />
 
         <button
           onClick={handleDownloadTemplate}
-          className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+          className="flex items-center gap-1.5 text-primary-600 hover:text-primary-700 text-sm font-medium transition-colors"
         >
           <Download size={14} />
           Download {fileType}-template.csv
@@ -171,19 +173,19 @@ export default function FileUpload({
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
           </div>
         )}
 
-        <button
+        <Button
           onClick={handleUpload}
           disabled={!preview || uploading}
-          className="w-full bg-blue-500 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+          fullWidth
         >
           {uploading ? t('uploading', language) : t('uploadButton', language)}
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

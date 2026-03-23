@@ -1,9 +1,8 @@
 /**
  * AI Provider Abstraction Layer
  * 
- * Defines standard interfaces for AI providers to enable seamless switching
- * between AWS Bedrock (primary) and Puter.js (fallback) without modifying
- * endpoint code.
+ * Defines standard interfaces for AI providers to enable model routing and
+ * Bedrock model-chain fallback without modifying endpoint code.
  * 
  * This abstraction layer supports the deterministic-first principle where AI
  * is used exclusively for explanation and interpretation, never for financial
@@ -20,13 +19,14 @@ export type AIErrorType =
   | 'rate_limit'       // Too many requests (throttling)
   | 'timeout'          // Request exceeded time limit
   | 'service_error'    // Provider service unavailable
+  | 'validation'       // Invalid request/prompt for the target model
   | 'unknown';         // Unclassified errors
 
 /**
  * Standard response format for all AI providers
  * 
  * This interface ensures consistent response structure regardless of
- * which provider (Bedrock or Puter) handled the request.
+ * which runtime provider handled the request.
  */
 export interface AIProviderResponse {
   /** Whether the request succeeded */
@@ -41,8 +41,11 @@ export interface AIProviderResponse {
   /** Categorized error type for handling (present if success=false) */
   errorType?: AIErrorType;
   
-  /** Which provider handled the request */
+  /** Which runtime provider handled the request */
   provider: 'bedrock' | 'puter';
+
+  /** Which model handled the request, when available */
+  modelId?: string;
 }
 
 /**
@@ -63,7 +66,7 @@ export interface GenerateOptions {
  * Abstract interface that all AI providers must implement
  * 
  * This interface enables dependency injection for testing and allows
- * seamless switching between providers without modifying endpoint code.
+ * seamless switching between model-capable runtimes without modifying endpoint code.
  */
 export interface AIProvider {
   /**
@@ -81,7 +84,7 @@ export interface AIProvider {
   /**
    * Get the provider identifier
    * 
-   * @returns Provider name ('bedrock' or 'puter')
+ * @returns Provider name ('bedrock' or 'puter')
    */
   getProviderName(): 'bedrock' | 'puter';
   

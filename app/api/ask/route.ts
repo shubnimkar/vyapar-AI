@@ -256,7 +256,7 @@ export async function POST(request: NextRequest) {
     if (session.inventoryData) availableSources.push('inventory_csv');
     const sourcesUsed = inferRelevantSources(question, availableSources, appContext?.activeSection);
 
-    const orchestrator = getFallbackOrchestrator();
+    const orchestrator = getFallbackOrchestrator('qa');
     const sessionUserId = (session as unknown as { userId?: string }).userId;
     const aiResponse = await orchestrator.generateResponse(
       prompt,
@@ -373,7 +373,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const orchestrator = getFallbackOrchestrator();
+    const orchestrator = getFallbackOrchestrator('qa');
     const sessionUserId = (session as unknown as { userId?: string }).userId;
 
     const translatedMessages = await Promise.all(

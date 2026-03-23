@@ -17,6 +17,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle2, Search, X } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 import { getOverdueCredits } from '@/lib/credit-manager';
 import { markCreditAsPaid, syncPendingEntries, updateCreditEntry, getLocalEntries } from '@/lib/credit-sync';
 import { generateReminderLink } from '@/lib/whatsapp-link-generator';
@@ -504,11 +507,11 @@ export default function FollowUpPanel({
             <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{t('followUp.loading', language)}</span>
           </div>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
           <div className="h-10 w-full max-w-md rounded-lg bg-slate-100 animate-pulse mb-6" />
           <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
-            <div className="rounded-xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
+            <div className="rounded-2xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
+            <div className="rounded-2xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
           </div>
         </div>
       </section>
@@ -548,7 +551,7 @@ export default function FollowUpPanel({
 
       {error.type && (
         <div className="mb-4">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
             <div className="flex items-center gap-3">
               <AlertCircle className="size-5 text-red-600" aria-hidden="true" />
               <div>
@@ -568,19 +571,18 @@ export default function FollowUpPanel({
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-            <input
-              className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35] transition-all placeholder:text-slate-400"
+            <Search className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Input
               placeholder={t('followUp.searchPlaceholder', language)}
-              type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-11"
             />
           </div>
-          <button
+          <Button
             type="button"
             onClick={() => {
               setShowAllEntries((current) => !current);
@@ -588,14 +590,16 @@ export default function FollowUpPanel({
                 setCurrentPage(1);
               }
             }}
-            className="text-sm text-[#ff6b35] hover:text-[#ff5722] font-medium self-end md:self-auto"
+            variant="ghost"
+            size="sm"
+            className="self-end md:self-auto"
           >
             {showAllEntries ? t('followUp.showLess', language) : t('followUp.viewAll', language)}
-          </button>
+          </Button>
         </div>
 
         {visibleCredits.length === 0 && (
-          <div className="rounded-xl border border-slate-200 p-8 text-center">
+          <div className="rounded-2xl border border-slate-200 p-8 text-center">
             <CheckCircle2 className="mx-auto mb-4 size-10 text-slate-400" aria-hidden="true" />
             <h3 className="text-lg font-semibold text-slate-900 mb-2">
               {overdueCredits.length === 0 ? t('followUp.noOverdue', language) : t('followUp.noMatching', language)}
@@ -611,9 +615,9 @@ export default function FollowUpPanel({
         {visibleCredits.length > 0 && (
           <div className="space-y-4">
             {paginatedCredits.map((credit) => (
-              <div
+              <Card
                 key={credit.id}
-                className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+                className="overflow-hidden p-0"
               >
                 <div className="p-6 border-b border-slate-200">
                   <div className="flex justify-between items-start">
@@ -660,10 +664,10 @@ export default function FollowUpPanel({
                 <div className="p-4 bg-white grid-cols-2 gap-3 flex grid">
                   {/* WhatsApp Reminder Button */}
                   {credit.phoneNumber && (
-                    <button
+                    <Button
                       onClick={() => handleSendReminder(credit)}
                       disabled={error.type === 'validation' && error.creditId === credit.id}
-                      className="flex items-center justify-center gap-2 bg-[#ff6b35] hover:bg-[#ff5722] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-primary-600 hover:bg-primary-700"
                     >
                       <svg className="size-4" height="20" viewBox="0 0 48 48" width="20" x="0px" xmlns="http://www.w3.org/2000/svg" y="0px">
                         <path d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z" fill="#fff"></path>
@@ -673,19 +677,19 @@ export default function FollowUpPanel({
                         <path clipRule="evenodd" d="M19.268,16.045c-0.355-0.79-0.729-0.806-1.068-0.82c-0.277-0.012-0.593-0.011-0.909-0.011c-0.316,0-0.83,0.119-1.265,0.594c-0.435,0.475-1.661,1.622-1.661,3.956c0,2.334,1.7,4.59,1.937,4.906c0.237,0.316,3.282,5.259,8.104,7.161c4.007,1.58,4.823,1.266,5.693,1.187c0.87-0.079,2.807-1.147,3.202-2.255c0.395-1.108,0.395-2.057,0.277-2.255c-0.119-0.198-0.435-0.316-0.909-0.554s-2.807-1.385-3.242-1.543c-0.435-0.158-0.751-0.237-1.068,0.238c-0.316,0.474-1.225,1.543-1.502,1.859c-0.277,0.317-0.554,0.357-1.028,0.119c-0.474-0.238-2.002-0.738-3.815-2.354c-1.41-1.257-2.362-2.81-2.639-3.285c-0.277-0.474-0.03-0.731,0.208-0.968c0.213-0.213,0.474-0.554,0.712-0.831c0.237-0.277,0.316-0.475,0.474-0.791c0.158-0.317,0.079-0.594-0.04-0.831C20.612,19.329,19.69,16.983,19.268,16.045z" fill="#fff" fillRule="evenodd"></path>
                       </svg>
                       {t('followUp.sendReminder', language)}
-                    </button>
+                    </Button>
                   )}
                   {/* Mark as Paid Button */}
-                  <button
+                  <Button
                     onClick={() => handleMarkAsPaid(credit)}
                     disabled={error.type !== null && error.creditId === credit.id}
-                    className="flex items-center justify-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    variant="secondary"
                   >
                     <CheckCircle2 className="size-4" aria-hidden="true" />
                     {t('followUp.markPaid', language)}
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             ))}
 
             {!showAllEntries && (
@@ -695,25 +699,27 @@ export default function FollowUpPanel({
                     start: showingStart,
                     end: showingEnd,
                     total: visibleCredits.length,
-                  })}
-                </p>
+                })}
+              </p>
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                     disabled={currentPage === 1}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    variant="secondary"
+                    size="sm"
                   >
                     {t('ui.button.previous', language)}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    variant="secondary"
+                    size="sm"
                   >
                     {t('ui.button.next', language)}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

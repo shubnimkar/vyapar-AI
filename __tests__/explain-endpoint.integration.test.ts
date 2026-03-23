@@ -1,14 +1,13 @@
 /**
  * Integration tests for /api/explain endpoint with FallbackOrchestrator
- * Tests endpoint behavior with mock Bedrock success, fallback to Puter, and both providers failing
+ * Tests endpoint behavior with mock Bedrock success, Bedrock model fallback, and all-models failing
  */
 
 import { POST } from '@/app/api/explain/route';
 import { NextRequest } from 'next/server';
 import { getSession } from '@/lib/session-store';
 import { ProfileService } from '@/lib/dynamodb-client';
-import { getFallbackOrchestrator, resetFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
-import { MockProvider } from '@/lib/ai/__tests__/mock-provider';
+import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
 import { AIProviderResponse } from '@/lib/ai/provider-abstraction';
 
 // Mock dependencies
@@ -21,16 +20,10 @@ const mockGetProfile = ProfileService.getProfile as jest.MockedFunction<typeof P
 const mockGetFallbackOrchestrator = getFallbackOrchestrator as jest.MockedFunction<typeof getFallbackOrchestrator>;
 
 describe('/api/explain endpoint integration tests', () => {
-  let mockBedrockProvider: MockProvider;
-  let mockPuterProvider: MockProvider;
   let mockOrchestrator: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    // Create mock providers
-    mockBedrockProvider = new MockProvider('bedrock');
-    mockPuterProvider = new MockProvider('puter');
     
     // Create mock orchestrator
     mockOrchestrator = {
@@ -56,11 +49,6 @@ describe('/api/explain endpoint integration tests', () => {
       explanation_mode: 'simple',
       language: 'en',
     });
-  });
-
-  afterEach(() => {
-    mockBedrockProvider.reset();
-    mockPuterProvider.reset();
   });
 
   describe('Bedrock success path', () => {
@@ -91,8 +79,7 @@ describe('/api/explain endpoint integration tests', () => {
       
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.explanation.success).toBe(true);
-      expect(data.explanation.content).toBe(mockResponse.content);
+      expect(data.explanation).toBe(mockResponse.content);
       expect(data.metric).toBe('health_score');
       expect(data.value).toBe(85);
       
@@ -105,13 +92,13 @@ describe('/api/explain endpoint integration tests', () => {
     });
   });
 
-  describe('Fallback to Puter path', () => {
-    it('should return AI explanation when Bedrock fails but Puter succeeds', async () => {
-      // Mock Puter fallback response
+  describe('Bedrock fallback model path', () => {
+    it('should return AI explanation when the fallback Bedrock model succeeds', async () => {
       const mockResponse: AIProviderResponse = {
         success: true,
         content: 'Your health score of 85 indicates good financial health for your kirana store.',
-        provider: 'puter',
+        provider: 'bedrock',
+        modelId: 'apac.amazon.nova-lite-v1:0',
       };
       
       mockOrchestrator.generateResponse.mockResolvedValue(mockResponse);
@@ -133,17 +120,15 @@ describe('/api/explain endpoint integration tests', () => {
       
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.explanation.success).toBe(true);
-      expect(data.explanation.content).toBe(mockResponse.content);
+      expect(data.explanation).toBe(mockResponse.content);
       
       // Verify orchestrator was called
       expect(mockOrchestrator.generateResponse).toHaveBeenCalled();
     });
   });
 
-  describe('Both providers fail path', () => {
-    it('should return graceful degradation message when both providers fail', async () => {
-      // Mock both providers failing
+  describe('All configured Bedrock models fail path', () => {
+    it('should return graceful degradation message when all configured models fail', async () => {
       const mockResponse: AIProviderResponse = {
         success: false,
         error: 'AI service temporarily unavailable. Please try again later.',
@@ -170,8 +155,7 @@ describe('/api/explain endpoint integration tests', () => {
       
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.explanation.success).toBe(false);
-      expect(data.explanation.content).toContain('AI explanation temporarily unavailable');
+      expect(data.explanation).toContain('AI explanation temporarily unavailable');
       expect(data.metric).toBe('health_score');
       expect(data.value).toBe(85);
     });
@@ -237,8 +221,7 @@ describe('/api/explain endpoint integration tests', () => {
       expect(data).toHaveProperty('explanation');
       expect(data).toHaveProperty('metric');
       expect(data).toHaveProperty('value');
-      expect(data.explanation).toHaveProperty('success');
-      expect(data.explanation).toHaveProperty('content');
+      expect(typeof data.explanation).toBe('string');
     });
   });
 
@@ -277,8 +260,7 @@ describe('/api/explain endpoint integration tests', () => {
       
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(data.explanation.success).toBe(true);
-      expect(data.explanation.content).toBe(mockResponse.content);
+      expect(data.explanation).toBe(mockResponse.content);
       
       // Verify orchestrator was called with cashflow prediction prompt
       const promptCall = mockOrchestrator.generateResponse.mock.calls[0][0];

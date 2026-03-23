@@ -36,9 +36,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  */
 const buttonVariants: Record<ButtonVariant, string> = {
   primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm',
-  secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:ring-neutral-500',
-  outline: 'border-2 border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus:ring-neutral-500',
-  ghost: 'text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-500',
+  secondary: 'bg-white text-neutral-800 border border-neutral-200 hover:bg-neutral-50 focus:ring-primary-500 shadow-sm',
+  outline: 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus:ring-primary-500',
+  ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-primary-500',
   danger: 'bg-error-600 text-white hover:bg-error-700 focus:ring-error-500 shadow-sm',
 };
 
@@ -47,9 +47,9 @@ const buttonVariants: Record<ButtonVariant, string> = {
  * Each size has appropriate padding and font size for different contexts
  */
 const buttonSizes: Record<ButtonSize, string> = {
-  sm: 'px-3 py-2 text-sm',
-  md: 'px-4 py-3 text-base',
-  lg: 'px-6 py-4 text-lg',
+  sm: 'h-10 px-4 text-sm',
+  md: 'h-12 px-5 text-sm',
+  lg: 'h-14 px-6 text-base',
 };
 
 /**
@@ -98,16 +98,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         className={cn(
           // Base styles
-          'inline-flex items-center justify-center gap-2',
-          'font-medium rounded-lg',
+          'inline-flex items-center justify-center gap-2 whitespace-nowrap',
+          'font-semibold rounded-xl',
           'transition-all duration-base',
           'focus:outline-none focus:ring-2 focus:ring-offset-2',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           'min-h-[44px]', // Touch target (Requirement 5.8)
-          
-          // Hover effect (Requirement 5.7)
-          'hover:scale-[1.02] active:scale-[0.98]',
-          
+
           // Variant styles (Requirement 5.1)
           buttonVariants[variant],
           

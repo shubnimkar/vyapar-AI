@@ -1,5 +1,6 @@
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { getLambdaModelChain } from "../shared/bedrock-chain.mjs";
 
 // Initialize AWS clients
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
@@ -8,7 +9,7 @@ const s3Client = new S3Client({ region: AWS_REGION });
 const bedrockClient = new BedrockRuntimeClient({ region: BEDROCK_REGION });
 
 // Configuration from environment variables
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
+const RECEIPT_MODEL_CHAIN = getLambdaModelChain('receipt');
 const RESULTS_BUCKET = process.env.RESULTS_BUCKET || process.env.S3_BUCKET_RECEIPTS || 'vyapar-receipts-output';
 
 export const handler = async (event) => {
@@ -23,7 +24,7 @@ export const handler = async (event) => {
     const imageKey = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
 
     console.log(`📄 Processing: ${imageKey} from ${inputBucket}`);
-    console.log(`⚙️  Config: Model=${BEDROCK_MODEL_ID}, Output=${RESULTS_BUCKET}`);
+    console.log(`⚙️  Config: Models=${RECEIPT_MODEL_CHAIN.join(' -> ')}, Output=${RESULTS_BUCKET}`);
 
     // Download image from S3
     console.log("📥 Downloading image from S3...");
@@ -194,28 +195,44 @@ Return ONLY valid JSON in this exact format:
     console.log("📡 Calling Bedrock Vision API...");
     console.log(`🌍 S3 Region: ${AWS_REGION}`);
     console.log(`🌍 Bedrock Region: ${BEDROCK_REGION}`);
-    console.log(`🤖 Model ID: ${BEDROCK_MODEL_ID}`);
-    
-    const bedrockCommand = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: JSON.stringify(bedrockPayload),
-    });
+    console.log(`🤖 Model Chain: ${RECEIPT_MODEL_CHAIN.join(' -> ')}`);
 
-    const bedrockResponse = await bedrockClient.send(bedrockCommand);
-    const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
+    let extractedText = '';
+    let usedModelId = '';
+    let lastError = null;
 
-    console.log("✅ Bedrock response received");
-    console.log("📄 Response:", JSON.stringify(responseBody, null, 2));
+    for (const modelId of RECEIPT_MODEL_CHAIN) {
+      try {
+        const bedrockCommand = new InvokeModelCommand({
+          modelId,
+          contentType: "application/json",
+          accept: "application/json",
+          body: JSON.stringify(bedrockPayload),
+        });
 
-    // Nova format: output.message.content is an array of content blocks
-    const contentBlocks = responseBody.output.message.content;
-    const textBlock = contentBlocks.find(block => block.text);
-    if (!textBlock) {
-      throw new Error("No text content found in Nova response");
+        const bedrockResponse = await bedrockClient.send(bedrockCommand);
+        const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
+
+        const contentBlocks = responseBody.output?.message?.content || [];
+        const textBlock = contentBlocks.find(block => block.text);
+        if (!textBlock) {
+          throw new Error("No text content found in Nova response");
+        }
+
+        extractedText = textBlock.text;
+        usedModelId = modelId;
+        break;
+      } catch (error) {
+        lastError = error;
+        console.warn(`⚠️ receipt-ocr: model ${modelId} failed`, error.message);
+      }
     }
-    const extractedText = textBlock.text;
+
+    if (!extractedText) {
+      throw lastError || new Error("No text content found in Nova response");
+    }
+
+    console.log(`✅ Bedrock response received from ${usedModelId}`);
     const jsonMatch = extractedText.match(/\{[\s\S]*\}/);
     
     if (!jsonMatch) {

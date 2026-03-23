@@ -2,16 +2,17 @@
 // Allows users to generate daily, weekly, and monthly reports on-demand
 
 import { NextRequest, NextResponse } from 'next/server';
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBService } from '@/lib/dynamodb-client';
 import { calculateExpenseRatio, calculateProfitMargin } from '@/lib/calculations';
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
 import { DailyEntry, DailyReport, Language } from '@/lib/types';
+import { generateWithModelChain } from '@/lib/ai/bedrock-model-chain';
+import { getModelChain } from '@/lib/ai/model-routing';
 // report-localization not needed at generation time — content stored flat
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
 
 type ReportType = 'daily' | 'weekly' | 'monthly';
@@ -177,29 +178,30 @@ Return ONLY valid JSON in this shape:
   "nextSteps": ["short action", "short action"]
 }`;
 
-  const command = new InvokeModelCommand({
-    modelId: BEDROCK_MODEL_ID,
-    contentType: 'application/json',
-    accept: 'application/json',
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'user',
-          content: [{ text: prompt }],
-        },
-      ],
-      inferenceConfig: {
-        max_new_tokens: 500,
-      },
-    }),
+  const response = await generateWithModelChain({
+    client: bedrockClient,
+    modelIds: getModelChain('report'),
+    prompt,
+    options: { language },
+    metadata: {
+      endpoint: '/api/reports/generate',
+      feature: 'report',
+    },
+    maxTokens: 500,
   });
 
-  const response = await bedrockClient.send(command);
-  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  const extractedText = responseBody.output?.message?.content?.[0]?.text || '';
+  if (!response.success || !response.content) {
+    logger.warn('Report insight generation failed, using deterministic fallback', {
+      reportType,
+      periodLabel,
+      error: response.error,
+      modelId: response.modelId,
+    });
+    return parseReportInsights('', buildFallbackSummary(metrics.totalSales, metrics.totalExpenses, metrics.netProfit, reportType));
+  }
 
   return parseReportInsights(
-    extractedText,
+    response.content,
     buildFallbackSummary(metrics.totalSales, metrics.totalExpenses, metrics.netProfit, reportType)
   );
 }

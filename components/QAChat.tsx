@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { MessageSquarePlus, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { CreditEntry, DailyEntry, DailyReport, InferredTransaction, Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 
@@ -377,50 +380,62 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">
-        {t('askQuestion', language)}
-      </h2>
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <p className="text-sm text-gray-600 sm:max-w-2xl">
-          {t('qaScope', language)}
-        </p>
+    <Card className="space-y-6 rounded-3xl">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+            <Sparkles className="h-4 w-4" />
+            {t('askQuestion', language)}
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              {t('askQuestion', language)}
+            </h2>
+            <p className="max-w-3xl text-base leading-7 text-slate-500">
+              {t('qaScope', language)}
+            </p>
+          </div>
+        </div>
         {messages.length > 0 && (
-          <button
+          <Button
             type="button"
             onClick={clearConversation}
             disabled={loading}
-            className="inline-flex items-center justify-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+            variant="secondary"
+            size="md"
+            icon={<MessageSquarePlus className="h-4 w-4" />}
           >
             {loading ? t('qaClearingConversation', language) : t('qaNewConversation', language)}
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Messages */}
-      <div className="space-y-3 mb-4 max-h-[28rem] overflow-y-auto">
+      <div className="max-h-[34rem] space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
         {messages.length === 0 && (
-          <div className="text-center py-4">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
             {hasAnyData ? (
               <>
-                <p className="text-gray-600 text-sm mb-4">
+                <p className="mx-auto mb-5 max-w-2xl text-sm leading-6 text-slate-500">
                   {t('questionPlaceholder', language)}
                 </p>
-                <div className="flex flex-wrap gap-2 justify-center">
+                <div className="flex flex-wrap justify-center gap-2">
                   {prioritizedQuestions.map((q, idx) => (
-                    <button
+                    <Button
                       key={idx}
                       onClick={() => askQuestion(q)}
                       disabled={loading}
-                      className="px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm hover:bg-blue-100 transition-colors disabled:opacity-50"
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-full text-blue-700"
                     >
                       {q}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </>
             ) : (
-              <p className="text-gray-600 text-sm">
+              <p className="text-sm text-slate-500">
                 {t('qaEmptyState', language)}
               </p>
             )}
@@ -435,13 +450,13 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
 
               if (structuredAnswer) {
                 return (
-                  <div className="w-full max-w-full rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-gray-800 shadow-sm sm:max-w-[85%]">
-                    <div className="space-y-3 text-sm">
+                  <div className="w-full max-w-full rounded-2xl border border-blue-100 bg-blue-50/70 px-5 py-4 text-slate-800 shadow-sm sm:max-w-[88%]">
+                    <div className="space-y-4 text-sm">
                       {sourceChips && sourceChips.length > 0 && (
                         <div className="flex flex-wrap items-center gap-2 border-b border-blue-100 pb-3">
-                          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{t('qaSourceHeading', language)}</p>
+                          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t('qaSourceHeading', language)}</p>
                           {sourceChips.map((source) => (
-                            <span key={source} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-blue-700 border border-blue-100">
+                            <span key={source} className="rounded-full border border-blue-100 bg-white px-2.5 py-1 text-xs font-medium text-blue-700">
                               {dataSourceLabels[source]}
                             </span>
                           ))}
@@ -449,19 +464,19 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
                       )}
                       {structuredAnswer.conclusion && (
                         <div>
-                          <p className="font-semibold text-gray-900">{answerLabels.conclusion}</p>
+                          <p className="text-sm font-semibold text-slate-900">{answerLabels.conclusion}</p>
                           <p className="mt-1 whitespace-pre-wrap leading-relaxed">{structuredAnswer.conclusion}</p>
                         </div>
                       )}
                       {structuredAnswer.why && (
                         <div>
-                          <p className="font-semibold text-gray-900">{answerLabels.why}</p>
+                          <p className="text-sm font-semibold text-slate-900">{answerLabels.why}</p>
                           <p className="mt-1 whitespace-pre-wrap leading-relaxed">{structuredAnswer.why}</p>
                         </div>
                       )}
                       {structuredAnswer.nextStep && (
                         <div>
-                          <p className="font-semibold text-gray-900">{answerLabels.nextStep}</p>
+                          <p className="text-sm font-semibold text-slate-900">{answerLabels.nextStep}</p>
                           <p className="mt-1 whitespace-pre-wrap leading-relaxed">{structuredAnswer.nextStep}</p>
                         </div>
                       )}
@@ -472,23 +487,23 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
 
               return (
                 <div
-                  className={`w-full max-w-full rounded-lg px-4 py-2 sm:max-w-[80%] ${
+                  className={`w-full max-w-full rounded-2xl px-4 py-3 shadow-sm sm:max-w-[84%] ${
                     msg.role === 'user'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-slate-200 bg-white text-slate-800'
                   }`}
                 >
                   {msg.role === 'assistant' && sourceChips && sourceChips.length > 0 && (
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{t('qaSourceHeading', language)}</p>
+                    <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{t('qaSourceHeading', language)}</p>
                       {sourceChips.map((source) => (
-                        <span key={source} className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-blue-700 border border-blue-100">
+                        <span key={source} className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700">
                           {dataSourceLabels[source]}
                         </span>
                       ))}
                     </div>
                   )}
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className="whitespace-pre-wrap text-sm leading-7">{msg.content}</p>
                 </div>
               );
             })()}
@@ -497,8 +512,8 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
 
         {(loading || translatingHistory) && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 rounded-lg px-4 py-2">
-              <p className="text-sm text-gray-600">...</p>
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+              <p className="text-sm text-slate-500">...</p>
             </div>
           </div>
         )}
@@ -508,7 +523,7 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-3">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
@@ -521,16 +536,18 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
           onChange={(e) => setQuestion(e.target.value)}
           placeholder={t('questionPlaceholder', language)}
           disabled={loading || !hasAnyData}
-          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 min-h-[44px]"
+          className="min-h-[44px] flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-base text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 disabled:bg-neutral-50 disabled:text-neutral-500"
         />
-        <button
+        <Button
           type="submit"
           disabled={!question.trim() || loading || !hasAnyData}
-          className="w-full bg-blue-500 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors min-h-[44px] sm:w-auto"
+          variant="primary"
+          size="md"
+          className="w-full sm:w-auto"
         >
           {t('sendButton', language)}
-        </button>
+        </Button>
       </form>
-    </div>
+    </Card>
   );
 }

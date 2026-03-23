@@ -352,7 +352,7 @@ export default function IndicesDashboard({
             loading={isExplaining}
             variant="primary"
             size="lg"
-            className="px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-2xl shadow-xl shadow-blue-200 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center gap-3"
+            className="px-10"
           >
             <span>
               {isExplaining

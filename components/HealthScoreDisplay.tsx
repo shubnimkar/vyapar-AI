@@ -5,6 +5,8 @@ import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { Heart, Info, TrendingUp } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
 interface HealthScoreDisplayProps {
   score: number;
@@ -115,7 +117,7 @@ export default function HealthScoreDisplay({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+    <Card className="rounded-2xl">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="bg-red-50 p-2 rounded-lg">
@@ -126,14 +128,16 @@ export default function HealthScoreDisplay({
           </h2>
         </div>
         {sessionId && userId && (
-          <button
+          <Button
             onClick={handleExplain}
             disabled={explaining}
-            className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 disabled:text-gray-400 transition-colors"
+            variant="ghost"
+            size="sm"
+            icon={<Info className="w-4 h-4" />}
+            className="text-blue-600 hover:bg-transparent hover:text-blue-700"
           >
-            <Info className="w-4 h-4" />
             {t('explainScore', language)}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -176,12 +180,12 @@ export default function HealthScoreDisplay({
 
       {/* Breakdown Grid */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-600">{t('marginScore', language)}</span>
-            <span className="text-sm font-semibold text-gray-900">{breakdown.marginScore}/30</span>
+            <span className="text-xs font-medium text-slate-500">{t('marginScore', language)}</span>
+            <span className="text-sm font-semibold text-slate-900">{breakdown.marginScore}/30</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
+          <div className="w-full bg-slate-200 rounded-full h-1.5">
             <div
               className="h-full bg-blue-600 rounded-full transition-all duration-500"
               style={{ width: `${(breakdown.marginScore / 30) * 100}%` }}
@@ -189,12 +193,12 @@ export default function HealthScoreDisplay({
           </div>
         </div>
 
-        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-600">{t('expenseScore', language)}</span>
-            <span className="text-sm font-semibold text-gray-900">{breakdown.expenseScore}/30</span>
+            <span className="text-xs font-medium text-slate-500">{t('expenseScore', language)}</span>
+            <span className="text-sm font-semibold text-slate-900">{breakdown.expenseScore}/30</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
+          <div className="w-full bg-slate-200 rounded-full h-1.5">
             <div
               className="h-full bg-blue-600 rounded-full transition-all duration-500"
               style={{ width: `${(breakdown.expenseScore / 30) * 100}%` }}
@@ -202,12 +206,12 @@ export default function HealthScoreDisplay({
           </div>
         </div>
 
-        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-600">{t('cashScore', language)}</span>
-            <span className="text-sm font-semibold text-gray-900">{breakdown.cashScore}/20</span>
+            <span className="text-xs font-medium text-slate-500">{t('cashScore', language)}</span>
+            <span className="text-sm font-semibold text-slate-900">{breakdown.cashScore}/20</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
+          <div className="w-full bg-slate-200 rounded-full h-1.5">
             <div
               className="h-full bg-blue-600 rounded-full transition-all duration-500"
               style={{ width: `${(breakdown.cashScore / 20) * 100}%` }}
@@ -215,12 +219,12 @@ export default function HealthScoreDisplay({
           </div>
         </div>
 
-        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-600">{t('creditScore', language)}</span>
-            <span className="text-sm font-semibold text-gray-900">{breakdown.creditScore}/20</span>
+            <span className="text-xs font-medium text-slate-500">{t('creditScore', language)}</span>
+            <span className="text-sm font-semibold text-slate-900">{breakdown.creditScore}/20</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
+          <div className="w-full bg-slate-200 rounded-full h-1.5">
             <div
               className="h-full bg-blue-600 rounded-full transition-all duration-500"
               style={{ width: `${(breakdown.creditScore / 20) * 100}%` }}
@@ -271,9 +275,9 @@ export default function HealthScoreDisplay({
                 {translateHint[language] || translateHint['en']}
               </p>
             )}
-          </div>
-        );
-      })()}
-    </div>
+            </div>
+          );
+        })()}
+    </Card>
   );
 }

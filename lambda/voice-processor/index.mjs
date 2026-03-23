@@ -1,14 +1,15 @@
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { TranscribeClient, StartTranscriptionJobCommand, GetTranscriptionJobCommand } from "@aws-sdk/client-transcribe";
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
+import { generateWithModelChain, getLambdaModelChain } from "../shared/bedrock-chain.mjs";
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 const s3Client = new S3Client({ region: AWS_REGION });
 const transcribeClient = new TranscribeClient({ region: AWS_REGION });
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
 
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 const RESULTS_BUCKET = process.env.RESULTS_BUCKET || 'vyapar-voice';
+const VOICE_MODEL_CHAIN = getLambdaModelChain('voice');
 
 export const handler = async (event) => {
   console.log("Event:", JSON.stringify(event, null, 2));
@@ -114,41 +115,24 @@ Return ONLY valid JSON format:
   "confidence": number (0-1)
 }`;
 
-    // Amazon Nova format
-    const bedrockPayload = {
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              text: prompt,
-            },
-          ],
-        },
-      ],
-      inferenceConfig: {
-        max_new_tokens: 500,
-      },
-    };
-
     console.log("Calling Bedrock for data extraction...");
     console.log(`🌍 Bedrock Region: ${AWS_REGION}`);
-    console.log(`🤖 Bedrock Model ID: ${BEDROCK_MODEL_ID}`);
+    console.log(`🤖 Bedrock Model Chain: ${VOICE_MODEL_CHAIN.join(' -> ')}`);
 
-    const bedrockCommand = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: JSON.stringify(bedrockPayload),
+    const aiResponse = await generateWithModelChain({
+      client: bedrockClient,
+      modelIds: VOICE_MODEL_CHAIN,
+      prompt,
+      maxTokens: 500,
+      feature: 'voice-processor',
     });
 
-    const bedrockResponse = await bedrockClient.send(bedrockCommand);
-    const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
+    if (!aiResponse.success || !aiResponse.content) {
+      throw new Error(aiResponse.error || 'Voice extraction failed');
+    }
 
-    console.log("Bedrock response:", JSON.stringify(responseBody, null, 2));
-
-    // Nova response format: output.message.content[0].text
-    const extractedText = responseBody.output.message.content[0].text;
+    console.log(`Bedrock response model: ${aiResponse.modelId}`);
+    const extractedText = aiResponse.content;
 
     // Parse the JSON from the response
     let extractedData;

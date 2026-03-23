@@ -1,6 +1,7 @@
 'use client';
 
 import { BusinessInsights, Language } from '@/lib/types';
+import { Button } from './ui/Button';
 
 interface ShareWhatsAppProps {
   insights: BusinessInsights;
@@ -208,12 +209,14 @@ export default function ShareWhatsApp({ insights, language }: ShareWhatsAppProps
       : '📱 Share on WhatsApp';
 
   return (
-    <button
+    <Button
       onClick={handleShare}
-      className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-600 transition-colors shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+      variant="secondary"
+      fullWidth
+      className="border-green-200 text-green-700 hover:bg-green-50"
     >
       <span className="text-2xl">💬</span>
       <span>{buttonText}</span>
-    </button>
+    </Button>
   );
 }

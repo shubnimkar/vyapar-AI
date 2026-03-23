@@ -1,13 +1,12 @@
 /**
  * Integration tests for /api/analyze endpoint with FallbackOrchestrator
- * Tests deterministic calculation ordering and AI fallback behavior
+ * Tests deterministic calculation ordering and Bedrock model-chain fallback behavior
  */
 
 import { POST } from '@/app/api/analyze/route';
 import { NextRequest } from 'next/server';
 import { getSession } from '@/lib/session-store';
 import { getFallbackOrchestrator } from '@/lib/ai/fallback-orchestrator';
-import { MockProvider } from '@/lib/ai/__tests__/mock-provider';
 import { AIProviderResponse } from '@/lib/ai/provider-abstraction';
 
 // Mock dependencies
@@ -140,7 +139,7 @@ describe('/api/analyze endpoint integration tests', () => {
     it('should return AI analysis when Bedrock succeeds', async () => {
       const mockResponse: AIProviderResponse = {
         success: true,
-        content: '**True Profit Analysis**\nYour business is profitable.\n**Cashflow Forecast**\nPositive trend.',
+        content: '[SECTION_1] Your business is profitable. [SECTION_5] Positive trend.',
         provider: 'bedrock',
       };
       
@@ -167,17 +166,18 @@ describe('/api/analyze endpoint integration tests', () => {
       expect(mockOrchestrator.generateResponse).toHaveBeenCalledWith(
         expect.any(String),
         { language: 'en' },
-        { endpoint: '/api/analyze', userId: 'user-123' }
+        { endpoint: '/api/analyze' }
       );
     });
   });
 
-  describe('Fallback to Puter path', () => {
-    it('should return AI analysis when Bedrock fails but Puter succeeds', async () => {
+  describe('Bedrock fallback model path', () => {
+    it('should return AI analysis when the fallback Bedrock model succeeds', async () => {
       const mockResponse: AIProviderResponse = {
         success: true,
         content: '**True Profit Analysis**\nGood profit margins.\n**Blocked Inventory Cash**\nSome inventory blocked.',
-        provider: 'puter',
+        provider: 'bedrock',
+        modelId: 'apac.amazon.nova-lite-v1:0',
       };
       
       mockOrchestrator.generateResponse.mockResolvedValue(mockResponse);

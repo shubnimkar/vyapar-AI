@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       calculatedMetrics // Pass pre-calculated metrics to prompt
     );
     
-    const orchestrator = getFallbackOrchestrator();
+    const orchestrator = getFallbackOrchestrator('analysis');
     const aiResponse = await orchestrator.generateResponse(
       prompt,
       { language },

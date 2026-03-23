@@ -1,11 +1,12 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand, QueryCommand, PutCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { generateWithModelChain, getLambdaModelChain } from '../shared/bedrock-chain.mjs';
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'vyapar-ai';
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 const REPORT_TIMEZONE = 'Asia/Kolkata';
+const REPORT_MODEL_CHAIN = getLambdaModelChain('report');
 
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
 const dynamoClient = new DynamoDBClient({ region: AWS_REGION });
@@ -127,29 +128,20 @@ Return ONLY valid JSON in this shape:
   "nextSteps": ["short action", "short action"]
 }`;
 
-  const command = new InvokeModelCommand({
-    modelId: BEDROCK_MODEL_ID,
-    contentType: 'application/json',
-    accept: 'application/json',
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'user',
-          content: [{ text: prompt }],
-        },
-      ],
-      inferenceConfig: {
-        max_new_tokens: 500,
-      },
-    }),
+  const response = await generateWithModelChain({
+    client: bedrockClient,
+    modelIds: REPORT_MODEL_CHAIN,
+    prompt,
+    maxTokens: 500,
+    feature: 'report-generator',
   });
 
-  const response = await bedrockClient.send(command);
-  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  const extractedText = responseBody.output?.message?.content?.[0]?.text || '';
+  if (!response.success || !response.content) {
+    throw new Error(response.error || 'Report generation failed');
+  }
 
   return parseReportInsights(
-    extractedText,
+    response.content,
     buildFallbackSummary(metrics.totalSales, metrics.totalExpenses, metrics.netProfit)
   );
 }

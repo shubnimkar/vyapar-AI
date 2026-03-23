@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { DailyPrediction, Language } from '@/lib/types';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 
 interface CashFlowPredictorProps {
   userId: string;
@@ -165,21 +167,23 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-4 border border-gray-200">
+    <Card className="space-y-5 rounded-2xl">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">{t.title}</h3>
+        <h3 className="text-xl font-semibold text-slate-900">{t.title}</h3>
         <div className="flex items-center gap-2">
           {predictions.length > 0 && (
-            <button
+            <Button
               onClick={handleExplainPrediction}
               disabled={explaining}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1 disabled:text-gray-400 transition-colors"
+              variant="ghost"
+              size="sm"
+              className="text-blue-600 hover:bg-transparent hover:text-blue-700"
             >
               ℹ️ {t.explainPrediction}
-            </button>
+            </Button>
           )}
           {hasNegativePredictions && (
-            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium border border-red-200">
+            <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-sm font-medium text-red-700">
               ⚠️ {negativeCount} {t.days}
             </span>
           )}
@@ -187,23 +191,25 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       </div>
 
       {predictions.length === 0 && !insufficientData && (
-        <button
+        <Button
           onClick={fetchPredictions}
           disabled={isLoading}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400"
+          variant="primary"
+          size="md"
+          fullWidth
         >
           {isLoading ? `⏳ ${t.loading}` : `🔮 ${t.predict}`}
-        </button>
+        </Button>
       )}
 
       {insufficientData && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-700">
+        <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-700">
           ℹ️ {t.insufficientData}
         </div>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
           ⚠️ {t.error}: {error}
         </div>
       )}
@@ -211,14 +217,14 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       {predictions.length > 0 && (
         <div className="space-y-3">
           {hasNegativePredictions && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm font-medium">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
               ⚠️ {t.negativeAlert}
             </div>
           )}
 
           {/* Loading skeleton while fetching all 3 languages */}
           {explaining && !Object.keys(explanations).length && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg animate-pulse">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 animate-pulse">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -254,7 +260,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
             };
 
             return anyText ? (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{anyText}</p>
                 {isFallback && (
                   <p className="mt-2 text-xs text-blue-500 italic">
@@ -269,15 +275,15 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
             {predictions.map((prediction, index) => (
               <div
                 key={index}
-                className={`border rounded-lg p-4 ${
+                className={`rounded-xl border p-4 ${
                   prediction.isNegative
                     ? 'border-red-300 bg-red-50'
-                    : 'border-gray-200 bg-gray-50'
+                    : 'border-slate-200 bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-slate-900">
                       {new Date(prediction.date).toLocaleDateString('en-IN', {
                         weekday: 'short',
                         month: 'short',
@@ -292,9 +298,9 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
                       {formatCurrency(prediction.predictedBalance)}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl">{getTrendEmoji(prediction.trend)}</div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-right">
+                      <div className="text-2xl">{getTrendEmoji(prediction.trend)}</div>
+                    <div className="mt-1 text-xs text-slate-500">
                       {Math.round(prediction.confidence * 100)}% {t.confidence}
                     </div>
                   </div>
@@ -304,6 +310,6 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

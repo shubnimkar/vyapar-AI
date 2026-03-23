@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
+import { Card, CardBody, CardHeader } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 import { Language, CreditSummary } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { Check, Trash2, AlertCircle, Search, PlusCircle, Landmark, AlertTriangle } from 'lucide-react';
@@ -280,180 +283,169 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
   };
 
   return (
-    <div className="p-6 md:p-8 bg-white font-display text-slate-900">
+    <div className="bg-white text-slate-900">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-          <input 
-            className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35] transition-all placeholder:text-slate-400" 
+          <Search className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <Input
             placeholder={language === 'hi' ? 'ग्राहक या चालान खोजें...' : language === 'mr' ? 'ग्राहक किंवा चलन शोधा...' : "Search customers or invoices..."} 
-            type="text"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setCurrentPage(1); // Reset to first page when searching
             }}
+            className="pl-11"
           />
         </div>
-        <button 
+        <Button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-[#ff6b35] hover:bg-[#ff5722] text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+          icon={<PlusCircle className="w-4 h-4" />}
+          className="whitespace-nowrap"
         >
-          <PlusCircle className="w-4 h-4" />
           <span>{t('addCredit', language)}</span>
-        </button>
+        </Button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {/* Total Outstanding */}
-        <div className="bg-gradient-to-br from-[#6366f1] to-[#8b5cf6] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">+5.2%</div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Landmark className="w-5 h-5" />
+        <Card className="bg-primary-50 border-primary-100">
+          <CardBody className="relative">
+            <div className="absolute top-0 right-0 text-primary-300 text-xs font-semibold">+5.2%</div>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="rounded-xl border border-primary-100 bg-white p-2">
+                <Landmark className="w-5 h-5 text-primary-600" />
+              </div>
             </div>
-          </div>
-          <p className="text-white/90 text-xs font-medium mb-1">{t('totalOutstanding', language)}</p>
-          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">₹{summary.totalOutstanding.toLocaleString('en-IN')}</h3>
-          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
-            {t('credit.updatedAgo', language)}
-          </p>
-        </div>
+            <p className="mb-1 text-sm font-medium text-slate-500">{t('totalOutstanding', language)}</p>
+            <h3 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">₹{summary.totalOutstanding.toLocaleString('en-IN')}</h3>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+              {t('credit.updatedAgo', language)}
+            </p>
+          </CardBody>
+        </Card>
 
         {/* Total Overdue */}
-        <div className="bg-gradient-to-br from-[#f43f5e] to-[#ec4899] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">-2.4%</div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <AlertCircle className="w-5 h-5" />
+        <Card className="bg-rose-50 border-rose-100">
+          <CardBody className="relative">
+            <div className="absolute top-0 right-0 text-rose-300 text-xs font-semibold">-2.4%</div>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="rounded-xl border border-rose-100 bg-white p-2">
+                <AlertCircle className="w-5 h-5 text-rose-600" />
+              </div>
             </div>
-          </div>
-          <p className="text-white/90 text-xs font-medium mb-1">{t('totalOverdue', language)}</p>
-          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">₹{summary.totalOverdue.toLocaleString('en-IN')}</h3>
-          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
-            {t('credit.requiresAction', language)}
-          </p>
-        </div>
+            <p className="mb-1 text-sm font-medium text-slate-500">{t('totalOverdue', language)}</p>
+            <h3 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">₹{summary.totalOverdue.toLocaleString('en-IN')}</h3>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
+              {t('credit.requiresAction', language)}
+            </p>
+          </CardBody>
+        </Card>
 
         {/* Total Alerts / Overdue Customers */}
-        <div className="bg-gradient-to-br from-[#f59e0b] to-[#f97316] rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute top-3 right-3 text-white/30 text-xs font-semibold">+12%</div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <AlertTriangle className="w-5 h-5" />
+        <Card className="bg-amber-50 border-amber-100">
+          <CardBody className="relative">
+            <div className="absolute top-0 right-0 text-amber-300 text-xs font-semibold">+12%</div>
+            <div className="mb-4 flex items-center gap-2">
+              <div className="rounded-xl border border-amber-100 bg-white p-2">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+              </div>
             </div>
-          </div>
-          <p className="text-white/90 text-xs font-medium mb-1">
-            {t('credit.totalAlerts', language)}
-          </p>
-          <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-2">{summary.overdueCount}</h3>
-          <p className="text-white/70 text-[10px] uppercase tracking-wide font-medium">
-            {t('credit.criticalCount', language)}
-          </p>
-        </div>
+            <p className="mb-1 text-sm font-medium text-slate-500">
+              {t('credit.totalAlerts', language)}
+            </p>
+            <h3 className="mb-2 text-3xl font-bold tracking-tight text-slate-900">{summary.overdueCount}</h3>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-amber-700">
+              {t('credit.criticalCount', language)}
+            </p>
+          </CardBody>
+        </Card>
       </div>
 
       {/* Add Form */}
       {showForm && (
-        <form onSubmit={handleAddEntry} className="mb-6 p-5 bg-white rounded-xl border border-slate-200">
-          <h3 className="text-base font-semibold mb-4 text-slate-800">{t('addCredit', language)}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                {t('customerName', language)}
-              </label>
-              <input
-                type="text"
-                required
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
-                placeholder={t('enterName', language)}
-              />
-            </div>
+        <Card className="mb-6">
+          <CardHeader>
+            <h3 className="text-xl font-semibold text-slate-900">{t('addCredit', language)}</h3>
+          </CardHeader>
+          <CardBody>
+            <form onSubmit={handleAddEntry}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <Input
+                  type="text"
+                  label={t('customerName', language)}
+                  required
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder={t('enterName', language)}
+                />
 
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                {t('amount', language)}
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                required
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
-                placeholder="5000"
-              />
-            </div>
+                <Input
+                  type="number"
+                  label={t('amount', language)}
+                  min="0"
+                  step="0.01"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="5000"
+                />
 
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                {t('dueDate', language)}
-              </label>
-              <input
-                type="date"
-                required
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
-              />
-            </div>
+                <Input
+                  type="date"
+                  label={t('dueDate', language)}
+                  required
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
 
-            <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">
-                {t('phoneNumber', language)} ({t('optional', language)})
-              </label>
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#ff6b35]/30 focus:border-[#ff6b35]"
-                placeholder="9876543210"
-                maxLength={10}
-                pattern="[0-9]{10}"
-              />
-            </div>
-          </div>
+                <Input
+                  type="tel"
+                  label={`${t('phoneNumber', language)} (${t('optional', language)})`}
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="9876543210"
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                />
+              </div>
 
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-[#ff6b35] hover:bg-[#ff5722] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-            >
-              {t('save', language)}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm border border-slate-200 transition-colors"
-            >
-              {t('cancel', language)}
-            </button>
-          </div>
-        </form>
+              <div className="flex gap-2">
+                <Button type="submit">
+                  {t('save', language)}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  variant="secondary"
+                >
+                  {t('cancel', language)}
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
       )}
 
       {/* Recent Activity Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-6 py-4 bg-white border-b border-slate-200 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-gray-900">
+      <Card className="overflow-hidden p-0">
+        <div className="px-6 py-5 bg-white border-b border-slate-200 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-slate-900">
             {t('credit.recentActivity', language)}
           </h2>
-          <button 
+          <Button
             onClick={() => {
               setShowAllEntries(!showAllEntries);
               if (!showAllEntries) {
                 setCurrentPage(1); // Reset to first page when toggling
               }
             }}
-            className="text-sm text-[#ff6b35] hover:text-[#ff5722] font-medium"
+            variant="ghost"
+            size="sm"
           >
             {showAllEntries ? t('credit.showLess', language) : t('credit.viewAll', language)}
-          </button>
+          </Button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -538,7 +530,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
         {/* Pagination */}
         {filteredEntries.length > 0 && !showAllEntries && (
           <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-slate-500">
               {formatTemplate(t('credit.showingLogs', language), {
                 start: showingStart,
                 end: showingEnd,
@@ -546,24 +538,26 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
               })}
             </p>
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 onClick={handlePreviousPage}
                 disabled={currentPage === 1}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                variant="secondary"
+                size="sm"
               >
                 {t('ui.button.previous', language)}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                variant="secondary"
+                size="sm"
               >
                 {t('ui.button.next', language)}
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

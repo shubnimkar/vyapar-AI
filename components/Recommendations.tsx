@@ -1,6 +1,7 @@
 'use client';
 
 import { ActionableRecommendation, Language } from '@/lib/types';
+import { Card } from './ui/Card';
 
 interface RecommendationsProps {
   recommendations: ActionableRecommendation[];
@@ -45,14 +46,14 @@ export default function Recommendations({
       : '🎯 Actionable Recommendations';
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
+    <Card className="rounded-2xl">
+      <h2 className="mb-4 text-2xl font-semibold text-slate-900">{title}</h2>
 
       <div className="space-y-3">
         {recommendations.map((rec, idx) => (
           <div
             key={idx}
-            className={`border rounded-lg p-4 ${getSeverityColor(rec.severity)}`}
+            className={`rounded-2xl border p-5 ${getSeverityColor(rec.severity)}`}
           >
             <div className="flex items-start gap-3">
               <span className="text-2xl flex-shrink-0">
@@ -60,7 +61,7 @@ export default function Recommendations({
               </span>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-semibold px-2 py-0.5 bg-white rounded">
+                  <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold">
                     {language === 'hi'
                       ? `प्राथमिकता ${rec.priority}`
                       : language === 'mr'
@@ -82,6 +83,6 @@ export default function Recommendations({
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

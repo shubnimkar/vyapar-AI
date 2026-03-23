@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Language, UserProfile as UserProfileType } from '@/lib/types';
+import { BusinessType, CityTier, Language, UserProfile as UserProfileType } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import ProfileSetupForm from './ProfileSetupForm';
 import { t } from '@/lib/translations';
 import ProfileAvatar from './ui/ProfileAvatar';
+import { Button } from './ui/Button';
+import { Card } from './ui/Card';
 
 interface ProfileContentProps {
   language: Language;
@@ -97,7 +99,7 @@ export default function ProfileContent({ language, user, showBackButton = false 
   if (fetchError) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+        <Card className="p-12 text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
             <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -112,16 +114,19 @@ export default function ProfileContent({ language, user, showBackButton = false 
             {t('profile.fetchErrorDescription', language)}
           </p>
 
-          <button
+          <Button
             onClick={() => loadProfileData(user.userId)}
-            className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+            variant="primary"
+            size="md"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            }
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
             {t('profile.retry', language)}
-          </button>
-        </div>
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -150,7 +155,7 @@ export default function ProfileContent({ language, user, showBackButton = false 
         <ProfileSetupForm
           phoneNumber={profileData.phoneNumber || ''}
           userId={user.userId}
-            username={user.username}
+          username={user.username}
           onComplete={handleEditComplete}
           onSkip={() => setIsEditMode(false)}
           language={language}
@@ -160,8 +165,8 @@ export default function ProfileContent({ language, user, showBackButton = false 
             email: profileData.email,
             avatarUrl: profileData.avatarUrl,
             language: profileData.language,
-            businessType: profileData.business_type,
-            city: profileData.city_tier,
+            businessType: (profileData.businessType || profileData.business_type) as BusinessType | undefined,
+            city: profileData.city as CityTier | undefined,
             business_type: profileData.business_type,
             city_tier: profileData.city_tier,
             explanation_mode: profileData.explanation_mode,
@@ -178,46 +183,51 @@ export default function ProfileContent({ language, user, showBackButton = false 
         {hasProfile ? (
           <>
             {/* Profile Header Section */}
-            <div className="flex flex-col items-center text-center mb-8">
-            <div className="relative group">
-              <ProfileAvatar
-                src={profileData!.avatarUrl}
-                name={profileData!.shopName || profileData!.userName}
-                size="xl"
-                className="border-4 border-white shadow-xl"
-              />
-            </div>
-            <div className="mt-4">
-              <h2 className="text-2xl font-bold">{profileData!.shopName}</h2>
-              <p className="text-slate-500 font-medium">
-                {profileData!.userName} • {getBusinessTypeLabel(profileData!.business_type || profileData!.businessType || 'other')}
-              </p>
-              {profileData!.city_tier && (
-                <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-blue-600/10 text-blue-600 text-xs font-semibold uppercase tracking-wider">
-                  {profileData!.city_tier === 'tier1' && (language === 'hi' ? 'टियर 1 व्यापारी' : language === 'mr' ? 'टियर 1 व्यापारी' : 'Tier 1 Merchant')}
-                  {profileData!.city_tier === 'tier2' && (language === 'hi' ? 'टियर 2 व्यापारी' : language === 'mr' ? 'टियर 2 व्यापारी' : 'Tier 2 Merchant')}
-                  {profileData!.city_tier === 'tier3' && (language === 'hi' ? 'टियर 3 व्यापारी' : language === 'mr' ? 'टियर 3 व्यापारी' : 'Tier 3 Merchant')}
-                  {profileData!.city_tier === 'rural' && (language === 'hi' ? 'ग्रामीण व्यापारी' : language === 'mr' ? 'ग्रामीण व्यापारी' : 'Rural Merchant')}
+            <Card className="mb-8 rounded-3xl bg-gradient-to-br from-slate-50 via-white to-blue-50/70 p-8">
+              <div className="flex flex-col items-center text-center">
+                <div className="relative group">
+                  <ProfileAvatar
+                    src={profileData!.avatarUrl}
+                    name={profileData!.shopName || profileData!.userName}
+                    size="xl"
+                    className="border-4 border-white shadow-xl"
+                  />
                 </div>
-              )}
-            </div>
-            <div className="mt-6 flex gap-3 w-full sm:w-auto justify-center">
-              <button
-                onClick={() => setIsEditMode(true)}
-                className="sm:flex-none px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-600/90 transition-colors flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                {t('profile.edit', language)}
-              </button>
-            </div>
-          </div>
+                <div className="mt-5">
+                  <h2 className="text-4xl font-bold tracking-tight text-slate-900">{profileData!.shopName}</h2>
+                  <p className="mt-2 text-lg font-medium text-slate-500">
+                    {profileData!.userName} • {getBusinessTypeLabel(profileData!.business_type || profileData!.businessType || 'other')}
+                  </p>
+                  {profileData!.city_tier && (
+                    <div className="mt-3 inline-flex items-center rounded-full bg-blue-50 px-4 py-1.5 text-sm font-semibold text-blue-700">
+                      {profileData!.city_tier === 'tier1' && (language === 'hi' ? 'टियर 1 व्यापारी' : language === 'mr' ? 'टियर 1 व्यापारी' : 'Tier 1 Merchant')}
+                      {profileData!.city_tier === 'tier2' && (language === 'hi' ? 'टियर 2 व्यापारी' : language === 'mr' ? 'टियर 2 व्यापारी' : 'Tier 2 Merchant')}
+                      {profileData!.city_tier === 'tier3' && (language === 'hi' ? 'टियर 3 व्यापारी' : language === 'mr' ? 'टियर 3 व्यापारी' : 'Tier 3 Merchant')}
+                      {profileData!.city_tier === 'rural' && (language === 'hi' ? 'ग्रामीण व्यापारी' : language === 'mr' ? 'ग्रामीण व्यापारी' : 'Rural Merchant')}
+                    </div>
+                  )}
+                </div>
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    onClick={() => setIsEditMode(true)}
+                    variant="primary"
+                    size="md"
+                    icon={
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    }
+                  >
+                    {t('profile.edit', language)}
+                  </Button>
+                </div>
+              </div>
+            </Card>
 
           {/* Content Grid */}
           <div className="space-y-6">
             {/* Business Information Card */}
-            <section className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -269,7 +279,7 @@ export default function ProfileContent({ language, user, showBackButton = false 
             </section>
 
             {/* Contact & Location Card */}
-            <section className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -319,7 +329,7 @@ export default function ProfileContent({ language, user, showBackButton = false 
             </section>
 
             {/* Preferences Card */}
-            <section className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -357,7 +367,7 @@ export default function ProfileContent({ language, user, showBackButton = false 
       ) : (
         // Empty State
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <Card className="p-12 text-center">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
               <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -372,16 +382,19 @@ export default function ProfileContent({ language, user, showBackButton = false 
               {t('profile.incompleteDescription', language)}
             </p>
 
-            <button
+            <Button
               onClick={() => setIsEditMode(true)}
-              className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium shadow-lg hover:shadow-xl transition-all"
+              variant="primary"
+              size="md"
+              icon={
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              }
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
               {t('profile.setup.complete', language)}
-            </button>
-          </div>
+            </Button>
+          </Card>
         </div>
       )}
     </div>

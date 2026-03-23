@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, CalendarClock, ChevronLeft, FileText, RefreshCw, Sparkles, TrendingDown, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { getLocalEntries } from '@/lib/daily-entry-sync';
 import { DailyReport, Language, ReportsListResponse } from '@/lib/types';
 import { logger } from '@/lib/logger';
@@ -400,7 +402,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
   if (isLoading) {
     return (
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <Card className="rounded-3xl">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 rounded bg-slate-200" />
           <div className="grid gap-4 md:grid-cols-3">
@@ -410,21 +412,25 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
           </div>
           <div className="h-64 rounded-2xl bg-slate-100" />
         </div>
-      </div>
+      </Card>
     );
   }
 
   if (selectedReport) {
     return (
-      <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <button
-          type="button"
-          onClick={() => setSelectedReport(null)}
-          className="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-800"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          {t.back}
-        </button>
+      <Card className="space-y-6 rounded-3xl">
+        <div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedReport(null)}
+            icon={<ChevronLeft className="h-4 w-4" />}
+            className="px-0 text-blue-700 hover:bg-transparent hover:text-blue-800"
+          >
+            {t.back}
+          </Button>
+        </div>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
@@ -504,33 +510,34 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           {t.missingData}
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <Card className="space-y-8 rounded-3xl">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-slate-900">{t.title}</h3>
-          <p className="max-w-3xl text-sm leading-6 text-slate-600">{t.subtitle}</p>
+          <h3 className="text-3xl font-bold tracking-tight text-slate-900">{t.title}</h3>
+          <p className="max-w-3xl text-base leading-7 text-slate-500">{t.subtitle}</p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => void fetchReports('refresh')}
           disabled={isRefreshing}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+          variant="secondary"
+          size="md"
+          icon={<RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />}
         >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           {t.refresh}
-        </button>
+        </Button>
       </div>
 
       {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
       {notice && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</div>}
 
       <div className="grid gap-4 xl:grid-cols-[1.15fr,0.85fr]">
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
           <div className="flex items-center gap-2 text-slate-900">
             <CalendarClock className="h-5 w-5 text-blue-700" />
             <h4 className="text-lg font-semibold">{t.automation}</h4>
@@ -548,14 +555,14 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
                 type="time"
                 value={reportTime}
                 onChange={(event) => setReportTime(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-blue-500"
+                className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
               />
             </div>
             <button
               type="button"
               aria-pressed={automationEnabled}
               onClick={() => setAutomationEnabled((value) => !value)}
-              className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+              className={`flex h-12 items-center gap-3 rounded-xl border px-4 text-sm font-medium transition ${
                 automationEnabled
                   ? 'border-blue-200 bg-blue-50 text-blue-900'
                   : 'border-slate-200 bg-white text-slate-700'
@@ -574,18 +581,18 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
               </span>
               <span>{automationEnabled ? t.enabled : t.disabled}</span>
             </button>
-            <button
+            <Button
               type="button"
               onClick={savePreferences}
               disabled={isSavingPrefs}
-              className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
+              variant="primary"
             >
               {isSavingPrefs ? t.saving : t.savePrefs}
-            </button>
+            </Button>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 p-5">
+        <section className="rounded-2xl border border-slate-200 p-6">
           <div className="flex items-center gap-2 text-slate-900">
             <Sparkles className="h-5 w-5 text-blue-700" />
             <h4 className="text-lg font-semibold">{t.generateTitle}</h4>
@@ -595,20 +602,20 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             <select
               value={selectedGenerateType}
               onChange={(event) => setSelectedGenerateType(event.target.value as Exclude<ReportType, 'all'>)}
-              className="flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-blue-500"
+              className="h-12 flex-1 rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
             >
               <option value="daily">{t.daily}</option>
               <option value="weekly">{t.weekly}</option>
               <option value="monthly">{t.monthly}</option>
             </select>
-            <button
+            <Button
               type="button"
               onClick={generateReport}
               disabled={isGenerating}
-              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              variant="primary"
             >
               {isGenerating ? t.generating : t.generateNow}
-            </button>
+            </Button>
           </div>
         </section>
       </div>
@@ -622,18 +629,20 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
       <div className="flex flex-wrap gap-2">
         {reportTypes.map((type) => (
-          <button
+          <Button
             key={type}
             type="button"
             onClick={() => setActiveFilter(type)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            variant={activeFilter === type ? 'primary' : 'secondary'}
+            size="sm"
+            className={`rounded-full ${
               activeFilter === type
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'border-transparent'
+                : 'shadow-none'
             }`}
           >
             {type === 'all' ? t.allReports : t[type]}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -654,7 +663,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
                 key={report.id}
                 type="button"
                 onClick={() => setSelectedReport(report)}
-                className="w-full rounded-2xl border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-slate-50"
+                className="w-full rounded-2xl border border-slate-200 p-5 text-left transition hover:border-blue-300 hover:bg-slate-50"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
@@ -680,7 +689,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
           </div>
         )}
       </section>
-    </div>
+    </Card>
   );
 }
 

@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Invoke AI via FallbackOrchestrator
-    const orchestrator = getFallbackOrchestrator();
+    const orchestrator = getFallbackOrchestrator('indices');
     const aiResponse = await orchestrator.generateResponse(
       fullPrompt,
       { language },

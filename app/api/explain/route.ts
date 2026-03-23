@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Call AI for explanation only (graceful degradation if AI unavailable)
-    const orchestrator = getFallbackOrchestrator();
+    const orchestrator = getFallbackOrchestrator('explain');
     const aiResponse = await orchestrator.generateResponse(
       `${promptStructure.system}\n\n${promptStructure.user}`,
       { language },

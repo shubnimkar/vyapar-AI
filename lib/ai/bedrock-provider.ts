@@ -5,12 +5,13 @@
  * This enables seamless integration with the fallback orchestrator while maintaining
  * compatibility with existing Bedrock infrastructure.
  * 
- * The provider supports both Claude and Nova model formats and includes retry logic
+ * The provider supports Bedrock model-family request formatting and includes retry logic
  * for throttling errors with exponential backoff.
  */
 
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { AIProvider, AIProviderResponse, GenerateOptions } from './provider-abstraction';
+import { extractBedrockContent, formatBedrockRequest, mapBedrockErrorType } from './bedrock-utils';
 
 /**
  * BedrockProvider implements the AIProvider interface for AWS Bedrock
@@ -19,7 +20,7 @@ import { AIProvider, AIProviderResponse, GenerateOptions } from './provider-abst
  * - Dependency injection support for testing
  * - Standardized response format
  * - Retry logic with exponential backoff
- * - Support for both Claude and Nova models
+ * - Support for Bedrock model-family request/response handling
  * - Error type mapping and user-friendly messages
  */
 export class BedrockProvider implements AIProvider {
@@ -63,27 +64,24 @@ export class BedrockProvider implements AIProvider {
     
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        // Determine model type and format request
-        const modelType = this.getModelType(this.modelId);
-        const requestBody = this.formatRequest(prompt, modelType);
-        
         const command = new InvokeModelCommand({
           modelId: this.modelId,
           contentType: 'application/json',
           accept: 'application/json',
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify(formatBedrockRequest(prompt, this.modelId)),
         });
         
         const response = await this.client.send(command);
         const responseBody = JSON.parse(new TextDecoder().decode(response.body));
         
         // Extract content based on model type
-        const content = this.extractContent(responseBody, modelType);
+        const content = extractBedrockContent(responseBody, this.modelId);
         
         return {
           success: true,
           content,
           provider: 'bedrock',
+          modelId: this.modelId,
         };
         
       } catch (error: any) {
@@ -97,7 +95,7 @@ export class BedrockProvider implements AIProvider {
         }
         
         // Map error types
-        const errorType = this.mapErrorType(error);
+        const errorType = mapBedrockErrorType(error);
         
         // Don't retry on non-throttling errors
         if (errorType !== 'rate_limit') {
@@ -107,12 +105,13 @@ export class BedrockProvider implements AIProvider {
     }
     
     // Return error response
-    const errorType = this.mapErrorType(lastError);
+    const errorType = mapBedrockErrorType(lastError);
     return {
       success: false,
       error: this.getErrorMessage(lastError, errorType),
       errorType,
       provider: 'bedrock',
+      modelId: this.modelId,
     };
   }
   
@@ -141,77 +140,6 @@ export class BedrockProvider implements AIProvider {
   }
   
   /**
-   * Detect model type from model ID
-   * 
-   * @param modelId - The Bedrock model ID
-   * @returns 'claude' or 'nova'
-   */
-  private getModelType(modelId: string): 'claude' | 'nova' {
-    if (modelId.includes('anthropic') || modelId.includes('claude')) {
-      return 'claude';
-    }
-    if (modelId.includes('nova')) {
-      return 'nova';
-    }
-    return 'claude'; // default
-  }
-  
-  /**
-   * Format request body based on model type
-   * 
-   * @param prompt - The prompt text
-   * @param modelType - 'claude' or 'nova'
-   * @returns Formatted request body
-   */
-  private formatRequest(prompt: string, modelType: 'claude' | 'nova'): any {
-    if (modelType === 'nova') {
-      // Amazon Nova format
-      return {
-        messages: [{ role: 'user', content: [{ text: prompt }] }],
-        inferenceConfig: { max_new_tokens: 2000 },
-      };
-    } else {
-      // Claude format
-      return {
-        anthropic_version: 'bedrock-2023-05-31',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }],
-      };
-    }
-  }
-  
-  /**
-   * Extract content from response body based on model type
-   * 
-   * @param responseBody - Parsed response body
-   * @param modelType - 'claude' or 'nova'
-   * @returns Extracted content text
-   */
-  private extractContent(responseBody: any, modelType: 'claude' | 'nova'): string {
-    if (modelType === 'nova') {
-      // Nova response format: output.message.content[0].text
-      return responseBody.output?.message?.content?.[0]?.text || '';
-    } else {
-      // Claude response format: content[0].text
-      return responseBody.content?.[0]?.text || '';
-    }
-  }
-  
-  /**
-   * Map AWS error to standardized error type
-   * 
-   * @param error - The error object from AWS SDK
-   * @returns Standardized error type
-   */
-  private mapErrorType(error: any): AIProviderResponse['errorType'] {
-    if (error.name === 'ThrottlingException') return 'rate_limit';
-    if (error.name === 'TimeoutError' || error.code === 'ETIMEDOUT') return 'timeout';
-    if (error.name === 'ServiceUnavailableException') return 'service_error';
-    if (error.name === 'UnauthorizedException' || error.name === 'AccessDeniedException') return 'authentication';
-    return 'unknown';
-  }
-  
-  /**
    * Get user-friendly error message based on error type
    * 
    * Never exposes AWS-specific error details, credentials, or stack traces.
@@ -230,6 +158,8 @@ export class BedrockProvider implements AIProvider {
         return 'AI service is temporarily unavailable.';
       case 'authentication':
         return 'Authentication failed.';
+      case 'validation':
+        return 'Invalid AI request.';
       default:
         // Never expose raw error messages - they might contain AWS details
         return 'Failed to get AI response.';

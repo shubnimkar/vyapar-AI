@@ -1,6 +1,7 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { generateWithModelChain, getLambdaModelChain } from '../shared/bedrock-chain.mjs';
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
@@ -16,7 +17,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient, {
 });
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'vyapar-ai';
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
+const CASHFLOW_MODEL_CHAIN = getLambdaModelChain('cashflow');
 
 export const handler = async (event) => {
   console.log("MILESTONE: Starting cash flow prediction");
@@ -106,38 +107,22 @@ Consider patterns like:
 
 Return ONLY a JSON array of exactly 7 predictions. No other text.`;
 
-    // Amazon Nova format
-    const bedrockPayload = {
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              text: prompt,
-            },
-          ],
-        },
-      ],
-      inferenceConfig: {
-        max_new_tokens: 1000,
-      },
-    };
-
     console.log(`🌍 Bedrock Region: ${AWS_REGION}`);
-    console.log(`🤖 Bedrock Model ID: ${BEDROCK_MODEL_ID}`);
+    console.log(`🤖 Bedrock Model Chain: ${CASHFLOW_MODEL_CHAIN.join(' -> ')}`);
     
-    const bedrockCommand = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: JSON.stringify(bedrockPayload),
+    const aiResponse = await generateWithModelChain({
+      client: bedrockClient,
+      modelIds: CASHFLOW_MODEL_CHAIN,
+      prompt,
+      maxTokens: 1000,
+      feature: 'cashflow-predictor',
     });
 
-    const bedrockResponse = await bedrockClient.send(bedrockCommand);
-    const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
+    if (!aiResponse.success || !aiResponse.content) {
+      throw new Error(aiResponse.error || 'Cashflow prediction failed');
+    }
 
-    // Nova response format: output.message.content[0].text
-    const extractedText = responseBody.output.message.content[0].text;
+    const extractedText = aiResponse.content;
 
     // Parse predictions
     let predictions;

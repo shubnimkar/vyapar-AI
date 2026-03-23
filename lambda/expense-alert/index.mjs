@@ -1,6 +1,7 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { generateWithModelChain, getLambdaModelChain } from '../shared/bedrock-chain.mjs';
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
@@ -16,7 +17,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient, {
 });
 
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || 'vyapar-ai';
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
+const EXPENSE_ALERT_MODEL_CHAIN = getLambdaModelChain('expense_alert');
 
 export const handler = async (event) => {
   console.log("MILESTONE: Starting expense anomaly detection");
@@ -105,38 +106,22 @@ If normal, return:
 
 Return ONLY valid JSON. No other text.`;
 
-    // Amazon Nova format
-    const bedrockPayload = {
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              text: prompt,
-            },
-          ],
-        },
-      ],
-      inferenceConfig: {
-        max_new_tokens: 300,
-      },
-    };
-
     console.log(`🌍 Bedrock Region: ${AWS_REGION}`);
-    console.log(`🤖 Bedrock Model ID: ${BEDROCK_MODEL_ID}`);
-    
-    const bedrockCommand = new InvokeModelCommand({
-      modelId: BEDROCK_MODEL_ID,
-      contentType: "application/json",
-      accept: "application/json",
-      body: JSON.stringify(bedrockPayload),
+    console.log(`🤖 Bedrock Model Chain: ${EXPENSE_ALERT_MODEL_CHAIN.join(' -> ')}`);
+
+    const aiResponse = await generateWithModelChain({
+      client: bedrockClient,
+      modelIds: EXPENSE_ALERT_MODEL_CHAIN,
+      prompt,
+      maxTokens: 300,
+      feature: 'expense-alert',
     });
 
-    const bedrockResponse = await bedrockClient.send(bedrockCommand);
-    const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
+    if (!aiResponse.success || !aiResponse.content) {
+      throw new Error(aiResponse.error || 'Expense alert analysis failed');
+    }
 
-    // Nova response format: output.message.content[0].text
-    const extractedText = responseBody.output.message.content[0].text;
+    const extractedText = aiResponse.content;
 
     // Parse anomaly result
     let anomalyResult;

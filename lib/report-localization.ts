@@ -1,9 +1,10 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime';
 import { Language, ReportLocalizedContent } from '@/lib/types';
 import { logger } from '@/lib/logger';
+import { generateWithModelChain } from '@/lib/ai/bedrock-model-chain';
+import { getModelChain } from '@/lib/ai/model-routing';
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
-const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
 
 function getLanguageName(language: Language): string {
@@ -94,19 +95,26 @@ Period: ${periodLabel}
 Content to translate:
 ${JSON.stringify(original)}`;
 
-  const command = new InvokeModelCommand({
-    modelId: BEDROCK_MODEL_ID,
-    contentType: 'application/json',
-    accept: 'application/json',
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: [{ text: prompt }] }],
-      inferenceConfig: { max_new_tokens: 500 },
-    }),
+  const response = await generateWithModelChain({
+    client: bedrockClient,
+    modelIds: getModelChain('localization'),
+    prompt,
+    metadata: {
+      endpoint: '/api/reports',
+      feature: 'localization',
+    },
+    maxTokens: 500,
   });
 
-  const response = await bedrockClient.send(command);
-  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  const extractedText = responseBody.output?.message?.content?.[0]?.text || '';
+  if (!response.success || !response.content) {
+    logger.warn('Report localization failed, using original content', {
+      targetLanguage,
+      generatedLanguage,
+      error: response.error,
+      modelId: response.modelId,
+    });
+    return original;
+  }
 
-  return parseLocalizedNarrative(extractedText, original);
+  return parseLocalizedNarrative(response.content, original);
 }

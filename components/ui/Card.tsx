@@ -33,7 +33,7 @@ const elevationStyles: Record<CardElevation, string> = {
 };
 
 const densityStyles: Record<CardDensity, string> = {
-  compact: 'p-4',
+  compact: 'p-5',
   comfortable: 'p-6',
 };
 
@@ -64,7 +64,7 @@ export function Card({
     <div
       className={cn(
         // Base styles - white background, rounded corners
-        'bg-white rounded-lg',
+        'bg-white rounded-2xl',
         'transition-all duration-base',
         
         // Elevation - using shadow tokens
@@ -76,8 +76,7 @@ export function Card({
         // Interactive variant - hover state with border color change and shadow increase
         interactive && [
           'cursor-pointer',
-          'hover:border-primary-300 hover:shadow-lg',
-          'active:scale-[0.99]', // Active scale effect
+          'hover:border-primary-200 hover:shadow-md',
         ],
         
         // Loading state

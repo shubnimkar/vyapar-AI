@@ -1,5 +1,6 @@
 'use client';
 
+import { Card } from './ui/Card';
 import {
   LineChart,
   Line,
@@ -56,7 +57,7 @@ export default function Charts({ chartData, language }: ChartsProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">
+      <h2 className="text-2xl font-semibold text-slate-900">
         {language === 'hi'
           ? 'दृश्य विश्लेषण'
           : language === 'mr'
@@ -67,8 +68,8 @@ export default function Charts({ chartData, language }: ChartsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Profit Trend */}
         {profitData.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <Card className="rounded-2xl">
+            <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
                 ? '📈 लाभ रुझान'
                 : language === 'mr'
@@ -91,13 +92,13 @@ export default function Charts({ chartData, language }: ChartsProps) {
                 />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </Card>
         )}
 
         {/* Product Sales */}
         {productData.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <Card className="rounded-2xl">
+            <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
                 ? '📊 उत्पाद बिक्री'
                 : language === 'mr'
@@ -118,13 +119,13 @@ export default function Charts({ chartData, language }: ChartsProps) {
                 />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </Card>
         )}
 
         {/* Expense Breakdown */}
         {expenseData.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <Card className="rounded-2xl">
+            <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
                 ? '💰 खर्च विभाजन'
                 : language === 'mr'
@@ -150,13 +151,13 @@ export default function Charts({ chartData, language }: ChartsProps) {
                 <Tooltip formatter={(value) => `₹${value}`} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          </Card>
         )}
 
         {/* Inventory Value */}
         {inventoryData.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <Card className="rounded-2xl">
+            <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
                 ? '📦 इन्वेंटरी मूल्य'
                 : language === 'mr'
@@ -177,7 +178,7 @@ export default function Charts({ chartData, language }: ChartsProps) {
                 />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </Card>
         )}
       </div>
     </div>

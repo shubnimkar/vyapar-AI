@@ -139,7 +139,7 @@ export default function UserProfile({ language }: UserProfileProps) {
     <div className="space-y-2">
       {/* Profile Card - Compact */}
       <div 
-        className="flex items-center gap-3 p-2 rounded-lg"
+        className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm"
       >
         {/* Avatar */}
         <ProfileAvatar
@@ -151,11 +151,11 @@ export default function UserProfile({ language }: UserProfileProps) {
         
         {/* User Info */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-gray-900 truncate">
+          <p className="truncate text-sm font-semibold text-slate-900">
             {showBusinessProfile ? profileData!.userName : user.username}
           </p>
           {showBusinessProfile && profileData!.shopName && (
-            <p className="text-xs text-gray-500 truncate flex items-center gap-1">
+            <p className="flex items-center gap-1 truncate text-xs text-slate-500">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
@@ -169,7 +169,7 @@ export default function UserProfile({ language }: UserProfileProps) {
       <button
         onClick={handleLogout}
         disabled={loading}
-        className="w-full px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full rounded-xl border border-error-200 bg-error-50 px-3 py-2.5 text-sm font-medium text-error-700 transition-colors hover:bg-error-100 focus:outline-none focus:ring-2 focus:ring-error-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? '...' : t('logout', language)}
       </button>

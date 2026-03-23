@@ -26,6 +26,7 @@ import ExpenseAlertBanner from '@/components/ExpenseAlertBanner';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import ReportViewer from '@/components/ReportViewer';
 import Toast, { ToastType } from '@/components/Toast';
+import { Button } from '@/components/ui/Button';
 import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
 import ExportPDF from '@/components/ExportPDF';
@@ -1061,35 +1062,36 @@ export default function Home() {
   ];
 
   const renderAnalysisPanel = () => (
-    <section className="space-y-4">
+    <section className="space-y-6">
       <button
         onClick={() => setAdvancedModeExpanded(!advancedModeExpanded)}
-        className="w-full bg-white rounded-lg shadow-md p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="flex w-full items-center justify-between rounded-2xl border border-neutral-200 bg-white p-5 text-left shadow-sm transition-colors hover:bg-neutral-50"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-gray-800">{t('advancedMode', language)}</span>
-          <span className="text-sm text-gray-500">
+          <span className="text-2xl font-semibold text-slate-900">{t('advancedMode', language)}</span>
+          <span className="text-sm text-slate-500">
             ({uploadedFiles.size} {language === 'hi' ? 'फाइलें' : language === 'mr' ? 'फाइल्स' : 'files'})
           </span>
         </div>
         {advancedModeExpanded ? (
-          <ChevronUp className="w-6 h-6 text-gray-600" />
+          <ChevronUp className="w-6 h-6 text-slate-500" />
         ) : (
-          <ChevronDown className="w-6 h-6 text-gray-600" />
+          <ChevronDown className="w-6 h-6 text-slate-500" />
         )}
       </button>
 
       {advancedModeExpanded && (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-800">{t('uploadCSV', language)}</h3>
-              <button
+              <h3 className="text-2xl font-semibold text-slate-900">{t('uploadCSV', language)}</h3>
+              <Button
                 onClick={handleLoadSampleData}
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors"
+                variant="secondary"
+                size="sm"
               >
                 Try Sample Data
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1115,17 +1117,18 @@ export default function Home() {
           </div>
 
           {hasUploadedData && (
-            <button
+            <Button
               onClick={handleAnalyze}
               disabled={analyzing}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl min-h-[56px]"
+              size="lg"
+              fullWidth
             >
               {analyzing ? t('analyzing', language) : t('analyzeButton', language)}
-            </button>
+            </Button>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">{error}</div>
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
           )}
 
           {insights && (
@@ -1180,24 +1183,24 @@ export default function Home() {
         />
       )}
 
-      <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row overflow-hidden">
+      <div className="min-h-screen overflow-hidden bg-neutral-50 flex flex-col lg:flex-row">
         {/* Sidebar */}
-        <aside className="hidden lg:flex w-64 border-r border-gray-200 bg-white flex-col h-screen sticky top-0">
+        <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r border-neutral-200 bg-white lg:flex">
           {/* Logo/Brand */}
-          <div className="p-6 flex items-center gap-3 border-b border-gray-200">
-            <div className="bg-blue-600 text-white p-2 rounded-lg">
+          <div className="flex items-center gap-3 border-b border-neutral-200 px-6 py-6">
+            <div className="rounded-xl bg-primary-600 p-3 text-white shadow-sm">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div>
-              <h1 className="font-bold text-lg leading-tight text-gray-900">{t('appTitle', language)}</h1>
-              <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Business</p>
+              <h1 className="text-2xl font-bold leading-tight text-slate-900">{t('appTitle', language)}</h1>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Business</p>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-5">
             {sectionItems.map((section) => {
               const Icon = section.icon;
               const active = activeSection === section.id;
@@ -1207,15 +1210,15 @@ export default function Home() {
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${active
-                    ? 'bg-blue-50 text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${active
+                    ? 'bg-primary-50 text-primary-700 shadow-sm ring-1 ring-primary-100'
+                    : 'text-slate-600 hover:bg-neutral-100 hover:text-slate-900'
                     }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
                   <span className="flex-1 text-left">{getSectionLabel(section.id)}</span>
                   {showBadge && (
-                    <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    <span className="rounded-full bg-primary-600 px-2 py-0.5 text-[10px] font-bold text-white">
                       {pendingCount.badge}
                     </span>
                   )}
@@ -1225,41 +1228,35 @@ export default function Home() {
           </nav>
 
           {/* User Profile Footer */}
-          <div className="p-4 mt-auto border-t border-gray-200">
+          <div className="mt-auto border-t border-neutral-200 p-4">
             <UserProfile language={language} />
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
+        <main className="flex h-screen flex-1 flex-col overflow-hidden bg-neutral-50">
           {/* Header */}
-          <header className="sticky top-0 z-30 px-4 py-3 sm:px-6 lg:px-8 bg-white/95 backdrop-blur-md border-b border-gray-200">
-            <div className="flex items-center justify-between gap-3">
+          <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-10">
+            <div className="flex items-start justify-between gap-6">
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                  {getSectionLabel(activeSection)}
+                <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+                  {activeSection === 'pending' ? 'Pending Transactions' : getSectionLabel(activeSection)}
                 </h2>
-                <div className="mt-1 hidden sm:flex items-center gap-4">
-                  <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
-                  <SyncStatus language={language} />
-                </div>
+                {activeSection === 'pending' && (
+                  <p className="mt-2 text-base text-slate-500">
+                    Review and reconcile your recent financial activities.
+                  </p>
+                )}
               </div>
-              {/* Compact actions for very small screens */}
-              <div className="flex items-center gap-2">
-                <div className="sm:hidden">
-                  <SyncStatus language={language} />
-                </div>
-                <button
-                  onClick={handleLogoutClick}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors"
-                >
-                  Logout
-                </button>
+              {/* Right side: language dropdown + sync */}
+              <div className="flex items-center gap-3">
+                <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
+                <SyncStatus language={language} />
               </div>
             </div>
 
             {/* Mobile top navigation pills */}
-            <div className="mt-3 lg:hidden overflow-x-auto">
+            <div className="mt-4 overflow-x-auto lg:hidden">
               <div className="flex gap-2 pb-1">
                 {sectionItems.map((section) => {
                   const Icon = section.icon;
@@ -1269,10 +1266,10 @@ export default function Home() {
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all ${
+                      className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-2 text-xs font-medium transition-all ${
                         active
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                          ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
+                          : 'border-neutral-200 bg-white text-slate-700 hover:bg-neutral-50'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -1287,24 +1284,19 @@ export default function Home() {
                 })}
               </div>
             </div>
-
-            {/* Full language selector row below nav on small/medium screens */}
-            <div className="mt-3 sm:hidden">
-              <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
-            </div>
           </header>
 
           {/* Scrollable Dashboard Content */}
           <div
-            className={`flex-1 overflow-y-auto p-4 pb-24 sm:p-6 sm:pb-6 lg:p-8 lg:pb-8 ${
+            className={`flex-1 overflow-y-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 sm:pb-8 lg:px-10 lg:py-10 ${
               activeSection === 'credit' ? 'bg-white' : 'bg-gray-50'
             }`}
           >
             <div
               className={
                 activeSection === 'health'
-                  ? 'space-y-6 w-full'
-                  : 'space-y-6 w-full max-w-7xl mx-auto'
+                  ? 'w-full space-y-8'
+                  : 'mx-auto w-full max-w-7xl space-y-8'
               }
             >
               {activeSection === 'dashboard' && (

@@ -5,6 +5,8 @@ import { Language, ProfileSetupData, CityTier, BusinessType } from '@/lib/types'
 import { t } from '@/lib/translations';
 import { logger } from '@/lib/logger';
 import ProfileAvatar from './ui/ProfileAvatar';
+import { Button } from './ui/Button';
+import { Card } from './ui/Card';
 
 interface ProfileSetupFormProps {
   phoneNumber: string;
@@ -256,7 +258,7 @@ export default function ProfileSetupForm({
       </div>
 
       {/* Main Form Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 flex-1 overflow-auto">
+      <Card className="flex-1 overflow-auto rounded-3xl p-0">
         <div className="p-6">
           {errors.general && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
@@ -269,7 +271,7 @@ export default function ProfileSetupForm({
 
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(false); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 
-            <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5">
+            <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50/50 p-6">
               <div className="flex flex-col gap-5 md:flex-row md:items-center">
                 <div className="flex flex-col items-center gap-3 md:w-40">
                   <div className="relative">
@@ -302,30 +304,36 @@ export default function ProfileSetupForm({
 
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center gap-2">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isProcessingPhoto}
-                        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                        variant="primary"
+                        size="md"
+                        icon={
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-3-3m3 3l3-3" />
+                          </svg>
+                        }
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 4v12m0 0l-3-3m3 3l3-3" />
-                        </svg>
                         {formData.avatarUrl ? t('profile.photo.change', language) : t('profile.photo.upload', language)}
-                      </button>
+                      </Button>
 
                       {formData.avatarUrl && (
-                        <button
+                        <Button
                           type="button"
                           onClick={handleRemovePhoto}
                           disabled={isProcessingPhoto}
-                          className="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                          variant="secondary"
+                          size="md"
+                          icon={
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          }
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
                           {t('profile.photo.remove', language)}
-                        </button>
+                        </Button>
                       )}
                     </div>
 
@@ -610,10 +618,12 @@ export default function ProfileSetupForm({
 
             {/* Action Buttons */}
             <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-4 border-t border-slate-100 pt-4">
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-blue-600 text-white font-semibold text-sm py-2.5 px-4 rounded-lg hover:bg-blue-700 shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="primary"
+                size="md"
+                fullWidth
               >
                 {isSubmitting ? (
                   <>
@@ -631,24 +641,28 @@ export default function ProfileSetupForm({
                     }
                   </>
                 )}
-              </button>
+              </Button>
               {!isEditMode && (
-                <button
+                <Button
                   type="button"
                   onClick={handleSkip}
                   disabled={isSubmitting}
-                  className="flex-1 bg-slate-100 text-slate-700 font-semibold text-sm py-2.5 px-4 rounded-lg hover:bg-slate-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="secondary"
+                  size="md"
+                  fullWidth
+                  icon={
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  }
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
                   {t('profile.setup.skip', language)}
-                </button>
+                </Button>
               )}
             </div>
           </form>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

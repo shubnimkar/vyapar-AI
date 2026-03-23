@@ -66,9 +66,9 @@ export type InputProps = StandardInputProps | TextareaInputProps | SelectInputPr
  * Each state has distinct colors for visual feedback
  */
 const stateStyles = {
-  default: 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500',
-  error: 'border-error-500 focus:border-error-500 focus:ring-error-500',
-  success: 'border-success-500 focus:border-success-500 focus:ring-success-500',
+  default: 'border-neutral-200 focus:border-primary-500 focus:ring-primary-500/15',
+  error: 'border-error-400 focus:border-error-500 focus:ring-error-500/15',
+  success: 'border-success-400 focus:border-success-500 focus:ring-success-500/15',
 };
 
 /**
@@ -128,21 +128,20 @@ export const Input = React.forwardRef<
   // Base classes shared by all input types
   const baseClasses = cn(
     // Base styles
-    'w-full px-4 py-3 rounded-lg',
-    'text-base text-neutral-900',
-    'border-2',
+    'w-full rounded-xl border bg-white px-4 text-base text-neutral-900',
     'transition-all duration-base',
     'focus:outline-none focus:ring-2 focus:ring-offset-0',
-    'placeholder:text-neutral-400 placeholder:opacity-50',
-    'disabled:bg-neutral-100 disabled:cursor-not-allowed',
+    'placeholder:text-neutral-400',
+    'disabled:bg-neutral-50 disabled:text-neutral-500 disabled:cursor-not-allowed',
     'min-h-[44px]', // Touch target (Requirement 6.9)
+    as === 'textarea' ? 'py-3 min-h-[120px]' : 'h-12',
     
     // State styles (Requirements 6.3, 6.4, 6.5)
     stateStyles[inputState],
     
     // Prefix/suffix padding (Requirement 6.6)
-    prefix && 'pl-10',
-    (suffix || inputState === 'error' || inputState === 'success') && 'pr-10',
+    prefix && 'pl-12',
+    (suffix || inputState === 'error' || inputState === 'success') && 'pr-12',
     
     className
   );
@@ -218,7 +217,7 @@ export const Input = React.forwardRef<
     <div className="w-full">
       {/* Label with required indicator (Requirement 6.2) */}
       {label && (
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
+        <label className="mb-2 block text-sm font-medium text-neutral-700">
           {label}
           {required && <span className="text-error-500 ml-1">*</span>}
         </label>
@@ -228,7 +227,7 @@ export const Input = React.forwardRef<
       <div className="relative">
         {/* Prefix icon/text (Requirement 6.6) */}
         {prefix && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
+          <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">
             {prefix}
           </div>
         )}
@@ -238,7 +237,7 @@ export const Input = React.forwardRef<
         
         {/* Suffix icon/text (Requirement 6.6) */}
         {suffix && !error && !success && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none">
+          <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400">
             {suffix}
           </div>
         )}

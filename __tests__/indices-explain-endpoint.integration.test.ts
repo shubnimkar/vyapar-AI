@@ -160,12 +160,13 @@ describe('/api/indices/explain endpoint integration tests', () => {
     });
   });
 
-  describe('Fallback to Puter path', () => {
-    it('should return AI explanation when Bedrock fails but Puter succeeds', async () => {
+  describe('Bedrock fallback model path', () => {
+    it('should return AI explanation when the fallback Bedrock model succeeds', async () => {
       const mockResponse: AIProviderResponse = {
         success: true,
         content: 'Your financial stress is moderate. Monitor your expenses closely.',
-        provider: 'puter',
+        provider: 'bedrock',
+        modelId: 'apac.amazon.nova-lite-v1:0',
       };
       
       mockOrchestrator.generateResponse.mockResolvedValue(mockResponse);
@@ -188,8 +189,8 @@ describe('/api/indices/explain endpoint integration tests', () => {
     });
   });
 
-  describe('Both providers fail path', () => {
-    it('should return deterministic fallback explanation when both providers fail', async () => {
+  describe('All configured Bedrock models fail path', () => {
+    it('should return deterministic fallback explanation when all configured models fail', async () => {
       const mockResponse: AIProviderResponse = {
         success: false,
         error: 'AI service temporarily unavailable.',
