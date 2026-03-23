@@ -81,7 +81,7 @@ export default function PWAInstallPrompt() {
         <div className="flex items-center gap-4">
           {/* Icon */}
           <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
               <Smartphone className="w-6 h-6 text-primary-600" />
             </div>
           </div>
@@ -108,7 +108,7 @@ export default function PWAInstallPrompt() {
             <button
               onClick={handleDismiss}
               className={cn(
-                'p-2 text-white hover:bg-white/10 rounded-lg transition-colors',
+                'p-2 text-white hover:bg-white/10 rounded-2xl transition-colors',
                 'min-w-[44px] min-h-[44px]',
                 'focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600'
               )}

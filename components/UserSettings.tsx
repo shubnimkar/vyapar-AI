@@ -164,7 +164,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-lg shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
             {t('settings.title', language)}
           </h1>
@@ -309,7 +309,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
                   step="1"
                   value={editableData.dataRetentionDays}
                   onChange={(e) => handleFieldChange('dataRetentionDays', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                  className="w-full h-2 bg-gray-200 rounded-2xl appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>30</span>

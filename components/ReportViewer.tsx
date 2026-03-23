@@ -406,11 +406,11 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 rounded bg-slate-200" />
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="h-28 rounded-2xl bg-slate-100" />
-            <div className="h-28 rounded-2xl bg-slate-100" />
-            <div className="h-28 rounded-2xl bg-slate-100" />
+            <div className="h-28 rounded-2xl bg-neutral-100" />
+            <div className="h-28 rounded-2xl bg-neutral-100" />
+            <div className="h-28 rounded-2xl bg-neutral-100" />
           </div>
-          <div className="h-64 rounded-2xl bg-slate-100" />
+          <div className="h-64 rounded-2xl bg-neutral-100" />
         </div>
       </Card>
     );
@@ -426,7 +426,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             size="sm"
             onClick={() => setSelectedReport(null)}
             icon={<ChevronLeft className="h-4 w-4" />}
-            className="px-0 text-blue-700 hover:bg-transparent hover:text-blue-800"
+            className="px-0 text-primary-700 hover:bg-transparent hover:text-blue-800"
           >
             {t.back}
           </Button>
@@ -434,10 +434,10 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            <div className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
               {t[selectedReport.reportType]}
             </div>
-            <h3 className="text-section-heading text-slate-900">{formatPeriod(selectedReport)}</h3>
+            <h3 className="text-section-heading text-neutral-900">{formatPeriod(selectedReport)}</h3>
             <p className="text-body-sm text-slate-500">
               {t.generatedAt}: {formatDateTime(selectedReport.generatedAt)}
             </p>
@@ -451,7 +451,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
-          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
             <h4 className="text-label uppercase tracking-wide text-slate-500">{t.summary}</h4>
             <p className="mt-3 text-body text-slate-800 leading-7">
               {selectedReport.summary || selectedReport.insights}
@@ -465,9 +465,9 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
           </section>
 
           <section className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 p-5">
+            <div className="rounded-2xl border border-neutral-200 p-5">
               <h4 className="text-label uppercase tracking-wide text-slate-500">{t.period}</h4>
-              <div className="mt-4 space-y-3 text-body-sm text-slate-700">
+              <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
                 <DetailRow label={t.entries} value={`${selectedReport.entryCount || 0}`} />
                 <DetailRow label={t.expenses} value={formatCurrency(selectedReport.totalExpenses)} />
                 <DetailRow label={t.avgExpenses} value={formatCurrency(selectedReport.averageDailyExpenses)} />
@@ -477,10 +477,10 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 p-5">
+            <div className="rounded-2xl border border-neutral-200 p-5">
               <h4 className="text-label uppercase tracking-wide text-slate-500">{t.comparison}</h4>
               {selectedReport.comparison ? (
-                <div className="mt-4 space-y-3 text-body-sm text-slate-700">
+                <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
                   <DetailRow label={t.sales} value={`${selectedReport.comparison.salesChangePct.toFixed(1)}%`} />
                   <DetailRow label={t.expenses} value={`${selectedReport.comparison.expenseChangePct.toFixed(1)}%`} />
                   <DetailRow label={selectedReport.netProfit >= 0 ? t.profit : t.loss} value={`${selectedReport.comparison.profitChangePct.toFixed(1)}%`} />
@@ -491,9 +491,9 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
               )}
             </div>
 
-            <div className="rounded-2xl border border-slate-200 p-5">
+            <div className="rounded-2xl border border-neutral-200 p-5">
               <h4 className="text-label uppercase tracking-wide text-slate-500">{t.insights}</h4>
-              <div className="mt-4 space-y-3 text-body-sm text-slate-700">
+              <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
                 <DetailRow
                   label={t.bestDay}
                   value={selectedReport.bestDay ? `${formatDate(selectedReport.bestDay.date)} · ${formatCurrency(selectedReport.bestDay.profit)}` : '—'}
@@ -507,7 +507,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
           </section>
         </div>
 
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="rounded-2xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-amber-900">
           {t.missingData}
         </div>
       </Card>
@@ -518,7 +518,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
     <Card className="space-y-8 rounded-3xl">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
-          <h3 className="text-page-title text-slate-900">{t.title}</h3>
+          <h3 className="text-page-title text-neutral-900">{t.title}</h3>
           <p className="max-w-3xl text-body text-slate-500 leading-7">{t.subtitle}</p>
         </div>
         <Button
@@ -537,12 +537,12 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
       {notice && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</div>}
 
       <div className="grid gap-4 xl:grid-cols-[1.15fr,0.85fr]">
-        <section className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <div className="flex items-center gap-2 text-slate-900">
-            <CalendarClock className="h-5 w-5 text-blue-700" />
-            <h4 className="text-section-heading text-slate-900">{t.automation}</h4>
+        <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
+          <div className="flex items-center gap-2 text-neutral-900">
+            <CalendarClock className="h-5 w-5 text-primary-700" />
+            <h4 className="text-section-heading text-neutral-900">{t.automation}</h4>
           </div>
-          <p className="mt-2 text-body-sm text-slate-600">{t.automationHint}</p>
+          <p className="mt-2 text-body-sm text-neutral-600">{t.automationHint}</p>
           <p className="mt-1 flex items-start gap-1.5 text-xs text-slate-500">
             <span className="mt-0.5 shrink-0 text-blue-400">ℹ</span>
             {t.automationNote}
@@ -550,7 +550,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
           <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end">
             <div className="flex-1">
-              <label className="mb-2 block text-sm font-medium text-slate-700">{t.reportTime}</label>
+              <label className="mb-2 block text-sm font-medium text-neutral-700">{t.reportTime}</label>
               <input
                 type="time"
                 value={reportTime}
@@ -564,13 +564,13 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
               onClick={() => setAutomationEnabled((value) => !value)}
               className={`flex h-12 items-center gap-3 rounded-xl border px-4 text-sm font-medium transition ${
                 automationEnabled
-                  ? 'border-blue-200 bg-blue-50 text-blue-900'
-                  : 'border-slate-200 bg-white text-slate-700'
+                  ? 'border-primary-200 bg-primary-50 text-blue-900'
+                  : 'border-neutral-200 bg-white text-neutral-700'
               }`}
             >
               <span
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                  automationEnabled ? 'bg-blue-600' : 'bg-slate-300'
+                  automationEnabled ? 'bg-primary-600' : 'bg-slate-300'
                 }`}
               >
                 <span
@@ -592,12 +592,12 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-200 p-6">
-          <div className="flex items-center gap-2 text-slate-900">
-            <Sparkles className="h-5 w-5 text-blue-700" />
-            <h4 className="text-section-heading text-slate-900">{t.generateTitle}</h4>
+        <section className="rounded-2xl border border-neutral-200 p-6">
+          <div className="flex items-center gap-2 text-neutral-900">
+            <Sparkles className="h-5 w-5 text-primary-700" />
+            <h4 className="text-section-heading text-neutral-900">{t.generateTitle}</h4>
           </div>
-          <p className="mt-2 text-body-sm text-slate-600">{t.generateHint}</p>
+          <p className="mt-2 text-body-sm text-neutral-600">{t.generateHint}</p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <select
               value={selectedGenerateType}
@@ -648,7 +648,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-section-heading text-slate-900">{t.latestReports}</h4>
+          <h4 className="text-section-heading text-neutral-900">{t.latestReports}</h4>
           <span className="text-body-sm text-slate-500">{t.lastUpdated}: {reports[0] ? formatDateTime(reports[0].generatedAt) : '—'}</span>
         </div>
 
@@ -663,17 +663,17 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
                 key={report.id}
                 type="button"
                 onClick={() => setSelectedReport(report)}
-                className="w-full rounded-2xl border border-slate-200 p-5 text-left transition hover:border-blue-300 hover:bg-slate-50"
+                className="w-full rounded-2xl border border-neutral-200 p-5 text-left transition hover:border-primary-300 hover:bg-neutral-50"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+                      <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
                         {t[report.reportType]}
                       </span>
                       <span className="text-sm text-slate-500">{formatPeriod(report)}</span>
                     </div>
-                    <p className="max-w-3xl text-sm leading-6 text-slate-700">
+                    <p className="max-w-3xl text-sm leading-6 text-neutral-700">
                       {report.summary || report.insights}
                     </p>
                   </div>
@@ -698,10 +698,10 @@ function MetricCard({ label, value, tone }: { label: string; value: string; tone
     tone === 'emerald'
       ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
       : tone === 'blue'
-        ? 'border-blue-200 bg-blue-50 text-blue-900'
+        ? 'border-primary-200 bg-primary-50 text-blue-900'
         : tone === 'amber'
-          ? 'border-amber-200 bg-amber-50 text-amber-900'
-          : 'border-slate-200 bg-slate-50 text-slate-900';
+          ? 'border-warning-200 bg-warning-50 text-amber-900'
+          : 'border-neutral-200 bg-neutral-50 text-neutral-900';
 
   return (
     <div className={`rounded-2xl border p-4 ${toneClass}`}>
@@ -726,10 +726,10 @@ function OverviewCard({
     tone === 'emerald'
       ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
       : tone === 'blue'
-        ? 'border-blue-200 bg-blue-50 text-blue-900'
+        ? 'border-primary-200 bg-primary-50 text-blue-900'
         : tone === 'amber'
-          ? 'border-amber-200 bg-amber-50 text-amber-900'
-          : 'border-slate-200 bg-slate-50 text-slate-900';
+          ? 'border-warning-200 bg-warning-50 text-amber-900'
+          : 'border-neutral-200 bg-neutral-50 text-neutral-900';
 
   return (
     <div className={`rounded-2xl border p-4 ${toneClass}`}>
@@ -744,9 +744,9 @@ function OverviewCard({
 
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-slate-100 px-3 py-2">
+    <div className="rounded-xl bg-neutral-100 px-3 py-2">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
+      <p className="mt-1 text-sm font-semibold text-neutral-900">{value}</p>
     </div>
   );
 }
@@ -755,7 +755,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <span className="text-slate-500">{label}</span>
-      <span className="text-right font-medium text-slate-900">{value}</span>
+      <span className="text-right font-medium text-neutral-900">{value}</span>
     </div>
   );
 }
@@ -763,9 +763,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 function ListBlock({ title, items, emptyLabel }: { title: string; items: string[]; emptyLabel: string }) {
   return (
     <div className="rounded-2xl bg-white p-4">
-      <h5 className="text-sm font-semibold text-slate-900">{title}</h5>
+      <h5 className="text-sm font-semibold text-neutral-900">{title}</h5>
       {items.length > 0 ? (
-        <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+        <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-700">
           {items.map((item, index) => (
             <li key={`${title}-${index}`} className="flex gap-2">
               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500" />
@@ -782,8 +782,8 @@ function ListBlock({ title, items, emptyLabel }: { title: string; items: string[
 
 function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-12 text-center">
-      <p className="text-section-heading text-slate-900">{title}</p>
+    <div className="rounded-2xl border border-dashed border-neutral-300 px-6 py-12 text-center">
+      <p className="text-section-heading text-neutral-900">{title}</p>
       <p className="mx-auto mt-2 max-w-xl text-body-sm text-slate-500 leading-6">{subtitle}</p>
     </div>
   );

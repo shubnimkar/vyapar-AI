@@ -30,6 +30,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: [...tokens.typography.fontFamily.sans],
+        headline: [...tokens.typography.fontFamily.headline],
         mono: [...tokens.typography.fontFamily.mono],
         devanagari: [...tokens.typography.fontFamily.devanagari],
       },

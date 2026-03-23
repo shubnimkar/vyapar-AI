@@ -75,7 +75,7 @@ export default function PWAUpdateNotification() {
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-info-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-info-100 rounded-2xl flex items-center justify-center">
               <RefreshCw className="w-5 h-5 text-info-600" />
             </div>
           </div>

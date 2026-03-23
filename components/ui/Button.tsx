@@ -33,13 +33,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 /**
  * Variant styles mapping
  * Each variant has distinct colors for different states
+ * Uses design tokens for brand consistency
  */
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm',
-  secondary: 'bg-white text-neutral-800 border border-neutral-200 hover:bg-neutral-50 focus:ring-primary-500 shadow-sm',
+  primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
+  secondary: 'bg-neutral-50 text-neutral-900 border border-neutral-200 hover:bg-neutral-100 focus:ring-primary-500',
   outline: 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus:ring-primary-500',
   ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-primary-500',
-  danger: 'bg-error-600 text-white hover:bg-error-700 focus:ring-error-500 shadow-sm',
+  danger: 'bg-error-600 text-white hover:bg-error-700 focus:ring-error-500',
 };
 
 /**

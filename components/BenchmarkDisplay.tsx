@@ -25,8 +25,8 @@ const categoryColors: Record<string, { dot: string; text: string; badge: string 
   },
   at_average: {
     dot: 'bg-amber-400',
-    text: 'text-amber-700',
-    badge: 'bg-amber-50 text-amber-700 border border-amber-200',
+    text: 'text-warning-700',
+    badge: 'bg-warning-50 text-warning-700 border border-warning-200',
   },
   below_average: {
     dot: 'bg-rose-500',
@@ -74,12 +74,12 @@ export default function BenchmarkDisplay({
     return (
       <Card>
         <div className="flex items-center gap-3 mb-4">
-          <div className="bg-gray-100 p-2 rounded-lg">
-            <BarChart3 className="w-5 h-5 text-gray-500" />
+          <div className="bg-neutral-100 p-2 rounded-2xl">
+            <BarChart3 className="w-5 h-5 text-neutral-500" />
           </div>
-          <h3 className="text-section-heading text-gray-900">{t('benchmark.title', language)}</h3>
+          <h3 className="text-section-heading text-neutral-900">{t('benchmark.title', language)}</h3>
         </div>
-        <p className="text-body-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+        <p className="text-body-sm text-warning-700 bg-warning-50 border border-warning-200 rounded-2xl px-4 py-3">
           {normalized}
         </p>
       </Card>
@@ -91,12 +91,12 @@ export default function BenchmarkDisplay({
     return (
       <Card>
         <div className="flex items-center gap-3 mb-4">
-          <div className="bg-blue-50 p-2 rounded-lg">
-            <BarChart3 className="w-5 h-5 text-blue-600" />
+          <div className="bg-primary-50 p-2 rounded-2xl">
+            <BarChart3 className="w-5 h-5 text-primary-600" />
           </div>
-          <h3 className="text-section-heading text-gray-900">{t('benchmark.title', language)}</h3>
+          <h3 className="text-section-heading text-neutral-900">{t('benchmark.title', language)}</h3>
         </div>
-        <p className="text-body-sm text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+        <p className="text-body-sm text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-2xl px-4 py-3">
           {t('benchmark.noData', language)}
         </p>
       </Card>
@@ -201,12 +201,12 @@ export default function BenchmarkDisplay({
     <Card>
       {/* Header */}
       <div className="flex items-center gap-3 mb-5">
-        <div className="bg-blue-50 p-2 rounded-lg">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
+        <div className="bg-primary-50 p-2 rounded-2xl">
+          <BarChart3 className="w-5 h-5 text-primary-600" />
         </div>
         <div>
-          <h3 className="text-section-heading text-gray-900">{t('benchmark.title', language)}</h3>
-          <p className="text-caption text-gray-500">
+          <h3 className="text-section-heading text-neutral-900">{t('benchmark.title', language)}</h3>
+          <p className="text-caption text-neutral-500">
             {t('benchmark.sampleSize', language).replace('{count}', comparison.segmentInfo.sampleSize.toString())}
           </p>
         </div>
@@ -214,14 +214,14 @@ export default function BenchmarkDisplay({
 
       {/* Warnings */}
       {showLimitedDataWarning && (
-        <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-xs text-warning-700 bg-warning-50 border border-warning-200 rounded-2xl px-3 py-2 mb-4">
           <span>⚠️</span>
           <span>{t('benchmark.limitedData', language)}</span>
         </div>
       )}
 
       {isStale && (
-        <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-xs text-neutral-500 bg-neutral-50 border border-neutral-200 rounded-2xl px-3 py-2 mb-4">
           <span>🕐</span>
           <span>{t('benchmark.staleData', language).replace('{days}', daysSinceUpdate.toString())}</span>
         </div>
@@ -256,7 +256,7 @@ export default function BenchmarkDisplay({
                 <span className="text-numeric text-slate-800">
                   {comparison.healthScoreComparison.userValue}
                 </span>
-                <span className="text-caption text-gray-400 tracking-wider uppercase">
+                <span className="text-caption text-neutral-400 tracking-wider uppercase">
                   {t('benchmark.healthScore', language)}
                 </span>
               </div>
@@ -277,7 +277,7 @@ export default function BenchmarkDisplay({
             {/* Health comparison numbers */}
             <div className="grid grid-cols-2 gap-4 mt-1">
               <div>
-                <p className="text-caption text-gray-400 uppercase tracking-wider">
+                <p className="text-caption text-neutral-400 uppercase tracking-wider">
                   {t('benchmark.yourBusiness', language)}
                 </p>
                 <p className={`text-subsection-heading ${healthColors.text}`}>
@@ -285,10 +285,10 @@ export default function BenchmarkDisplay({
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-caption text-gray-400 uppercase tracking-wider">
+                <p className="text-caption text-neutral-400 uppercase tracking-wider">
                   {t('benchmark.segmentAverage', language)}
                 </p>
-                <p className="text-subsection-heading text-gray-400">
+                <p className="text-subsection-heading text-neutral-400">
                   {comparison.healthScoreComparison.segmentMedian}
                 </p>
               </div>
@@ -299,7 +299,7 @@ export default function BenchmarkDisplay({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${marginColors.dot}`} />
-                  <span className="text-label text-slate-700">
+                  <span className="text-label text-neutral-700">
                     {t('benchmark.profitMargin', language)}
                   </span>
                 </div>
@@ -312,18 +312,18 @@ export default function BenchmarkDisplay({
               </div>
               <div className="flex items-baseline justify-between">
                 <div>
-                  <p className="text-caption text-gray-400 uppercase">
+                  <p className="text-caption text-neutral-400 uppercase">
                     {t('benchmark.yourBusiness', language)}
                   </p>
-                  <p className="text-numeric text-slate-900">
+                  <p className="text-numeric text-neutral-900">
                     {formatPercentage(comparison.marginComparison.userValue * 100)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-caption text-gray-400 uppercase">
+                  <p className="text-caption text-neutral-400 uppercase">
                     {t('benchmark.segmentAverage', language)}
                   </p>
-                  <p className="text-subsection-heading text-gray-400">
+                  <p className="text-subsection-heading text-neutral-400">
                     {formatPercentage(comparison.marginComparison.segmentMedian * 100)}
                   </p>
                 </div>
@@ -342,7 +342,7 @@ export default function BenchmarkDisplay({
             disabled={isExplaining || !userId}
             className={`w-full flex items-center justify-center gap-3 py-2.5 px-8 rounded-[18px] font-bold text-base tracking-tight transition-all duration-300 group active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               isExplaining || !userId
-                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                ? 'bg-gray-200 text-neutral-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-[#2D60FF] to-[#604BFF] hover:from-[#2550D6] hover:to-[#503ED6] text-white shadow-[0_8px_20px_-6px_rgba(45,96,255,0.4)] focus:ring-[#2D60FF]'
             }`}
           >
@@ -352,13 +352,13 @@ export default function BenchmarkDisplay({
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-label text-gray-700 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-blue-500" />
+              <h4 className="text-label text-neutral-700 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary-600" />
                 {t('benchmark.aiExplanation', language)}
               </h4>
               <button
                 onClick={() => setShowExplanation(false)}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
               >
                 <ChevronUp className="w-3.5 h-3.5" />
                 {t('benchmark.hide', language)}
@@ -367,12 +367,12 @@ export default function BenchmarkDisplay({
 
             {/* Loading skeleton while fetching all 3 languages */}
             {isExplaining && !Object.keys(explanations).length && (
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl animate-pulse">
+              <div className="p-4 bg-primary-50 border border-blue-100 rounded-xl animate-pulse">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
-                  <span className="text-xs text-blue-500 ml-1">
+                  <span className="text-xs text-primary-600 ml-1">
                     {language === 'hi'
                       ? 'AI तीनों भाषाओं में विश्लेषण तैयार कर रहा है…'
                       : language === 'mr'
@@ -403,10 +403,10 @@ export default function BenchmarkDisplay({
               };
 
               return anyText ? (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                  <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{anyText}</p>
+                <div className="bg-primary-50 border border-blue-100 rounded-xl p-4">
+                  <p className="text-sm text-neutral-700 whitespace-pre-line leading-relaxed">{anyText}</p>
                   {isFallback && (
-                    <p className="mt-2 text-xs text-blue-500 italic">
+                    <p className="mt-2 text-xs text-primary-600 italic">
                       {translateHint[language] || translateHint.en}
                     </p>
                   )}
@@ -418,7 +418,7 @@ export default function BenchmarkDisplay({
 
         {/* Explanation Error */}
         {explanationError && (
-          <p className="mt-2 text-xs text-amber-600 text-center">{explanationError}</p>
+          <p className="mt-2 text-xs text-warning-600 text-center">{explanationError}</p>
         )}
       </div>
     </Card>

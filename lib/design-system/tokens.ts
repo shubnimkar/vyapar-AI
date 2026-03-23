@@ -106,7 +106,15 @@ export const tokens = {
   typography: {
     fontFamily: {
       sans: [
-        'var(--font-geist-sans)',
+        'Inter',
+        'system-ui',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        'Segoe UI',
+        'sans-serif',
+      ],
+      headline: [
+        'Manrope',
         'system-ui',
         '-apple-system',
         'BlinkMacSystemFont',
@@ -114,14 +122,13 @@ export const tokens = {
         'sans-serif',
       ],
       mono: [
-        'var(--font-geist-mono)',
         'ui-monospace',
         'SFMono-Regular',
         'monospace',
       ],
       devanagari: [
         'Noto Sans Devanagari',
-        'var(--font-geist-sans)',
+        'Inter',
         'system-ui',
         'sans-serif',
       ],

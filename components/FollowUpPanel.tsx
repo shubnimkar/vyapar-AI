@@ -305,17 +305,17 @@ export default function FollowUpPanel({
   }
 
   const getSyncStatusColor = (): string => {
-    if (isSyncing) return 'text-blue-600';
+    if (isSyncing) return 'text-primary-600';
     
     switch (syncStatus.status) {
       case 'synced':
-        return 'text-green-600';
+        return 'text-success-600';
       case 'pending':
         return 'text-yellow-600';
       case 'offline':
-        return 'text-gray-600';
+        return 'text-neutral-600';
       default:
-        return 'text-gray-600';
+        return 'text-neutral-600';
     }
   };
 
@@ -499,19 +499,19 @@ export default function FollowUpPanel({
       <section className="mt-8">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h2 className="text-section-heading text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
+            <h2 className="text-section-heading text-neutral-900">{t('followUp.collectionsQueue', language)}</h2>
             <p className="text-body-sm mt-1">{t('followUp.collectionsSubtitle', language)}</p>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 border border-slate-200">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-50 border border-neutral-200">
             <span className="size-2 rounded-full bg-slate-400 animate-pulse"></span>
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{t('followUp.loading', language)}</span>
+            <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">{t('followUp.loading', language)}</span>
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-6">
-          <div className="h-10 w-full max-w-md rounded-lg bg-slate-100 animate-pulse mb-6" />
+        <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+          <div className="h-10 w-full max-w-md rounded-2xl bg-neutral-100 animate-pulse mb-6" />
           <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
-            <div className="rounded-2xl border border-slate-200 p-6 bg-slate-50 animate-pulse h-40" />
+            <div className="rounded-2xl border border-neutral-200 p-6 bg-neutral-50 animate-pulse h-40" />
+            <div className="rounded-2xl border border-neutral-200 p-6 bg-neutral-50 animate-pulse h-40" />
           </div>
         </div>
       </section>
@@ -522,13 +522,13 @@ export default function FollowUpPanel({
     <section className="mt-8">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h2 className="text-section-heading text-gray-900">{t('followUp.collectionsQueue', language)}</h2>
+          <h2 className="text-section-heading text-neutral-900">{t('followUp.collectionsQueue', language)}</h2>
           <p className="text-body-sm text-slate-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
         </div>
         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
           syncStatus.status === 'synced' ? 'bg-emerald-50 border-emerald-100' :
-          syncStatus.status === 'pending' ? 'bg-yellow-50 border-yellow-100' :
-          'bg-slate-50 border-slate-200'
+          syncStatus.status === 'pending' ? 'bg-warning-50 border-yellow-100' :
+          'bg-neutral-50 border-neutral-200'
         }`}>
           {isSyncing ? (
             <span className="size-2 rounded-full bg-blue-500 animate-pulse"></span>
@@ -541,8 +541,8 @@ export default function FollowUpPanel({
           )}
           <span className={`text-xs font-semibold uppercase tracking-wider ${
             syncStatus.status === 'synced' ? 'text-emerald-700' :
-            syncStatus.status === 'pending' ? 'text-yellow-700' :
-            'text-slate-600'
+            syncStatus.status === 'pending' ? 'text-warning-700' :
+            'text-neutral-600'
           }`}>
             {getSyncStatusText()}
           </span>
@@ -551,18 +551,18 @@ export default function FollowUpPanel({
 
       {error.type && (
         <div className="mb-4">
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+          <div className="bg-error-50 border border-error-200 rounded-2xl p-4">
             <div className="flex items-center gap-3">
-              <AlertCircle className="size-5 text-red-600" aria-hidden="true" />
+              <AlertCircle className="size-5 text-error-600" aria-hidden="true" />
               <div>
-                <h3 className="text-sm font-semibold text-red-800">
+                <h3 className="text-sm font-semibold text-error-800">
                   {error.type === 'network' ? t('followUp.networkErrorTitle', language) : t('followUp.errorTitle', language)}
                 </h3>
-                <p className="text-sm text-red-700 mt-1">{error.message}</p>
+                <p className="text-sm text-error-700 mt-1">{error.message}</p>
               </div>
               <button
                 onClick={() => setError({ type: null, message: '' })}
-                className="ml-auto text-red-600 hover:text-red-800"
+                className="ml-auto text-error-600 hover:text-error-800"
               >
                 <X className="size-4" aria-hidden="true" />
               </button>
@@ -571,7 +571,7 @@ export default function FollowUpPanel({
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-neutral-200 bg-white p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
           <div className="relative w-full max-w-md">
             <Search className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -599,9 +599,9 @@ export default function FollowUpPanel({
         </div>
 
         {visibleCredits.length === 0 && (
-          <div className="rounded-2xl border border-slate-200 p-8 text-center">
+          <div className="rounded-2xl border border-neutral-200 p-8 text-center">
             <CheckCircle2 className="mx-auto mb-4 size-10 text-slate-400" aria-hidden="true" />
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2">
               {overdueCredits.length === 0 ? t('followUp.noOverdue', language) : t('followUp.noMatching', language)}
             </h3>
             <p className="text-slate-500">
@@ -619,10 +619,10 @@ export default function FollowUpPanel({
                 key={credit.id}
                 className="overflow-hidden p-0"
               >
-                <div className="p-6 border-b border-slate-200">
+                <div className="p-6 border-b border-neutral-200">
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col gap-3">
-                      <h4 className="text-section-heading text-slate-900">{credit.customerName}</h4>
+                      <h4 className="text-section-heading text-neutral-900">{credit.customerName}</h4>
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between min-w-[320px] text-caption text-slate-500">
                           <span>{t('entryDate', language)}: {formatDate(credit.dateGiven)}</span>
@@ -632,7 +632,7 @@ export default function FollowUpPanel({
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                             credit.daysOverdue >= 30 ? 'bg-rose-50 text-rose-700' :
                             credit.daysOverdue >= 15 ? 'bg-orange-50 text-orange-700' :
-                            'bg-amber-50 text-amber-700'
+                            'bg-warning-50 text-warning-700'
                           }`}>
                             <span className={`size-1.5 rounded-full ${
                               credit.daysOverdue >= 30 ? 'bg-rose-500' :
@@ -656,7 +656,7 @@ export default function FollowUpPanel({
                         )}
                       </div>
                     </div>
-                    <p className="text-numeric text-slate-900">
+                    <p className="text-numeric text-neutral-900">
                       {formatAmount(credit.amount)}
                     </p>
                   </div>
@@ -694,7 +694,7 @@ export default function FollowUpPanel({
 
             {!showAllEntries && (
               <div className="pt-2 flex items-center justify-between">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-neutral-600">
                   {formatTemplate(t('followUp.showingResults', language), {
                     start: showingStart,
                     end: showingEnd,

@@ -366,7 +366,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
       <CardBody className="p-6">
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-4 p-4 bg-success-50 border border-success-200 rounded-lg flex items-start gap-3">
+          <div className="mb-4 p-4 bg-success-50 border border-success-200 rounded-2xl flex items-start gap-3">
             <svg className="w-5 h-5 text-success-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -375,7 +375,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
         )}
 
         {error && (
-          <div className="mb-4 p-4 bg-error-50 border border-error-200 rounded-lg flex items-start gap-3">
+          <div className="mb-4 p-4 bg-error-50 border border-error-200 rounded-2xl flex items-start gap-3">
             <svg className="w-5 h-5 text-error-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -387,7 +387,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
         {viewMode === 'form' && (
           <form onSubmit={handleSubmit} className="space-y-6">
             {isEditing && (
-              <div className="flex items-center justify-between p-4 bg-primary-50 border border-primary-200 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-primary-50 border border-primary-200 rounded-2xl">
                 <div className="flex items-center gap-2">
                   <Edit2 className="w-5 h-5 text-primary-600" />
                   <span className="text-sm font-medium text-primary-900">
@@ -562,17 +562,17 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-3 bg-neutral-50 rounded-lg">
+                    <div className="p-3 bg-neutral-50 rounded-2xl">
                       <p className="text-caption mb-1">{t('totalSales', language)}</p>
                       <p className="text-numeric text-base font-semibold text-neutral-900">₹{entry.totalSales.toLocaleString('en-IN')}</p>
                     </div>
                     
-                    <div className="p-3 bg-neutral-50 rounded-lg">
+                    <div className="p-3 bg-neutral-50 rounded-2xl">
                       <p className="text-caption mb-1">{t('totalExpenses', language)}</p>
                       <p className="text-numeric text-base font-semibold text-neutral-900">₹{entry.totalExpense.toLocaleString('en-IN')}</p>
                     </div>
                     
-                    <div className={`p-3 rounded-lg ${entry.estimatedProfit >= 0 ? 'bg-success-50' : 'bg-error-50'}`}>
+                    <div className={`p-3 rounded-2xl ${entry.estimatedProfit >= 0 ? 'bg-success-50' : 'bg-error-50'}`}>
                       <p className="text-caption mb-1">{t('estimatedProfit', language)}</p>
                       <p className={`text-numeric text-base font-semibold flex items-center gap-1 ${entry.estimatedProfit >= 0 ? 'text-success-700' : 'text-error-700'}`}>
                         {entry.estimatedProfit >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
@@ -580,14 +580,14 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
                       </p>
                     </div>
                     
-                    <div className="p-3 bg-primary-50 rounded-lg">
+                    <div className="p-3 bg-primary-50 rounded-2xl">
                       <p className="text-caption mb-1">{t('profitMargin', language)}</p>
                       <p className="text-numeric text-base font-semibold text-primary-700">{(entry.profitMargin * 100).toFixed(1)}%</p>
                     </div>
                   </div>
 
                   {entry.notes && (
-                    <div className="mt-4 p-3 bg-neutral-50 rounded-lg">
+                    <div className="mt-4 p-3 bg-neutral-50 rounded-2xl">
                       <p className="text-sm text-neutral-700">{entry.notes}</p>
                     </div>
                   )}

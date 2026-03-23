@@ -79,97 +79,95 @@ export function Header({
         'sticky top-0 z-40',
         // Background and border
         'bg-white border-b border-neutral-200',
-        // Padding
-        'px-4 py-3',
+        // Padding - aligned with sidebar
+        'px-6 py-4',
         // Shadow for elevation
         'shadow-sm',
         className
       )}
       role="banner"
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-4">
-          {/* Left section: Menu button + Title */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {/* Mobile menu button */}
-            {onMenuClick && (
-              <button
-                onClick={onMenuClick}
-                className={cn(
-                  'p-2 hover:bg-neutral-100 rounded-lg transition-colors',
-                  'desktop:hidden',
-                  // Minimum 44px touch target (Requirement 8.8)
-                  'min-w-[44px] min-h-[44px]',
-                  // Focus styles for keyboard navigation
-                  'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
-                )}
-                aria-label="Open menu"
-              >
-                <Menu className="w-6 h-6 text-neutral-700" />
-              </button>
-            )}
-            
-            {/* Custom left action */}
-            {leftAction}
-            
-            {/* Title and subtitle */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg tablet:text-xl font-bold text-neutral-900 truncate">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-xs tablet:text-sm text-neutral-600 truncate">
-                  {subtitle}
-                </p>
+      <div className="flex items-center justify-between gap-4">
+        {/* Left section: Menu button + Title */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Mobile menu button */}
+          {onMenuClick && (
+            <button
+              onClick={onMenuClick}
+              className={cn(
+                'p-2 hover:bg-neutral-100 rounded-2xl transition-colors',
+                'desktop:hidden',
+                // Minimum 44px touch target (Requirement 8.8)
+                'min-w-[44px] min-h-[44px]',
+                // Focus styles for keyboard navigation
+                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
               )}
+              aria-label="Open menu"
+            >
+              <Menu className="w-6 h-6 text-neutral-700" />
+            </button>
+          )}
+
+          {/* Custom left action */}
+          {leftAction}
+
+          {/* Title and subtitle */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-neutral-900 truncate">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="text-sm text-neutral-600 truncate">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Right section: Status indicators + Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Offline indicator (Requirement 17.3) */}
+          {!isOnline && (
+            <div
+              className="flex items-center gap-1 px-3 py-1.5 bg-error-50 text-error-700 rounded-lg text-xs font-medium"
+              role="status"
+              aria-label="Offline"
+            >
+              <WifiOff className="w-4 h-4" />
+              <span className="hidden tablet:inline">Offline</span>
             </div>
-          </div>
-          
-          {/* Right section: Status indicators + Actions */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Offline indicator (Requirement 17.3) */}
-            {!isOnline && (
-              <div
-                className="flex items-center gap-1 px-2 py-1 bg-error-50 text-error-700 rounded-md text-xs font-medium"
-                role="status"
-                aria-label="Offline"
-              >
-                <WifiOff className="w-4 h-4" />
-                <span className="hidden tablet:inline">Offline</span>
-              </div>
-            )}
-            
-            {/* Sync status indicator (Requirement 17.4) */}
-            {isOnline && isSyncing && (
-              <div
-                className="flex items-center gap-1 px-2 py-1 bg-info-50 text-info-700 rounded-md text-xs font-medium"
-                role="status"
-                aria-label="Syncing"
-              >
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span className="hidden tablet:inline">Syncing</span>
-              </div>
-            )}
-            
-            {/* Online indicator (subtle) */}
-            {isOnline && !isSyncing && (
-              <div
-                className="flex items-center gap-1 px-2 py-1 bg-success-50 text-success-700 rounded-md text-xs font-medium"
-                role="status"
-                aria-label="Online"
-              >
-                <Wifi className="w-4 h-4" />
-                <span className="hidden tablet:inline">Online</span>
-              </div>
-            )}
-            
-            {/* Custom right actions */}
-            {rightActions && (
-              <div className="flex items-center gap-2">
-                {rightActions}
-              </div>
-            )}
-          </div>
+          )}
+
+          {/* Sync status indicator (Requirement 17.4) */}
+          {isOnline && isSyncing && (
+            <div
+              className="flex items-center gap-1 px-3 py-1.5 bg-info-50 text-info-700 rounded-lg text-xs font-medium"
+              role="status"
+              aria-label="Syncing"
+            >
+              <RefreshCw className="w-4 h-4 animate-spin" />
+              <span className="hidden tablet:inline">Syncing</span>
+            </div>
+          )}
+
+          {/* Online indicator (subtle) */}
+          {isOnline && !isSyncing && (
+            <div
+              className="flex items-center gap-1 px-3 py-1.5 bg-success-50 text-success-700 rounded-lg text-xs font-medium"
+              role="status"
+              aria-label="Online"
+            >
+              <Wifi className="w-4 h-4" />
+              <span className="hidden tablet:inline">Online</span>
+            </div>
+          )}
+
+          {/* Custom right actions */}
+          {rightActions && (
+            <div className="flex items-center gap-2">
+              {rightActions}
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -268,14 +268,14 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
+    <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
       <h3 className="text-lg font-semibold text-gray-800">
         {language === 'hi' ? 'वॉइस एंट्री' : 'Voice Entry'}
       </h3>
 
       {/* Waveform Visualization */}
       {isRecording && (
-        <div className="flex items-center justify-center h-20 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-center h-20 bg-gray-50 rounded-2xl">
           <div className="flex items-end space-x-1 h-16">
             {waveformData.map((value, index) => (
               <div
@@ -303,7 +303,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
         {!isRecording && !audioBlob && (
           <button
             onClick={startRecording}
-            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-2xl hover:bg-blue-700 transition-colors font-medium"
           >
             🎤 {t.record}
           </button>
@@ -312,7 +312,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
         {isRecording && (
           <button
             onClick={stopRecording}
-            className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium"
+            className="flex-1 bg-red-600 text-white py-3 px-4 rounded-2xl hover:bg-red-700 transition-colors font-medium"
           >
             ⏹️ {t.stop}
           </button>
@@ -321,7 +321,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
         {audioBlob && uploadStatus === 'idle' && (
           <button
             onClick={uploadAudio}
-            className="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium"
+            className="flex-1 bg-green-600 text-white py-3 px-4 rounded-2xl hover:bg-green-700 transition-colors font-medium"
           >
             ⬆️ {t.upload}
           </button>
@@ -349,14 +349,14 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-3 text-red-700 text-sm">
           ⚠️ {errorMessage}
         </div>
       )}
 
       {/* Queued Uploads Indicator */}
       {queuedUploads > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-yellow-700 text-sm">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-3 text-yellow-700 text-sm">
           📦 {queuedUploads} {t.queuedUploads}
         </div>
       )}

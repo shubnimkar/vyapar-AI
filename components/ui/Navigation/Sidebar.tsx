@@ -106,6 +106,14 @@ export function Sidebar({ items, footer, className }: SidebarProps) {
       )}
       aria-label="Main navigation"
     >
+      {/* Header section - aligned with main header */}
+      <div className="px-6 py-4 border-b border-neutral-200 flex-shrink-0">
+        <h2 className="text-sm font-bold text-neutral-900 tracking-wide">
+          VYAPAR AI
+        </h2>
+        <p className="text-xs text-neutral-500 mt-1">BUSINESS</p>
+      </div>
+
       {/* Navigation items section */}
       <nav
         ref={navRef}
@@ -115,14 +123,14 @@ export function Sidebar({ items, footer, className }: SidebarProps) {
       >
         {items.map((item) => {
           const isActive = pathname === item.href;
-          
+
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 // Base styles
-                'flex items-center gap-3 px-4 py-3 rounded-lg',
+                'flex items-center gap-3 px-4 py-3 rounded-2xl',
                 'text-sm font-medium',
                 'transition-all duration-base',
                 // Minimum 44px touch target (Requirement 8.8)
@@ -137,16 +145,18 @@ export function Sidebar({ items, footer, className }: SidebarProps) {
               aria-current={isActive ? 'page' : undefined}
             >
               {/* Icon with active state color */}
-              <span className={cn(
-                'flex-shrink-0',
-                isActive ? 'text-primary-600' : 'text-neutral-500'
-              )}>
+              <span
+                className={cn(
+                  'flex-shrink-0',
+                  isActive ? 'text-primary-600' : 'text-neutral-500'
+                )}
+              >
                 {item.icon}
               </span>
-              
+
               {/* Label */}
               <span className="flex-1">{item.label}</span>
-              
+
               {/* Badge for pending items (Requirement 8.5) */}
               {item.badge !== undefined && item.badge > 0 && (
                 <Badge variant="warning" aria-label={`${item.badge} pending items`}>
@@ -157,7 +167,7 @@ export function Sidebar({ items, footer, className }: SidebarProps) {
           );
         })}
       </nav>
-      
+
       {/* Footer section for user profile (Requirement 8.7) */}
       {footer && (
         <div className="p-4 border-t border-neutral-200">

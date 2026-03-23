@@ -12,8 +12,8 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
   const title = `📊 ${t('benchmark.title', language)}`;
 
   const getPerformanceColor = () => {
-    if (benchmark.yourMetric >= benchmark.topPerformers) return 'text-green-600';
-    if (benchmark.yourMetric >= benchmark.industryAverage) return 'text-blue-600';
+    if (benchmark.yourMetric >= benchmark.topPerformers) return 'text-success-600';
+    if (benchmark.yourMetric >= benchmark.industryAverage) return 'text-primary-600';
     return 'text-orange-600';
   };
 
@@ -28,7 +28,7 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
 
       <div className="space-y-4">
@@ -39,10 +39,10 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
         <div className="space-y-3">
           {/* Your Metric */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-neutral-600">
               {t('benchmark.yourBusiness', language)} {benchmark.metricName}:
             </span>
-            <span className="text-lg font-bold text-blue-600">
+            <span className="text-lg font-bold text-primary-600">
               {benchmark.yourMetric}
               {benchmark.unit}
             </span>
@@ -50,10 +50,10 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
 
           {/* Industry Average */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-neutral-600">
               {t('benchmark.segmentAverage', language)}:
             </span>
-            <span className="text-lg font-semibold text-gray-700">
+            <span className="text-lg font-semibold text-neutral-700">
               {benchmark.industryAverage}
               {benchmark.unit}
             </span>
@@ -61,10 +61,10 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
 
           {/* Top Performers */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-neutral-600">
               {t('benchmark.category.above_average', language)}:
             </span>
-            <span className="text-lg font-semibold text-green-600">
+            <span className="text-lg font-semibold text-success-600">
               {benchmark.topPerformers}
               {benchmark.unit}
             </span>
@@ -81,7 +81,7 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
               }}
             />
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="flex justify-between text-xs text-neutral-500 mt-1">
             <span>0{benchmark.unit}</span>
             <span>
               {benchmark.topPerformers}

@@ -20,7 +20,7 @@ export default function ErrorDisplay({
   };
 
   return (
-    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+    <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
       <div className="flex items-start gap-3">
         <span className="text-2xl">⚠️</span>
         <div className="flex-1">
@@ -28,7 +28,7 @@ export default function ErrorDisplay({
           {onRetry && (
             <button
               onClick={onRetry}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors min-h-[36px]"
+              className="bg-red-600 text-white px-4 py-2 rounded-2xl text-sm font-medium hover:bg-red-700 transition-colors min-h-[36px]"
             >
               {retryText[language]}
             </button>

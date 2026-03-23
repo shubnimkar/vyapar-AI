@@ -169,7 +169,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
   return (
     <Card className="space-y-5 rounded-2xl">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-slate-900">{t.title}</h3>
+        <h3 className="text-xl font-semibold text-neutral-900">{t.title}</h3>
         <div className="flex items-center gap-2">
           {predictions.length > 0 && (
             <Button
@@ -177,13 +177,13 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
               disabled={explaining}
               variant="ghost"
               size="sm"
-              className="text-blue-600 hover:bg-transparent hover:text-blue-700"
+              className="text-primary-600 hover:bg-transparent hover:text-primary-700"
             >
               ℹ️ {t.explainPrediction}
             </Button>
           )}
           {hasNegativePredictions && (
-            <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-sm font-medium text-red-700">
+            <span className="rounded-full border border-error-200 bg-error-50 px-3 py-1 text-sm font-medium text-error-700">
               ⚠️ {negativeCount} {t.days}
             </span>
           )}
@@ -203,13 +203,13 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       )}
 
       {insufficientData && (
-        <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-700">
+        <div className="rounded-xl border border-yellow-200 bg-warning-50 p-4 text-warning-700">
           ℹ️ {t.insufficientData}
         </div>
       )}
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+        <div className="rounded-xl border border-error-200 bg-error-50 p-4 text-error-700">
           ⚠️ {t.error}: {error}
         </div>
       )}
@@ -217,19 +217,19 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       {predictions.length > 0 && (
         <div className="space-y-3">
           {hasNegativePredictions && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">
+            <div className="rounded-xl border border-error-200 bg-error-50 p-3 text-sm font-medium text-error-700">
               ⚠️ {t.negativeAlert}
             </div>
           )}
 
           {/* Loading skeleton while fetching all 3 languages */}
           {explaining && !Object.keys(explanations).length && (
-              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 animate-pulse">
+              <div className="rounded-xl border border-primary-200 bg-primary-50 p-4 animate-pulse">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
                 <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
                 <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
-                <span className="text-xs text-blue-500 ml-1">
+                <span className="text-xs text-primary-600 ml-1">
                   {language === 'hi'
                     ? 'AI तीनों भाषाओं में विश्लेषण तैयार कर रहा है…'
                     : language === 'mr'
@@ -260,10 +260,10 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
             };
 
             return anyText ? (
-              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">{anyText}</p>
+              <div className="rounded-xl border border-primary-200 bg-primary-50 p-4">
+                <p className="text-sm text-neutral-700 whitespace-pre-wrap">{anyText}</p>
                 {isFallback && (
-                  <p className="mt-2 text-xs text-blue-500 italic">
+                  <p className="mt-2 text-xs text-primary-600 italic">
                     {translateHint[language] || translateHint.en}
                   </p>
                 )}
@@ -277,13 +277,13 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
                 key={index}
                 className={`rounded-xl border p-4 ${
                   prediction.isNegative
-                    ? 'border-red-300 bg-red-50'
-                    : 'border-slate-200 bg-slate-50'
+                    ? 'border-error-300 bg-error-50'
+                    : 'border-neutral-200 bg-neutral-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium text-slate-900">
+                    <div className="font-medium text-neutral-900">
                       {new Date(prediction.date).toLocaleDateString('en-IN', {
                         weekday: 'short',
                         month: 'short',
@@ -292,7 +292,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
                     </div>
                     <div
                       className={`text-lg font-bold ${
-                        prediction.isNegative ? 'text-red-600' : 'text-green-600'
+                        prediction.isNegative ? 'text-error-600' : 'text-success-600'
                       }`}
                     >
                       {formatCurrency(prediction.predictedBalance)}

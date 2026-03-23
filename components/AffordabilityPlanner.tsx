@@ -43,21 +43,21 @@ function getColorClasses(color: AffordabilityColor): {
   switch (color) {
     case 'green':
       return {
-        bg: 'bg-green-100',
+        bg: 'bg-success-100',
         text: 'text-green-800',
-        border: 'border-green-300',
+        border: 'border-success-300',
       };
     case 'yellow':
       return {
         bg: 'bg-yellow-100',
         text: 'text-yellow-800',
-        border: 'border-yellow-300',
+        border: 'border-warning-300',
       };
     case 'red':
       return {
-        bg: 'bg-red-100',
-        text: 'text-red-800',
-        border: 'border-red-300',
+        bg: 'bg-error-100',
+        text: 'text-error-800',
+        border: 'border-error-300',
       };
   }
 }
@@ -130,9 +130,9 @@ export default function AffordabilityPlanner({
   };
 
   return (
-    <article className="bg-slate-50 border border-slate-200 rounded-2xl p-8 flex flex-col shadow-sm h-full">
+    <article className="bg-neutral-50 border border-neutral-200 rounded-2xl p-8 flex flex-col shadow-sm h-full">
       <div className="mb-2">
-        <h3 className="text-section-heading text-slate-700">
+        <h3 className="text-section-heading text-neutral-700">
           {t('indices.affordabilityIndex', language)}
         </h3>
       </div>
@@ -149,7 +149,7 @@ export default function AffordabilityPlanner({
         <div className="space-y-2">
           <label
             htmlFor="plannedCost"
-            className="block text-label text-slate-600"
+            className="block text-label text-neutral-600"
           >
             {t('indices.plannedExpense', language)}
           </label>
@@ -164,7 +164,7 @@ export default function AffordabilityPlanner({
               onChange={(e) => setPlannedCost(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={t('indices.enterAmount', language)}
-              className="block w-full pl-9 pr-4 py-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-300 disabled:bg-slate-100"
+              className="block w-full pl-9 pr-4 py-3 bg-white border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-300 disabled:bg-neutral-100"
               disabled={isLoading}
               min="0"
               step="1"
@@ -178,7 +178,7 @@ export default function AffordabilityPlanner({
           className={`w-full py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-[0.98] ${
             isLoading || !plannedCost
               ? 'bg-slate-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
+              : 'bg-primary-600 hover:bg-primary-700 shadow-blue-200'
           }`}
         >
           {isLoading
@@ -188,7 +188,7 @@ export default function AffordabilityPlanner({
 
         {/* Error Message */}
         {error && (
-          <div className="p-3 bg-red-100 border border-red-300 text-red-800 rounded-lg text-sm">
+          <div className="p-3 bg-error-100 border border-error-300 text-error-800 rounded-2xl text-sm">
             {error}
           </div>
         )}
@@ -218,7 +218,7 @@ export default function AffordabilityPlanner({
             {/* Breakdown */}
             <div className="border-t border-slate-100 pt-4 space-y-3 text-sm">
               <div className="flex justify-between items-center">
-                <span className="text-slate-600">
+                <span className="text-neutral-600">
                   {t('indices.costToProfitRatio', language)}
                 </span>
                 <span className="font-medium text-slate-800">
@@ -227,7 +227,7 @@ export default function AffordabilityPlanner({
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-slate-600">
+                <span className="text-neutral-600">
                   {t('indices.avgMonthlyProfit', language)}
                 </span>
                 <span className="font-medium text-slate-800">
@@ -236,7 +236,7 @@ export default function AffordabilityPlanner({
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-slate-600">
+                <span className="text-neutral-600">
                   {t('indices.plannedExpense', language)}
                 </span>
                 <span className="font-medium text-slate-800">
@@ -261,7 +261,7 @@ export default function AffordabilityPlanner({
         {!result && (
           <div className="mt-4 p-4 bg-white/60 rounded-xl border border-white flex items-center gap-4">
             <div className="flex -space-x-2">
-              <div className="w-8 h-8 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-blue-600">
+              <div className="w-8 h-8 rounded-full bg-primary-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-primary-600">
                 AI
               </div>
               <div className="w-8 h-8 rounded-full bg-slate-800 border-2 border-white flex items-center justify-center">

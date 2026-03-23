@@ -1,15 +1,20 @@
-/* Import Google Fonts - Noto Sans Devanagari for Hindi/Marathi support */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap');
-
-/* Geist Sans optimization for better performance */
-@font-face {
-  font-family: 'Geist Sans';
-  font-display: swap; /* Show fallback text immediately, swap when ready */
-}
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Font optimization for web performance */
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Manrope';
+  font-display: swap;
+}
 
 /* CSS Custom Properties - Design Tokens */
 :root {
@@ -48,9 +53,10 @@
   --spacing-12: 3rem;    /* 48px */
   
   /* Typography */
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
-  --font-devanagari: 'Noto Sans Devanagari', var(--font-geist-sans), system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-headline: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+  --font-devanagari: 'Noto Sans Devanagari', 'Inter', system-ui, sans-serif;
   
   /* Font sizes — Material Design 3 Standard (Google) */
   --font-size-xs: 0.75rem;    /* 12px — captions, badges */
@@ -326,6 +332,7 @@ button, a, input, select, textarea {
 @layer components {
   /* Page title — e.g. "Daily Entry", "Credit Tracking" */
   .text-page-title {
+    font-family: var(--font-headline);
     font-size: var(--font-size-3xl);     /* 28px (was 24px) */
     font-weight: var(--font-weight-bold);
     line-height: var(--line-height-tight);
@@ -334,6 +341,7 @@ button, a, input, select, textarea {
 
   /* Section heading — e.g. card titles, panel headers */
   .text-section-heading {
+    font-family: var(--font-headline);
     font-size: var(--font-size-xl);      /* 22px (was 18px) */
     font-weight: var(--font-weight-semibold);
     line-height: var(--line-height-tight);
@@ -342,6 +350,7 @@ button, a, input, select, textarea {
 
   /* Subsection heading — e.g. form group labels, table headers */
   .text-subsection-heading {
+    font-family: var(--font-headline);
     font-size: var(--font-size-lg);      /* 20px (was 16px) */
     font-weight: var(--font-weight-semibold);
     line-height: var(--line-height-normal);
@@ -350,6 +359,7 @@ button, a, input, select, textarea {
 
   /* Body text — default paragraph / description */
   .text-body {
+    font-family: var(--font-sans);
     font-size: var(--font-size-base);    /* 16px */
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-normal);
@@ -358,6 +368,7 @@ button, a, input, select, textarea {
 
   /* Secondary body — supporting text, hints */
   .text-body-sm {
+    font-family: var(--font-sans);
     font-size: var(--font-size-sm);      /* 14px */
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-normal);
@@ -366,6 +377,7 @@ button, a, input, select, textarea {
 
   /* Label — form labels, input labels */
   .text-label {
+    font-family: var(--font-sans);
     font-size: var(--font-size-sm);      /* 14px */
     font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
@@ -374,6 +386,7 @@ button, a, input, select, textarea {
 
   /* Caption — badges, timestamps, footnotes */
   .text-caption {
+    font-family: var(--font-sans);
     font-size: var(--font-size-xs);      /* 12px */
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height-normal);
@@ -382,6 +395,7 @@ button, a, input, select, textarea {
 
   /* Numeric display — amounts, scores, big numbers */
   .text-numeric {
+    font-family: var(--font-sans);
     font-size: var(--font-size-2xl);     /* 24px */
     font-weight: var(--font-weight-bold);
     line-height: var(--line-height-tight);
@@ -389,6 +403,7 @@ button, a, input, select, textarea {
   }
 
   .text-numeric-lg {
+    font-family: var(--font-sans);
     font-size: var(--font-size-3xl);     /* 28px (was 30px) */
     font-weight: var(--font-weight-bold);
     line-height: var(--line-height-tight);
@@ -527,4 +542,59 @@ button, a, input, select, textarea {
   .text-subsection-heading {
     font-weight: 700; /* Ensure bold weight for headings */
   }
+}
+
+/* ============ DESIGN SYSTEM ENFORCEMENT ============ */
+/* These rules enforce consistent design token usage across all components */
+@layer components {
+  /* Card standardization: all cards use rounded-2xl */
+  [class*="card"],
+  [class*="Card"] {
+    @apply rounded-2xl;
+  }
+
+  /* Color mapping: redirect hardcoded colors to design tokens */
+  .bg-blue-50 { @apply bg-primary-50; }
+  .bg-blue-100 { @apply bg-primary-100; }
+  .bg-blue-600 { @apply bg-primary-600; }
+  .bg-blue-700 { @apply bg-primary-700; }
+  .text-blue-600 { @apply text-primary-600; }
+  .text-blue-700 { @apply text-primary-700; }
+  .border-blue-300 { @apply border-primary-300; }
+
+  .bg-gray-50 { @apply bg-neutral-50; }
+  .bg-gray-100 { @apply bg-neutral-100; }
+  .bg-slate-50 { @apply bg-neutral-50; }
+  .bg-slate-100 { @apply bg-neutral-100; }
+  .text-gray-600 { @apply text-neutral-600; }
+  .text-slate-600 { @apply text-neutral-600; }
+  .border-gray-200 { @apply border-neutral-200; }
+  .border-gray-300 { @apply border-neutral-300; }
+  .border-slate-200 { @apply border-neutral-200; }
+
+  .bg-green-50 { @apply bg-success-50; }
+  .bg-green-100 { @apply bg-success-100; }
+  .text-green-600 { @apply text-success-600; }
+  .text-green-700 { @apply text-success-700; }
+  .border-green-200 { @apply border-success-200; }
+  .border-green-300 { @apply border-success-300; }
+
+  .bg-red-50 { @apply bg-error-50; }
+  .bg-red-100 { @apply bg-error-100; }
+  .text-red-600 { @apply text-error-600; }
+  .text-red-700 { @apply text-error-700; }
+  .text-red-800 { @apply text-error-800; }
+  .border-red-300 { @apply border-error-300; }
+
+  .bg-orange-50 { @apply bg-warning-50; }
+  .text-orange-600 { @apply text-warning-600; }
+  .border-orange-300 { @apply border-warning-300; }
+
+  /* Icon standardization using 4px grid */
+  .icon-xs { @apply w-3 h-3; }
+  .icon-sm { @apply w-4 h-4; }
+  .icon-md { @apply w-5 h-5; }
+  .icon-lg { @apply w-6 h-6; }
+  .icon-xl { @apply w-8 h-8; }
+  .icon-2xl { @apply w-10 h-10; }
 }

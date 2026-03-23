@@ -63,25 +63,25 @@ export function Card({
   return (
     <div
       className={cn(
-        // Base styles - white background, rounded corners
+        // Base styles - white background, rounded corners (Material Design 3 standard)
         'bg-white rounded-2xl',
         'transition-all duration-base',
-        
+
         // Elevation - using shadow tokens
         elevationStyles[elevation],
-        
+
         // Density - internal spacing
         densityStyles[density],
-        
+
         // Interactive variant - hover state with border color change and shadow increase
         interactive && [
           'cursor-pointer',
           'hover:border-primary-200 hover:shadow-md',
         ],
-        
+
         // Loading state
         loading && 'animate-pulse',
-        
+
         className
       )}
       {...props}

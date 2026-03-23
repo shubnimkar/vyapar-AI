@@ -12,13 +12,13 @@ export default function Alerts({ alerts, language }: AlertsProps) {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return 'bg-red-50 border-red-300 text-red-900';
+        return 'bg-error-50 border-error-300 text-red-900';
       case 'warning':
         return 'bg-orange-50 border-orange-300 text-orange-900';
       case 'good':
-        return 'bg-green-50 border-green-300 text-green-900';
+        return 'bg-success-50 border-success-300 text-green-900';
       default:
-        return 'bg-blue-50 border-blue-300 text-blue-900';
+        return 'bg-primary-50 border-primary-300 text-blue-900';
     }
   };
 
@@ -33,7 +33,7 @@ export default function Alerts({ alerts, language }: AlertsProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-2xl font-semibold text-slate-900">{title}</h3>
+      <h3 className="text-2xl font-semibold text-neutral-900">{title}</h3>
       <div className="space-y-3">
         {alerts.map((alert, idx) => (
           <Card

@@ -63,12 +63,12 @@ export type InputProps = StandardInputProps | TextareaInputProps | SelectInputPr
 
 /**
  * State-based border and ring color styles
- * Each state has distinct colors for visual feedback
+ * Each state has distinct colors using design tokens for visual feedback
  */
 const stateStyles = {
   default: 'border-neutral-200 focus:border-primary-500 focus:ring-primary-500/15',
-  error: 'border-error-400 focus:border-error-500 focus:ring-error-500/15',
-  success: 'border-success-400 focus:border-success-500 focus:ring-success-500/15',
+  error: 'border-error-500 focus:border-error-600 focus:ring-error-500/15',
+  success: 'border-success-500 focus:border-success-600 focus:ring-success-500/15',
 };
 
 /**

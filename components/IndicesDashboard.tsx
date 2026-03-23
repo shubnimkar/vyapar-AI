@@ -378,7 +378,7 @@ export default function IndicesDashboard({
         {(isExplaining || Object.keys(explanations).length > 0) && (
           <div className="mt-6">
             {isExplaining && !Object.keys(explanations).length && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg animate-pulse">
+              <div className="p-4 bg-primary-50 border border-primary-200 rounded-2xl animate-pulse">
                 <div className="flex items-center gap-2 mb-3">
                   <div
                     className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
@@ -392,7 +392,7 @@ export default function IndicesDashboard({
                     className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
                     style={{ animationDelay: '300ms' }}
                   />
-                  <span className="text-xs text-blue-500 ml-1">
+                  <span className="text-xs text-primary-600 ml-1">
                     {language === 'hi'
                       ? 'AI तीनों भाषाओं में विश्लेषण तैयार कर रहा है…'
                       : language === 'mr'
@@ -417,7 +417,7 @@ export default function IndicesDashboard({
 
               if (!anyText) {
                 return (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-4 bg-primary-50 border border-primary-200 rounded-2xl">
                     <p className="text-sm text-neutral-700">
                       {t('indices.error', language)}
                     </p>
@@ -432,12 +432,12 @@ export default function IndicesDashboard({
               };
 
               return (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-4 bg-primary-50 border border-primary-200 rounded-2xl">
                   <p className="text-sm text-neutral-700 whitespace-pre-wrap">
                     {anyText}
                   </p>
                   {isFallback && (
-                    <p className="mt-2 text-xs text-blue-500 italic">
+                    <p className="mt-2 text-xs text-primary-600 italic">
                       {translateHint[language] || translateHint.en}
                     </p>
                   )}

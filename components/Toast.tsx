@@ -62,7 +62,7 @@ export default function Toast({ message, type, onClose, duration = 3000 }: Toast
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg ${bgColor} ${borderColor} animate-slide-in-right`}
+      className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-lg ${bgColor} ${borderColor} animate-slide-in-right`}
       role="alert"
     >
       <Icon className={`w-5 h-5 flex-shrink-0 ${iconColor}`} />

@@ -1187,7 +1187,7 @@ export default function Home() {
         {/* Sidebar */}
         <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r border-neutral-200 bg-white lg:flex">
           {/* Logo/Brand */}
-          <div className="flex items-center gap-3 border-b border-neutral-200 px-6 py-6">
+          <div className="flex items-center gap-3 border-b border-neutral-200 px-6 py-4">
             <div className="rounded-xl bg-primary-600 p-3 text-white shadow-sm">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1237,7 +1237,7 @@ export default function Home() {
         <main className="flex h-screen flex-1 flex-col overflow-hidden bg-neutral-50">
           {/* Header */}
           <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-10">
-            <div className="flex items-start justify-between gap-6">
+            <div className="flex items-center justify-between gap-6">
               <div>
                 <h2 className="text-3xl font-bold tracking-tight text-slate-900">
                   {activeSection === 'pending' ? 'Pending Transactions' : getSectionLabel(activeSection)}

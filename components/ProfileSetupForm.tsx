@@ -261,7 +261,7 @@ export default function ProfileSetupForm({
       <Card className="flex-1 overflow-auto rounded-3xl p-0">
         <div className="p-6">
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-2">
               <svg className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -368,7 +368,7 @@ export default function ProfileSetupForm({
                     setFormData({ ...formData, shopName: e.target.value });
                     if (errors.shopName) setErrors({ ...errors, shopName: '' });
                   }}
-                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-2xl border ${
                     errors.shopName ? 'border-red-500 bg-red-50' : 'border-slate-300'
                   } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
                   placeholder={language === 'hi' ? 'दुकान का नाम दर्ज करें' : language === 'mr' ? 'दुकानाचे नाव प्रविष्ट करा' : 'Enter shop name'}
@@ -402,7 +402,7 @@ export default function ProfileSetupForm({
                     setFormData({ ...formData, userName: e.target.value });
                     if (errors.userName) setErrors({ ...errors, userName: '' });
                   }}
-                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-2xl border ${
                     errors.userName ? 'border-red-500 bg-red-50' : 'border-slate-300'
                   } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
                   placeholder={language === 'hi' ? 'मालिक का नाम दर्ज करें' : language === 'mr' ? 'मालकाचे नाव प्रविष्ट करा' : 'Enter owner name'}
@@ -472,7 +472,7 @@ export default function ProfileSetupForm({
                     setFormData({ ...formData, email: e.target.value });
                     if (errors.email) setErrors({ ...errors, email: '' });
                   }}
-                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-lg border ${
+                  className={`w-full pl-9 pr-3 py-2 text-sm rounded-2xl border ${
                     errors.email ? 'border-red-500 bg-red-50' : 'border-slate-300'
                   } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
                   placeholder="name@business.com"
@@ -504,7 +504,7 @@ export default function ProfileSetupForm({
                     setFormData({ ...formData, language: e.target.value as Language });
                     if (errors.language) setErrors({ ...errors, language: '' });
                   }}
-                  className={`w-full pl-9 pr-8 py-2 text-sm rounded-lg border ${
+                  className={`w-full pl-9 pr-8 py-2 text-sm rounded-2xl border ${
                     errors.language ? 'border-red-500 bg-red-50' : 'border-slate-300'
                   } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all`}
                   required
@@ -546,7 +546,7 @@ export default function ProfileSetupForm({
                       business_type: e.target.value as BusinessType,
                     })
                   }
-                  className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
+                  className="w-full pl-9 pr-8 py-2 text-sm rounded-2xl border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
                 >
                   <option value="">
                     {language === 'hi' ? 'प्रकार चुनें' : language === 'mr' ? 'प्रकार निवडा' : 'Select type'}
@@ -592,7 +592,7 @@ export default function ProfileSetupForm({
                       city: e.target.value as CityTier | undefined,
                     })
                   }
-                  className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
+                  className="w-full pl-9 pr-8 py-2 text-sm rounded-2xl border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
                 >
                   <option value="">
                     {language === 'hi' ? 'स्तर चुनें' : language === 'mr' ? 'स्तर निवडा' : 'Select tier'}

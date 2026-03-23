@@ -42,21 +42,21 @@ function getColorClasses(color: StressColor): {
   switch (color) {
     case 'green':
       return {
-        bg: 'bg-green-100',
+        bg: 'bg-success-100',
         text: 'text-green-800',
-        border: 'border-green-300',
+        border: 'border-success-300',
       };
     case 'yellow':
       return {
         bg: 'bg-yellow-100',
         text: 'text-yellow-800',
-        border: 'border-yellow-300',
+        border: 'border-warning-300',
       };
     case 'red':
       return {
-        bg: 'bg-red-100',
-        text: 'text-red-800',
-        border: 'border-red-300',
+        bg: 'bg-error-100',
+        text: 'text-error-800',
+        border: 'border-error-300',
       };
   }
 }
@@ -84,9 +84,9 @@ export default function StressIndexDisplay({
   );
 
   return (
-    <article className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col items-center justify-between shadow-sm hover:shadow-md transition-shadow duration-300">
+    <article className="bg-white border border-neutral-200 rounded-2xl p-8 flex flex-col items-center justify-between shadow-sm hover:shadow-md transition-shadow duration-300">
       <div className="w-full">
-        <h3 className="text-section-heading text-slate-700 mb-6">
+        <h3 className="text-section-heading text-neutral-700 mb-6">
           {t('indices.stressIndex', language)}
         </h3>
       </div>
@@ -138,7 +138,7 @@ export default function StressIndexDisplay({
       <div className="w-full flex flex-col items-center gap-4">
         <button
           onClick={() => setShowBreakdown(!showBreakdown)}
-          className="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center gap-1 group transition-colors"
+          className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-1 group transition-colors"
         >
           <span>
             {showBreakdown
@@ -162,17 +162,17 @@ export default function StressIndexDisplay({
 
         {showBreakdown && (
           <div className="w-full pt-4 border-t border-slate-100 space-y-3">
-            <h4 className="text-label text-slate-700 mb-1">
+            <h4 className="text-label text-neutral-700 mb-1">
               {t('indices.breakdown', language)}
             </h4>
 
             {/* Credit Ratio Score */}
             <div className="flex justify-between items-center">
-              <span className="text-body-sm text-slate-600">
+              <span className="text-body-sm text-neutral-600">
                 {t('indices.creditRatio', language)}
               </span>
               <div className="flex items-center gap-2">
-                <div className="w-24 bg-slate-100 rounded-full h-2">
+                <div className="w-24 bg-neutral-100 rounded-full h-2">
                   <div
                     className="h-2 rounded-full"
                     style={{
@@ -189,11 +189,11 @@ export default function StressIndexDisplay({
 
             {/* Cash Buffer Score */}
             <div className="flex justify-between items-center">
-              <span className="text-body-sm text-slate-600">
+              <span className="text-body-sm text-neutral-600">
                 {t('indices.cashBuffer', language)}
               </span>
               <div className="flex items-center gap-2">
-                <div className="w-24 bg-slate-100 rounded-full h-2">
+                <div className="w-24 bg-neutral-100 rounded-full h-2">
                   <div
                     className="h-2 rounded-full"
                     style={{
@@ -210,11 +210,11 @@ export default function StressIndexDisplay({
 
             {/* Expense Volatility Score */}
             <div className="flex justify-between items-center">
-              <span className="text-body-sm text-slate-600">
+              <span className="text-body-sm text-neutral-600">
                 {t('indices.expenseVolatility', language)}
               </span>
               <div className="flex items-center gap-2">
-                <div className="w-24 bg-slate-100 rounded-full h-2">
+                <div className="w-24 bg-neutral-100 rounded-full h-2">
                   <div
                     className="h-2 rounded-full"
                     style={{

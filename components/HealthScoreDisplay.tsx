@@ -120,8 +120,8 @@ export default function HealthScoreDisplay({
     <Card className="rounded-2xl">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="bg-red-50 p-2 rounded-lg">
-            <Heart className="w-5 h-5 text-red-600" />
+          <div className="bg-error-50 p-2 rounded-2xl">
+            <Heart className="w-5 h-5 text-error-600" />
           </div>
           <h2 className="text-section-heading">
             {t('healthScore', language)}
@@ -134,7 +134,7 @@ export default function HealthScoreDisplay({
             variant="ghost"
             size="sm"
             icon={<Info className="w-4 h-4" />}
-            className="text-blue-600 hover:bg-transparent hover:text-blue-700"
+            className="text-primary-600 hover:bg-transparent hover:text-primary-700"
           >
             {t('explainScore', language)}
           </Button>
@@ -180,54 +180,54 @@ export default function HealthScoreDisplay({
 
       {/* Breakdown Grid */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-slate-500">{t('marginScore', language)}</span>
-            <span className="text-label font-semibold text-slate-900">{breakdown.marginScore}/30</span>
+            <span className="text-label font-semibold text-neutral-900">{breakdown.marginScore}/30</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.marginScore / 30) * 100}%` }} />
+            <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.marginScore / 30) * 100}%` }} />
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-slate-500">{t('expenseScore', language)}</span>
-            <span className="text-label font-semibold text-slate-900">{breakdown.expenseScore}/30</span>
+            <span className="text-label font-semibold text-neutral-900">{breakdown.expenseScore}/30</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.expenseScore / 30) * 100}%` }} />
+            <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.expenseScore / 30) * 100}%` }} />
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-slate-500">{t('cashScore', language)}</span>
-            <span className="text-label font-semibold text-slate-900">{breakdown.cashScore}/20</span>
+            <span className="text-label font-semibold text-neutral-900">{breakdown.cashScore}/20</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.cashScore / 20) * 100}%` }} />
+            <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.cashScore / 20) * 100}%` }} />
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-label text-slate-500">{t('creditScore', language)}</span>
-            <span className="text-label font-semibold text-slate-900">{breakdown.creditScore}/20</span>
+            <span className="text-label font-semibold text-neutral-900">{breakdown.creditScore}/20</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-1.5">
-            <div className="h-full bg-blue-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.creditScore / 20) * 100}%` }} />
+            <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.creditScore / 20) * 100}%` }} />
           </div>
         </div>
       </div>
 
       {explaining && (
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-pulse">
+        <div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-2xl animate-pulse">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
             <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
             <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
-            <span className="text-xs text-blue-500 ml-1">
+            <span className="text-xs text-primary-600 ml-1">
               {language === 'hi' ? 'AI विश्लेषण तैयार हो रहा है…' :
                 language === 'mr' ? 'AI विश्लेषण तयार होत आहे…' :
                   'Generating AI explanation in all languages…'}
@@ -256,10 +256,10 @@ export default function HealthScoreDisplay({
 
         if (!anyText) return null;
         return (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">{anyText}</p>
+          <div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-2xl">
+            <p className="text-sm text-neutral-700 whitespace-pre-wrap">{anyText}</p>
             {isFallback && (
-              <p className="mt-2 text-xs text-blue-500 italic">
+              <p className="mt-2 text-xs text-primary-600 italic">
                 {translateHint[language] || translateHint['en']}
               </p>
             )}

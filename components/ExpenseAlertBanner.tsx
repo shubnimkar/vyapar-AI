@@ -49,7 +49,7 @@ export default function ExpenseAlertBanner({ alert, onDismiss, language }: Expen
 
   return (
     <div
-      className={`border-2 rounded-lg p-4 mb-4 ${severityStyles[alert.severity]}`}
+      className={`border-2 rounded-2xl p-4 mb-4 ${severityStyles[alert.severity]}`}
       role="alert"
     >
       <div className="flex items-start justify-between">

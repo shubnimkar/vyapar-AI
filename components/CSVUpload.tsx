@@ -338,7 +338,7 @@ export default function CSVUpload({
           <FileText className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-lg font-bold tracking-tight text-slate-900">{t.title}</h3>
+          <h3 className="text-lg font-bold tracking-tight text-neutral-900">{t.title}</h3>
           <p className="text-sm text-slate-500">{t.description}</p>
         </div>
       </div>
@@ -403,7 +403,7 @@ export default function CSVUpload({
             className={`rounded-[24px] border-2 border-dashed p-8 text-center transition-colors ${
               dragActive
                 ? 'border-[#2563eb] bg-[#eef4ff]'
-                : 'border-[#d9e1ee] bg-[#fbfcff] hover:border-slate-300'
+                : 'border-[#d9e1ee] bg-[#fbfcff] hover:border-neutral-300'
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -413,7 +413,7 @@ export default function CSVUpload({
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
               <Upload className="h-7 w-7" />
             </div>
-            <p className="mb-2 text-slate-700">
+            <p className="mb-2 text-neutral-700">
               {t.dragDrop}{' '}
               <button
                 onClick={handleBrowseClick}
@@ -436,7 +436,7 @@ export default function CSVUpload({
           <div className="mt-4 flex flex-col gap-3">
             <button
               onClick={handleDownloadTemplate}
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
+              className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 transition-colors hover:border-neutral-300 hover:text-neutral-900"
             >
               <Download className="h-4 w-4" />
               {t.downloadTemplate}
@@ -457,7 +457,7 @@ export default function CSVUpload({
       {uploading && (
         <div className="rounded-[24px] border-2 border-dashed border-[#d9e1ee] bg-[#fbfcff] p-8 text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-[#2563eb] border-t-transparent"></div>
-          <p className="font-medium text-slate-700">{t.uploading}</p>
+          <p className="font-medium text-neutral-700">{t.uploading}</p>
         </div>
       )}
 

@@ -66,7 +66,7 @@ export default function LanguageSelector({
             <button
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code)}
-              className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+              className={`w-full rounded-2xl px-3 py-2 text-left text-sm transition-colors ${
                 currentLanguage === lang.code
                   ? 'bg-primary-50 text-primary-700 font-medium'
                   : 'text-slate-700 hover:bg-slate-50'

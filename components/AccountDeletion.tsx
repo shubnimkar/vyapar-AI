@@ -97,45 +97,45 @@ export default function AccountDeletion({
     );
 
     return (
-      <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto">
         <div className="text-center mb-6">
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
             <svg className="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-2">
             {t('deletion.title', language)}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             {t('deletion.scheduledFor', language)}
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-4 p-3 bg-error-50 border border-error-200 rounded-md">
+            <p className="text-sm text-error-800">{error}</p>
           </div>
         )}
 
-        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6 mb-6">
+        <div className="bg-warning-50 border-2 border-yellow-200 rounded-2xl p-6 mb-6">
           <div className="text-center">
             <p className="text-3xl font-bold text-yellow-800 mb-2">{daysRemaining}</p>
-            <p className="text-sm text-yellow-700 mb-4">
+            <p className="text-sm text-warning-700 mb-4">
               {language === 'hi' 
                 ? 'दिन शेष'
                 : language === 'mr'
                 ? 'दिवस शिल्लक'
                 : 'days remaining'}
             </p>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-neutral-700">
               {scheduledDate}
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <p className="text-sm text-gray-600 text-center">
+          <p className="text-sm text-neutral-600 text-center">
             {language === 'hi'
               ? 'आपका खाता और सभी डेटा स्थायी रूप से हटा दिया जाएगा। आप इस अवधि के भीतर रद्द कर सकते हैं।'
               : language === 'mr'
@@ -161,29 +161,29 @@ export default function AccountDeletion({
   // Show confirmation dialog if user clicked delete
   if (showConfirmation) {
     return (
-      <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto">
         <div className="text-center mb-6">
-          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-            <svg className="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-error-100 mb-4">
+            <svg className="h-8 w-8 text-error-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-2">
             {t('deletion.title', language)}
           </h2>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-4 p-3 bg-error-50 border border-error-200 rounded-md">
+            <p className="text-sm text-error-800">{error}</p>
           </div>
         )}
 
-        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-6">
-          <p className="text-sm text-red-800 mb-4">
+        <div className="bg-error-50 border-2 border-error-200 rounded-2xl p-6 mb-6">
+          <p className="text-sm text-error-800 mb-4">
             {t('deletion.warning', language)}
           </p>
-          <ul className="text-sm text-red-700 space-y-2 list-disc list-inside">
+          <ul className="text-sm text-error-700 space-y-2 list-disc list-inside">
             <li>
               {language === 'hi'
                 ? 'सभी दैनिक प्रविष्टियाँ और व्यापार डेटा'
@@ -216,7 +216,7 @@ export default function AccountDeletion({
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
             {t('deletion.confirm', language)}
           </label>
           <input
@@ -227,7 +227,7 @@ export default function AccountDeletion({
               setError('');
             }}
             placeholder="DELETE"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
           />
         </div>
 
@@ -239,7 +239,7 @@ export default function AccountDeletion({
               setError('');
             }}
             disabled={isProcessing}
-            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            className="flex-1 px-6 py-3 border border-neutral-300 text-neutral-700 rounded-md hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
           >
             {t('cancel', language)}
           </button>
@@ -260,12 +260,12 @@ export default function AccountDeletion({
 
   // Initial state - show delete button
   return (
-    <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl mx-auto">
+    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
         {t('settings.deleteAccount', language)}
       </h2>
       
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-neutral-600 mb-6">
         {language === 'hi'
           ? 'खाता हटाने से आपका सभी डेटा 30 दिनों के बाद स्थायी रूप से हटा दिया जाएगा। आप इस अवधि के भीतर रद्द कर सकते हैं।'
           : language === 'mr'
