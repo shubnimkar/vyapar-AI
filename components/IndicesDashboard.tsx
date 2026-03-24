@@ -317,22 +317,8 @@ export default function IndicesDashboard({
   return (
     <>
       <div className="w-full">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
-            <h2 className="text-page-title text-slate-800">
-              {t('indices.stressIndex', language)} &amp; {t('indices.affordabilityIndex', language)}
-            </h2>
-            <p className="text-body-sm text-slate-500 mt-1">
-              {language === 'hi'
-                ? 'आपके व्यवसाय के तनाव और बड़ी खरीद क्षमता का त्वरित सारांश'
-                : language === 'mr'
-                  ? 'तुमच्या व्यवसायातील ताण आणि मोठ्या खरेदीची क्षमता याचे झटपट चित्र'
-                  : 'Real-time overview of your financial stress and affordability.'}
-            </p>
-          </div>
-          <div className="self-start md:self-auto">{renderSyncStatus()}</div>
-        </header>
+        {/* Sync status */}
+        <div className="flex justify-end mb-4">{renderSyncStatus()}</div>
 
         {/* Main Content */}
         <section className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">

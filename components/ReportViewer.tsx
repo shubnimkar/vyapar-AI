@@ -516,11 +516,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
   return (
     <Card className="space-y-8 rounded-3xl">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-2">
-          <h3 className="text-page-title text-neutral-900">{t.title}</h3>
-          <p className="max-w-3xl text-body text-slate-500 leading-7">{t.subtitle}</p>
-        </div>
+      <div className="flex justify-end">
         <Button
           type="button"
           onClick={() => void fetchReports('refresh')}

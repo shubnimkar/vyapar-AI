@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const audioFile = formData.get('audio') as File;
+    const language = formData.get('language') as string || 'en';
 
     if (!audioFile) {
       logger.warn('Missing audio file in voice entry request');
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Generate unique filename
     const timestamp = Date.now();
-    const filename = `voice-${timestamp}-${audioFile.name}`;
+    const filename = `voice-${language}-${timestamp}-${audioFile.name}`;
 
     // Convert File to Buffer
     const arrayBuffer = await audioFile.arrayBuffer();

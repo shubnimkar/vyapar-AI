@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquarePlus, Sparkles } from 'lucide-react';
+import { MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { CreditEntry, DailyEntry, DailyReport, InferredTransaction, Language } from '@/lib/types';
@@ -381,22 +381,8 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
 
   return (
     <Card className="space-y-6 rounded-3xl">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
-            <Sparkles className="h-4 w-4" />
-            {t('askQuestion', language)}
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-page-title text-slate-900">
-              {t('askQuestion', language)}
-            </h2>
-            <p className="max-w-3xl text-body text-slate-500 leading-7">
-              {t('qaScope', language)}
-            </p>
-          </div>
-        </div>
-        {messages.length > 0 && (
+      {messages.length > 0 && (
+        <div className="flex justify-end">
           <Button
             type="button"
             onClick={clearConversation}
@@ -407,8 +393,8 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
           >
             {loading ? t('qaClearingConversation', language) : t('qaNewConversation', language)}
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Messages */}
       <div className="max-h-[34rem] space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/60 p-4">

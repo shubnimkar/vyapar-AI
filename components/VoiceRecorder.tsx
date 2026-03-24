@@ -6,7 +6,7 @@ import { logger } from '@/lib/logger';
 
 interface VoiceRecorderProps {
   onDataExtracted: (data: ExtractedVoiceData) => void;
-  language: 'en' | 'hi';
+  language: 'en' | 'hi' | 'mr';
 }
 
 type UploadStatus = 'idle' | 'uploading' | 'processing' | 'success' | 'error';
@@ -57,6 +57,21 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
       uploadFailed: 'अपलोड विफल। ऑनलाइन होने पर पुनः प्रयास करेंगे।',
       offline: 'ऑफ़लाइन - रिकॉर्डिंग स्थानीय रूप से सहेजी गई',
       queuedUploads: 'अपलोड कतारबद्ध',
+    },
+    mr: {
+      record: 'आवाज रेकॉर्ड करा',
+      stop: 'रेकॉर्डिंग थांबवा',
+      upload: 'अपलोड आणि प्रोसेस करा',
+      recording: 'रेकॉर्डिंग',
+      uploading: 'अपलोड होत आहे',
+      processing: 'प्रोसेस होत आहे',
+      success: 'डेटा यशस्वीरित्या काढला गेला!',
+      error: 'त्रुटी',
+      micPermissionDenied: 'मायक्रोफोन परवानगी नाकारली. कृपया प्रवेशास अनुमती द्या.',
+      micNotSupported: 'या ब्राउझरमध्ये व्हॉइस रेकॉर्डिंग समर्थित नाही.',
+      uploadFailed: 'अपलोड अयशस्वी. ऑनलाइन असताना पुन्हा प्रयत्न करा.',
+      offline: 'ऑफलाइन - रेकॉर्डिंग स्थानिकरित्या जतन केले',
+      queuedUploads: 'अपलोड रांगेत आहेत',
     },
   };
 
@@ -179,6 +194,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
           queue.push({
             audioData: reader.result,
             timestamp: Date.now(),
+            language: language,
           });
           localStorage.setItem('voiceUploadQueue', JSON.stringify(queue));
           setQueuedUploads(queue.length);
@@ -191,6 +207,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
 
       const formData = new FormData();
       formData.append('audio', audioBlob, `voice-${Date.now()}.webm`);
+      formData.append('language', language);
 
       const response = await fetch('/api/voice-entry', {
         method: 'POST',
@@ -238,6 +255,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
 
         const formData = new FormData();
         formData.append('audio', blob, `voice-${item.timestamp}.webm`);
+        formData.append('language', item.language || 'en');
 
         const response = await fetch('/api/voice-entry', {
           method: 'POST',

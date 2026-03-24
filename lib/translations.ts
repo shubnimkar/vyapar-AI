@@ -290,9 +290,24 @@ export const translations: Translations = {
     mr: 'विश्लेषण',
   },
   'nav.chat': {
-    en: 'Q&A',
-    hi: 'प्रश्नोत्तर',
-    mr: 'प्रश्नोत्तर',
+    en: 'Ask AI',
+    hi: 'पूछें',
+    mr: 'विचारा',
+  },
+  askAITitle: {
+    en: 'Ask AI',
+    hi: 'AI से पूछें',
+    mr: 'AI ला विचारा',
+  },
+  askAISubtitle: {
+    en: 'Ask anything about your business — sales, expenses, credit, or trends.',
+    hi: 'अपने व्यापार के बारे में कुछ भी पूछें — बिक्री, खर्च, उधार या रुझान।',
+    mr: 'तुमच्या व्यवसायाबद्दल काहीही विचारा — विक्री, खर्च, उधार किंवा ट्रेंड.',
+  },
+  pendingSubtitle: {
+    en: 'Review and confirm transactions before they are added to your records.',
+    hi: 'लेनदेन को रिकॉर्ड में जोड़ने से पहले समीक्षा करें और पुष्टि करें।',
+    mr: 'व्यवहार नोंदींमध्ये जोडण्यापूर्वी पुनरावलोकन करा आणि पुष्टी करा.',
   },
   'nav.account': {
     en: 'Account',

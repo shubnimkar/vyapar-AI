@@ -1,15 +1,14 @@
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { TranscribeClient, StartTranscriptionJobCommand, GetTranscriptionJobCommand } from "@aws-sdk/client-transcribe";
-import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
-import { generateWithModelChain, getLambdaModelChain } from "../shared/bedrock-chain.mjs";
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 const s3Client = new S3Client({ region: AWS_REGION });
 const transcribeClient = new TranscribeClient({ region: AWS_REGION });
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
 
+const BEDROCK_MODEL_ID = process.env.BEDROCK_MODEL_ID || 'global.amazon.nova-2-lite-v1:0';
 const RESULTS_BUCKET = process.env.RESULTS_BUCKET || 'vyapar-voice';
-const VOICE_MODEL_CHAIN = getLambdaModelChain('voice');
 
 export const handler = async (event) => {
   console.log("Event:", JSON.stringify(event, null, 2));
@@ -103,6 +102,9 @@ Extract the following information from this Hindi transcript:
 - Expense amount (number)
 - Expense category (string)
 - Inventory changes (string description)
+- Date mentioned (YYYY-MM-DD format)
+
+IMPORTANT: If no specific date is mentioned in the transcript, you MUST use today's date: ${todayDate}
 
 Transcript: ${transcript}
 
@@ -112,27 +114,45 @@ Return ONLY valid JSON format:
   "expenses": number or null,
   "expenseCategory": string or null,
   "inventoryChanges": string or null,
+  "date": "YYYY-MM-DD",
   "confidence": number (0-1)
 }`;
 
+    // Amazon Nova format
+    const bedrockPayload = {
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+      inferenceConfig: {
+        max_new_tokens: 500,
+      },
+    };
+
     console.log("Calling Bedrock for data extraction...");
     console.log(`🌍 Bedrock Region: ${AWS_REGION}`);
-    console.log(`🤖 Bedrock Model Chain: ${VOICE_MODEL_CHAIN.join(' -> ')}`);
+    console.log(`🤖 Bedrock Model ID: ${BEDROCK_MODEL_ID}`);
 
-    const aiResponse = await generateWithModelChain({
-      client: bedrockClient,
-      modelIds: VOICE_MODEL_CHAIN,
-      prompt,
-      maxTokens: 500,
-      feature: 'voice-processor',
+    const bedrockCommand = new InvokeModelCommand({
+      modelId: BEDROCK_MODEL_ID,
+      contentType: "application/json",
+      accept: "application/json",
+      body: JSON.stringify(bedrockPayload),
     });
 
-    if (!aiResponse.success || !aiResponse.content) {
-      throw new Error(aiResponse.error || 'Voice extraction failed');
-    }
+    const bedrockResponse = await bedrockClient.send(bedrockCommand);
+    const responseBody = JSON.parse(new TextDecoder().decode(bedrockResponse.body));
 
-    console.log(`Bedrock response model: ${aiResponse.modelId}`);
-    const extractedText = aiResponse.content;
+    console.log("Bedrock response:", JSON.stringify(responseBody, null, 2));
+
+    // Nova response format: output.message.content[0].text
+    const extractedText = responseBody.output.message.content[0].text;
 
     // Parse the JSON from the response
     let extractedData;
@@ -150,12 +170,10 @@ Return ONLY valid JSON format:
         expenses: null,
         expenseCategory: null,
         inventoryChanges: null,
+        date: new Date().toISOString().split("T")[0],
         confidence: 0,
       };
     }
-
-    // Always use today's date (the date when voice was uploaded)
-    extractedData.date = todayDate;
 
     console.log("Extracted data:", JSON.stringify(extractedData, null, 2));
 

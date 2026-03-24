@@ -146,6 +146,7 @@ export default function Home() {
   const [qaReports, setQaReports] = useState<DailyReport[]>([]);
   const [qaPendingTransactions, setQaPendingTransactions] = useState<InferredTransaction[]>([]);
   const [qaInitialMessages, setQaInitialMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; sourcesUsed?: string[]; contentByLanguage?: Partial<Record<Language, string>> }>>([]);
+  const [voiceInitialData, setVoiceInitialData] = useState<{ date?: string; totalSales?: number; totalExpense?: number; notes?: string } | null>(null);
 
   // Get pending transaction count for badge
   const pendingCount = usePendingTransactionCount();
@@ -1015,7 +1016,7 @@ export default function Home() {
       credit: 'Credit',
       pending: 'Pending',
       analysis: 'Analysis',
-      chat: 'Q&A',
+      chat: t('nav.chat', 'en'),
       account: 'Account',
       reports: 'Reports',
     };
@@ -1027,7 +1028,7 @@ export default function Home() {
       credit: 'उधारी',
       pending: 'लंबित',
       analysis: 'विश्लेषण',
-      chat: 'प्रश्नोत्तर',
+      chat: t('nav.chat', 'hi'),
       account: 'खाता',
       reports: 'रिपोर्ट',
     };
@@ -1039,7 +1040,7 @@ export default function Home() {
       credit: 'उधार',
       pending: 'प्रलंबित',
       analysis: 'विश्लेषण',
-      chat: 'प्रश्नोत्तर',
+      chat: t('nav.chat', 'mr'),
       account: 'खाते',
       reports: 'अहवाल',
     };
@@ -1238,15 +1239,85 @@ export default function Home() {
           {/* Header */}
           <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-10">
             <div className="flex items-center justify-between gap-6">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-                  {activeSection === 'pending' ? 'Pending Transactions' : getSectionLabel(activeSection)}
-                </h2>
-                {activeSection === 'pending' && (
-                  <p className="mt-2 text-base text-slate-500">
-                    Review and reconcile your recent financial activities.
-                  </p>
-                )}
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 shrink-0">
+                    {activeSection === 'pending' ? t('nav.pending', language) : getSectionLabel(activeSection)}
+                  </h2>
+                  {activeSection === 'pending' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {t('pendingSubtitle', language)}
+                    </p>
+                  )}
+                  {activeSection === 'chat' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {t('askAISubtitle', language)}
+                    </p>
+                  )}
+                  {activeSection === 'reports' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {language === 'hi'
+                        ? 'अवधि सारांश बनाएं, प्रदर्शन रुझान ट्रैक करें।'
+                        : language === 'mr'
+                          ? 'कालावधी सारांश तयार करा, कामगिरीचे ट्रेंड ट्रॅक करा.'
+                          : 'Generate summaries and track performance trends.'}
+                    </p>
+                  )}
+                  {activeSection === 'analysis' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {language === 'hi'
+                        ? 'CSV डेटा अपलोड करें और AI से अंतर्दृष्टि पाएं।'
+                        : language === 'mr'
+                          ? 'CSV डेटा अपलोड करा आणि AI कडून अंतर्दृष्टी मिळवा.'
+                          : 'Upload CSV data to get AI-powered insights.'}
+                    </p>
+                  )}
+                  {activeSection === 'credit' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {language === 'hi'
+                        ? 'ग्राहकों का उधार ट्रैक करें, बकाया भुगतान का फॉलो-अप करें।'
+                        : language === 'mr'
+                          ? 'ग्राहकांचे उधार ट्रॅक करा आणि थकीत पेमेंटचा फॉलो-अप करा.'
+                          : 'Track customer credit, follow up on overdue payments, and manage your udhaar.'}
+                    </p>
+                  )}
+                  {activeSection === 'entries' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {language === 'hi'
+                        ? 'आज की बिक्री, खर्च और नकद दर्ज करें — आवाज, रसीद या मैन्युअल एंट्री से।'
+                        : language === 'mr'
+                          ? 'आजची विक्री, खर्च आणि रोकड नोंदवा — आवाज, पावती किंवा मॅन्युअल नोंदीने.'
+                          : 'Log today\'s sales, expenses, and cash — by voice, receipt, or manual entry.'}
+                    </p>
+                  )}
+                  {activeSection === 'dashboard' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {language === 'hi'
+                        ? 'अपने व्यवसाय का आज का स्वास्थ्य और प्रमुख संकेतक देखें।'
+                        : language === 'mr'
+                          ? 'आजचे व्यवसाय आरोग्य आणि प्रमुख निर्देशक पाहा.'
+                          : 'Your business health at a glance — scores, trends, and key metrics.'}
+                    </p>
+                  )}
+                  {activeSection === 'health' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {language === 'hi'
+                        ? 'तनाव सूचकांक, वहनीयता और नकदी प्रवाह पूर्वानुमान देखें।'
+                        : language === 'mr'
+                          ? 'ताण निर्देशांक, परवडणारेपणा आणि रोख प्रवाह अंदाज पाहा.'
+                          : 'Stress index, affordability, and cash flow forecast for your shop.'}
+                    </p>
+                  )}
+                  {activeSection === 'account' && (
+                    <p className="text-sm text-slate-500 truncate">
+                      {language === 'hi'
+                        ? 'अपनी प्रोफ़ाइल, व्यवसाय प्रकार और प्राथमिकताएं प्रबंधित करें।'
+                        : language === 'mr'
+                          ? 'तुमची प्रोफाइल, व्यवसाय प्रकार आणि प्राधान्ये व्यवस्थापित करा.'
+                          : 'Manage your profile, business type, and preferences.'}
+                    </p>
+                  )}
+                </div>
               </div>
               {/* Right side: language dropdown + sync */}
               <div className="flex items-center gap-3">
@@ -1367,11 +1438,20 @@ export default function Home() {
                 </>
               )}
 
-              {activeSection === 'entries' && (
+               {activeSection === 'entries' && (
                 <>
-                  {user && <VoiceRecorder onDataExtracted={handleVoiceDataExtracted} language={language === 'mr' ? 'hi' : language} />}
+                  {user && <VoiceRecorder onDataExtracted={handleVoiceDataExtracted} language={language} />}
                   <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
-                  {user && <DailyEntryForm language={language} onEntrySubmitted={handleDailyEntrySubmitted} />}
+                  {user && (
+                    <DailyEntryForm 
+                      language={language} 
+                      onEntrySubmitted={() => {
+                        handleDailyEntrySubmitted();
+                        setVoiceInitialData(null);
+                      }} 
+                      initialData={voiceInitialData || undefined}
+                    />
+                  )}
                   <CSVUpload language={language} />
                 </>
               )}
