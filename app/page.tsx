@@ -25,7 +25,7 @@ import CSVUpload from '@/components/CSVUpload';
 import ExpenseAlertBanner from '@/components/ExpenseAlertBanner';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import ReportViewer from '@/components/ReportViewer';
-import Toast, { ToastType } from '@/components/Toast';
+import { useToast } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { logger } from '@/lib/logger';
 import ShareWhatsApp from '@/components/ShareWhatsApp';
@@ -141,8 +141,8 @@ export default function Home() {
   // Expense Alert state
   const [expenseAlert, setExpenseAlert] = useState<ExpenseAlert | null>(null);
 
-  // Toast notification state
-  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+  const { showToast } = useToast();
+
   const [qaReports, setQaReports] = useState<DailyReport[]>([]);
   const [qaPendingTransactions, setQaPendingTransactions] = useState<InferredTransaction[]>([]);
   const [qaInitialMessages, setQaInitialMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; sourcesUsed?: string[]; contentByLanguage?: Partial<Record<Language, string>> }>>([]);
@@ -279,6 +279,28 @@ export default function Home() {
       setLanguage(savedLang);
     }
 
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
+  useEffect(() => {
+    // PWA installed shortcuts use query actions like /?action=add-entry.
+    // We intentionally read from window to avoid Next.js suspense requirements with useSearchParams().
+    if (typeof window === 'undefined') return;
+
+    const action = new URLSearchParams(window.location.search).get('action');
+    if (!action) return;
+
+    const actionToSection: Partial<Record<string, AppSection>> = {
+      'add-entry': 'entries',
+      'health-score': 'health',
+      credits: 'credit',
+    };
+
+    const next = actionToSection[action];
+    if (next) setActiveSection(next);
   }, []);
 
   useEffect(() => {
@@ -607,14 +629,14 @@ export default function Home() {
   const handleAddTransaction = async (transaction: InferredTransaction) => {
     if (!user) {
       logger.error('No user found when adding transaction');
-      setToast({
-        message: language === 'hi'
+      showToast(
+        'error',
+        language === 'hi'
           ? 'कृपया पहले लॉगिन करें'
           : language === 'mr'
             ? 'कृपया प्रथम लॉगिन करा'
-            : 'Please login first',
-        type: 'error'
-      });
+            : 'Please login first'
+      );
       return;
     }
 
@@ -641,10 +663,7 @@ export default function Home() {
             ? `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} जोडला!`
             : `₹${transaction.amount.toLocaleString('en-IN')} ${typeLabel} added!`;
 
-        setToast({
-          message: successMessage,
-          type: 'success'
-        });
+        showToast('success', successMessage);
 
         // Refresh dashboard data
         refreshHealthScore();
@@ -663,24 +682,21 @@ export default function Home() {
           ? 'व्यवहार जोडण्यात अयशस्वी'
           : 'Failed to add transaction';
 
-      setToast({
-        message: errorMessage,
-        type: 'error'
-      });
+      showToast('error', errorMessage);
     }
   };
 
   const handleVoiceDataExtracted = async (data: ExtractedVoiceData) => {
     if (!user) {
       logger.error('No user found when processing voice data');
-      setToast({
-        message: language === 'hi'
+      showToast(
+        'error',
+        language === 'hi'
           ? 'कृपया पहले लॉगिन करें'
           : language === 'mr'
             ? 'कृपया प्रथम लॉगिन करा'
-            : 'Please login first',
-        type: 'error'
-      });
+            : 'Please login first'
+      );
       return;
     }
 
@@ -723,14 +739,14 @@ export default function Home() {
 
       if (duplicate) {
         logger.info('Duplicate voice transaction detected', { transactionId: inferredTransaction.id });
-        setToast({
-          message: language === 'hi'
+        showToast(
+          'error',
+          language === 'hi'
             ? 'यह लेनदेन पहले से जोड़ा जा चुका है'
             : language === 'mr'
               ? 'हा व्यवहार आधीच जोडला गेला आहे'
-              : 'This transaction has already been added',
-          type: 'error'
-        });
+              : 'This transaction has already been added'
+        );
         return;
       }
 
@@ -752,10 +768,7 @@ export default function Home() {
             ? `व्हॉइस डेटा काढला! (विश्वास: ${Math.round(data.confidence * 100)}%) प्रलंबित टॅबमध्ये जा.`
             : `Voice data extracted! (Confidence: ${Math.round(data.confidence * 100)}%) Go to Pending tab.`;
 
-        setToast({
-          message: successMessage,
-          type: 'success'
-        });
+        showToast('success', successMessage);
 
         // Switch to pending section to show the transaction
         setActiveSection('pending');
@@ -772,10 +785,7 @@ export default function Home() {
           ? 'व्हॉइस डेटा प्रक्रिया करण्यात अयशस्वी'
           : 'Failed to process voice data';
 
-      setToast({
-        message: errorMessage,
-        type: 'error'
-      });
+      showToast('error', errorMessage);
     }
   };
 
@@ -990,12 +1000,12 @@ export default function Home() {
 
       const message =
         language === 'hi'
-          ? `रसीद प्रोसेस हो गई!\n\nतारीख: ${data.date}\nराशि: ₹${data.amount}\nदुकान: ${data.vendor}\nवस्तुएं: ${itemsList}\n\nयह खर्च आपके दैनिक प्रविष्टियों में जोड़ दिया गया है।`
+          ? `रसीद प्रोसेस हो गई! तारीख: ${data.date} राशि: ₹${data.amount} दुकान: ${data.vendor} वस्तुएं: ${itemsList}. यह खर्च आपके दैनिक प्रविष्टियों में जोड़ दिया गया है।`
           : language === 'mr'
-            ? `पावती प्रक्रिया झाली!\n\nतारीख: ${data.date}\nरक्कम: ₹${data.amount}\nदुकान: ${data.vendor}\nवस्तू: ${itemsList}\n\nहा खर्च तुमच्या दैनिक नोंदींमध्ये जोडला गेला आहे।`
-            : `Receipt processed!\n\nDate: ${data.date}\nAmount: ₹${data.amount}\nVendor: ${data.vendor}\nItems: ${itemsList}\n\nThis expense has been added to your daily entries.`;
+            ? `पावती प्रक्रिया झाली! तारीख: ${data.date} रक्कम: ₹${data.amount} दुकान: ${data.vendor} वस्तू: ${itemsList}. हा खर्च तुमच्या दैनिक नोंदींमध्ये जोडला गेला आहे।`
+            : `Receipt processed! Date: ${data.date} Amount: ₹${data.amount} Vendor: ${data.vendor} Items: ${itemsList}. This expense has been added to your daily entries.`;
 
-      alert(message);
+      showToast('success', message);
     } catch (error) {
       logger.error('Failed to add receipt to daily entries', { error });
       const errorMessage =
@@ -1004,7 +1014,7 @@ export default function Home() {
           : language === 'mr'
             ? 'खर्च जोडण्यात अयशस्वी. कृपया मॅन्युअली जोडा.'
             : 'Failed to add expense. Please add manually.';
-      alert(errorMessage);
+      showToast('error', errorMessage);
     }
   };
 
@@ -1175,15 +1185,6 @@ export default function Home() {
 
   return (
     <AuthGuard>
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
       <div className="min-h-screen overflow-hidden bg-neutral-50 flex flex-col lg:flex-row">
         {/* Sidebar */}
         <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r border-neutral-200 bg-white lg:flex">
@@ -1211,6 +1212,7 @@ export default function Home() {
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
+                  aria-current={active ? 'page' : undefined}
                   className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${active
                     ? 'bg-primary-50 text-primary-700 shadow-sm ring-1 ring-primary-100'
                     : 'text-slate-600 hover:bg-neutral-100 hover:text-slate-900'

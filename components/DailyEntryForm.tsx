@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardBody } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 interface DailyEntryFormProps {
   language: Language;
@@ -598,44 +599,23 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
         )}
       </CardBody>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card elevation="elevated" density="comfortable" className="max-w-md w-full">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-error-100 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-error-600" />
-              </div>
-              <h3 className="text-section-heading">{t('daily.deleteEntry', language)}</h3>
-            </div>
-            
-            <p className="text-neutral-600 mb-6">{t('daily.confirmDelete', language)}</p>
-            
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="md"
-                fullWidth
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setDeleteTarget(null);
-                }}
-              >
-                {t('cancel', language)}
-              </Button>
-              <Button
-                variant="danger"
-                size="md"
-                fullWidth
-                loading={loading}
-                onClick={() => deleteTarget && handleDelete(deleteTarget)}
-              >
-                {loading ? t('daily.deleting', language) : t('delete', language)}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title={t('daily.deleteEntry', language)}
+        message={t('daily.confirmDelete', language)}
+        cancelLabel={t('cancel', language)}
+        confirmLabel={loading ? t('daily.deleting', language) : t('delete', language)}
+        confirmLoading={loading}
+        onCancel={() => {
+          if (loading) return;
+          setShowDeleteConfirm(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          handleDelete(deleteTarget);
+        }}
+      />
     </Card>
   );
 }

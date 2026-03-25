@@ -6,6 +6,8 @@ import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Language, CreditSummary } from '@/lib/types';
 import { t } from '@/lib/translations';
+import { useToast } from '@/components/ui/Toast';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Check, Trash2, AlertCircle, Search, PlusCircle, Landmark, AlertTriangle } from 'lucide-react';
 import { 
   getLocalEntries, 
@@ -41,6 +43,11 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const { showToast } = useToast();
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     loadEntries();
     checkAndSync();
@@ -75,13 +82,20 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     e.preventDefault();
 
     if (!userId) {
-      alert('Please log in to add credit entries');
+      showToast(
+        'error',
+        language === 'hi'
+          ? 'कृपया पहले लॉगिन करें'
+          : language === 'mr'
+            ? 'कृपया प्रथम लॉगिन करा'
+            : 'Please login first'
+      );
       return;
     }
 
     // Validate phone number format if provided (10 digits, numeric only)
     if (phoneNumber && (phoneNumber.length !== 10 || !/^\d{10}$/.test(phoneNumber))) {
-      alert(t('error.invalidPhoneNumber', language));
+      showToast('error', t('error.invalidPhoneNumber', language));
       return;
     }
 
@@ -186,36 +200,55 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     if (onCreditChange) onCreditChange();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!userId) return;
-
-    if (!confirm(t('confirmDelete', language))) {
+  const handleDeleteRequest = (id: string) => {
+    if (!userId) {
+      showToast(
+        'error',
+        language === 'hi'
+          ? 'कृपया पहले लॉगिन करें'
+          : language === 'mr'
+            ? 'कृपया प्रथम लॉगिन करा'
+            : 'Please login first'
+      );
       return;
     }
 
+    setDeleteTarget(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userId || !deleteTarget) return;
+
+    setDeleting(true);
     try {
       // Try to delete from cloud first
-      const response = await fetch(`/api/credit?userId=${userId}&id=${id}`, {
+      const response = await fetch(`/api/credit?userId=${userId}&id=${deleteTarget}`, {
         method: 'DELETE',
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
         logger.info('[CreditTracking] Entry deleted from cloud');
       } else {
         throw new Error(data.error || 'Failed to delete');
       }
     } catch (error) {
+      // Deleting locally is still allowed; we just won't be able to reflect cloud state.
       logger.error('[CreditTracking] Failed to delete from cloud', { error });
-    }
+    } finally {
+      // Delete from localStorage regardless
+      deleteLocalEntry(deleteTarget);
 
-    // Delete from localStorage regardless
-    deleteLocalEntry(id);
-    
-    // Reload entries
-    loadEntries();
-    if (onCreditChange) onCreditChange();
+      // Reload entries
+      loadEntries();
+      if (onCreditChange) onCreditChange();
+
+      setShowDeleteConfirm(false);
+      setDeleteTarget(null);
+      setDeleting(false);
+    }
   };
 
   const isOverdue = (dueDate: string) => {
@@ -510,7 +543,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                             </button>
                           )}
                           <button 
-                            onClick={() => handleDelete(entry.id)} 
+                            onClick={() => handleDeleteRequest(entry.id)} 
                             className="p-1.5 hover:bg-rose-50 text-rose-600 rounded-2xl transition-colors" 
                             title={t('delete', language)}
                           >
@@ -557,6 +590,21 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           </div>
         )}
       </Card>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title={t('daily.deleteEntry', language)}
+        message={t('daily.confirmDelete', language)}
+        cancelLabel={t('cancel', language)}
+        confirmLabel={deleting ? t('daily.deleting', language) : t('delete', language)}
+        confirmLoading={deleting}
+        onCancel={() => {
+          if (deleting) return;
+          setShowDeleteConfirm(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={() => confirmDelete()}
+      />
     </div>
   );
 }

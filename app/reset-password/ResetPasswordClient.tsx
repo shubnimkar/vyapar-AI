@@ -2,12 +2,15 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { Language } from '@/lib/types';
+import { t } from '@/lib/translations';
 
 export default function ResetPasswordClient() {
   const params = useSearchParams();
   const router = useRouter();
   const token = useMemo(() => params.get('token') || '', [params]);
 
+  const [language, setLanguage] = useState<Language>('en');
   const [validating, setValidating] = useState(true);
   const [valid, setValid] = useState(false);
   const [password, setPassword] = useState('');
@@ -36,11 +39,23 @@ export default function ResetPasswordClient() {
     }
   }, [token]);
 
+  useEffect(() => {
+    const storedLanguage =
+      localStorage.getItem('vyapar-lang') ||
+      localStorage.getItem('language') ||
+      localStorage.getItem('vyapar-language');
+
+    if (storedLanguage && ['en', 'hi', 'mr'].includes(storedLanguage)) {
+      setLanguage(storedLanguage as Language);
+      document.documentElement.lang = storedLanguage;
+    }
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t('passwordsNoMatch', language));
       return;
     }
     setLoading(true);
@@ -52,7 +67,7 @@ export default function ResetPasswordClient() {
       });
       const json = await res.json();
       if (!res.ok || !json?.success) {
-        setError('Reset link is invalid or expired.');
+        setError(t('auth.reset.invalidOrExpired', language));
         return;
       }
       setDone(true);
@@ -65,22 +80,22 @@ export default function ResetPasswordClient() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Reset password</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.reset.title', language)}</h1>
 
         {validating ? (
-          <p className="text-sm text-gray-600">Validating reset link…</p>
+          <p className="text-sm text-gray-600">{t('auth.reset.validating', language)}</p>
         ) : !valid ? (
           <div className="space-y-4">
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              This reset link is invalid or expired.
+              {t('auth.reset.invalidTitle', language)}
             </div>
             <a className="text-blue-600 underline underline-offset-4" href="/forgot-password">
-              Request a new link
+              {t('auth.reset.requestNewLink', language)}
             </a>
           </div>
         ) : done ? (
           <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
-            Password updated. Redirecting to login…
+            {t('auth.reset.doneMessage', language)}
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4 mt-4">
@@ -90,7 +105,7 @@ export default function ResetPasswordClient() {
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">New password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('auth.reset.newPasswordLabel', language)}</label>
               <input
                 type="password"
                 value={password}
@@ -101,7 +116,7 @@ export default function ResetPasswordClient() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('auth.reset.confirmPasswordLabel', language)}</label>
               <input
                 type="password"
                 value={confirm}
@@ -116,7 +131,7 @@ export default function ResetPasswordClient() {
               disabled={loading}
               className="w-full min-h-[44px] rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
             >
-              {loading ? 'Updating…' : 'Update password'}
+              {loading ? t('auth.reset.updating', language) : t('auth.reset.updatePassword', language)}
             </button>
           </form>
         )}

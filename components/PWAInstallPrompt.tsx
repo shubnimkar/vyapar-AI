@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Smartphone, X } from 'lucide-react';
 import { cn } from '@/lib/design-system/utils';
+import { t } from '@/lib/translations';
+import { Language } from '@/lib/types';
 
 const DISMISS_KEY = 'pwa-install-dismissed';
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -25,8 +27,18 @@ const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 export default function PWAInstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [installManager] = useState(() => new PWAInstallManager());
+  const [language, setLanguage] = useState<Language>('en');
 
   useEffect(() => {
+    const storedLanguage =
+      localStorage.getItem('vyapar-lang') ||
+      localStorage.getItem('language') ||
+      localStorage.getItem('vyapar-language');
+    if (storedLanguage && ['en', 'hi', 'mr'].includes(storedLanguage)) {
+      setLanguage(storedLanguage as Language);
+      document.documentElement.lang = storedLanguage;
+    }
+
     // Don't show if already installed
     if (isPWA()) {
       return;
@@ -69,14 +81,22 @@ export default function PWAInstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-in slide-in-from-bottom duration-base">
+    <div
+      className="fixed left-0 right-0 z-50 p-4 animate-in slide-in-from-bottom duration-base pointer-events-none"
+      style={{ bottom: '0', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <Card
         elevation="elevated"
         className={cn(
-          'max-w-4xl mx-auto',
+          'max-w-md mx-auto',
           'bg-gradient-to-r from-primary-600 to-primary-700',
           'border-primary-500'
         )}
+        // Allow interaction with buttons inside while the backdrop uses pointer-events-none.
+        style={{ pointerEvents: 'auto' }}
       >
         <div className="flex items-center gap-4">
           {/* Icon */}
@@ -89,10 +109,10 @@ export default function PWAInstallPrompt() {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg text-white mb-1">
-              Install Vyapar AI
+              {t('ui.pwa.installTitle', language)}
             </h3>
             <p className="text-sm text-primary-100">
-              Get quick access and work offline. Install our app for the best experience!
+              {t('ui.pwa.installMessage', language)}
             </p>
           </div>
 
@@ -103,7 +123,7 @@ export default function PWAInstallPrompt() {
               variant="secondary"
               size="md"
             >
-              Install
+              {t('ui.pwa.install', language)}
             </Button>
             <button
               onClick={handleDismiss}
@@ -112,7 +132,7 @@ export default function PWAInstallPrompt() {
                 'min-w-[44px] min-h-[44px]',
                 'focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600'
               )}
-              aria-label="Dismiss install prompt"
+              aria-label={t('ui.pwa.later', language)}
             >
               <X className="w-5 h-5" />
             </button>

@@ -4,6 +4,7 @@ import "./globals.css";
 import PWAUpdateNotification from "@/components/PWAUpdateNotification";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { PWAServiceWorkerRegistration } from "@/components/PWAServiceWorkerRegistration";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -64,10 +65,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <PWAServiceWorkerRegistration />
-        <PWAUpdateNotification />
-        <PWAInstallPrompt />
+        <ToastProvider>
+          {children}
+          <PWAServiceWorkerRegistration />
+          <PWAUpdateNotification />
+          <PWAInstallPrompt />
+        </ToastProvider>
       </body>
     </html>
   );

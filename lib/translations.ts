@@ -640,6 +640,93 @@ export const translations: Translations = {
     mr: 'खाते तयार केले',
   },
 
+  // Forgot password / Reset password
+  'auth.forgot.title': {
+    en: 'Forgot password',
+    hi: 'पासवर्ड भूल गए',
+    mr: 'पासवर्ड विसरलात',
+  },
+  'auth.forgot.description': {
+    en: 'Enter your account email. If it exists, we’ll send a reset link.',
+    hi: 'अपना खाता ईमेल दर्ज करें। अगर यह मौजूद है, तो हम एक रीसेट लिंक भेजेंगे।',
+    mr: 'तुमचा खाते ईमेल टाका. तो अस्तित्वात असेल तर आम्ही रीसेट लिंक पाठवू.',
+  },
+  'auth.forgot.emailLabel': {
+    en: 'Email',
+    hi: 'ईमेल',
+    mr: 'ईमेल',
+  },
+  'auth.forgot.sendResetLink': {
+    en: 'Send reset link',
+    hi: 'रीसेट लिंक भेजें',
+    mr: 'रीसेट लिंक पाठवा',
+  },
+  'auth.forgot.sending': {
+    en: 'Sending…',
+    hi: 'भेज रहे हैं…',
+    mr: 'पाठवत आहोत…',
+  },
+  'auth.forgot.sentMessage': {
+    en: 'If that email is registered, a reset link has been sent.',
+    hi: 'अगर वह ईमेल रजिस्टर है, तो रीसेट लिंक भेज दिया गया है।',
+    mr: 'जर तो ईमेल नोंदणीकृत असेल तर रीसेट लिंक पाठवला आहे.',
+  },
+  'auth.forgot.backToLogin': {
+    en: 'Back to login',
+    hi: 'लॉगिन पर वापस',
+    mr: 'लॉगिनला परत जा',
+  },
+  'auth.reset.title': {
+    en: 'Reset password',
+    hi: 'पासवर्ड रीसेट करें',
+    mr: 'पासवर्ड रीसेट करा',
+  },
+  'auth.reset.validating': {
+    en: 'Validating reset link…',
+    hi: 'रीसेट लिंक सत्यापित हो रहा है…',
+    mr: 'रीसेट लिंक तपासत आहोत…',
+  },
+  'auth.reset.invalidTitle': {
+    en: 'This reset link is invalid or expired.',
+    hi: 'यह रीसेट लिंक अमान्य है या समाप्त हो गया है।',
+    mr: 'हा रीसेट लिंक अवैध आहे किंवा कालबाह्य झाला आहे.',
+  },
+  'auth.reset.requestNewLink': {
+    en: 'Request a new link',
+    hi: 'नया लिंक अनुरोध करें',
+    mr: 'नवीन लिंक मागवा',
+  },
+  'auth.reset.doneMessage': {
+    en: 'Password updated. Redirecting to login…',
+    hi: 'पासवर्ड अपडेट हो गया है। लॉगिन पर भेज रहे हैं…',
+    mr: 'पासवर्ड अपडेट झाला आहे. लॉगिनकडे पाठवत आहोत…',
+  },
+  'auth.reset.newPasswordLabel': {
+    en: 'New password',
+    hi: 'नया पासवर्ड',
+    mr: 'नवीन पासवर्ड',
+  },
+  'auth.reset.confirmPasswordLabel': {
+    en: 'Confirm password',
+    hi: 'पासवर्ड की पुष्टि करें',
+    mr: 'पासवर्डची पुष्टी करा',
+  },
+  'auth.reset.updatePassword': {
+    en: 'Update password',
+    hi: 'पासवर्ड अपडेट करें',
+    mr: 'पासवर्ड अपडेट करा',
+  },
+  'auth.reset.updating': {
+    en: 'Updating…',
+    hi: 'अपडेट हो रहा है…',
+    mr: 'अपडेट करत आहोत…',
+  },
+  'auth.reset.invalidOrExpired': {
+    en: 'Reset link is invalid or expired.',
+    hi: 'रीसेट लिंक अमान्य है या समाप्त हो गया है।',
+    mr: 'रीसेट लिंक अवैध आहे किंवा कालबाह्य झाला आहे.',
+  },
+
   // Error messages
   uploadDataFirst: {
     en: 'Please upload your business data first',

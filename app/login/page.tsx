@@ -34,6 +34,10 @@ export default function LoginPage() {
     }
   }, [router]);
 
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
     localStorage.setItem('vyapar-lang', newLanguage);

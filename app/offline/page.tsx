@@ -23,11 +23,19 @@ export default function OfflinePage() {
 
   useEffect(() => {
     // Get language from localStorage
-    const storedLanguage = localStorage.getItem('language') as Language;
-    if (storedLanguage) {
-      setLanguage(storedLanguage);
+    const storedLanguage =
+      localStorage.getItem('vyapar-lang') ||
+      localStorage.getItem('language') ||
+      localStorage.getItem('vyapar-language');
+
+    if (storedLanguage && ['en', 'hi', 'mr'].includes(storedLanguage)) {
+      setLanguage(storedLanguage as Language);
     }
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   return (
     <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">

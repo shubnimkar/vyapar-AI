@@ -71,9 +71,9 @@ export default function Charts({ chartData, language }: ChartsProps) {
           <Card className="rounded-2xl">
             <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
-                ? '📈 लाभ रुझान'
+                ? 'लाभ रुझान'
                 : language === 'mr'
-                ? '📈 नफा ट्रेंड'
+                ? 'नफा ट्रेंड'
                 : '📈 Profit Trend'}
             </h3>
             <ResponsiveContainer width="100%" height={250}>
@@ -100,10 +100,10 @@ export default function Charts({ chartData, language }: ChartsProps) {
           <Card className="rounded-2xl">
             <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
-                ? '📊 उत्पाद बिक्री'
+                ? 'उत्पाद बिक्री'
                 : language === 'mr'
-                ? '📊 उत्पादन विक्री'
-                : '📊 Product Sales'}
+                ? 'उत्पादन विक्री'
+                : 'Product Sales'}
             </h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={productData}>
@@ -127,10 +127,10 @@ export default function Charts({ chartData, language }: ChartsProps) {
           <Card className="rounded-2xl">
             <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
-                ? '💰 खर्च विभाजन'
+                ? 'खर्च विभाजन'
                 : language === 'mr'
-                ? '💰 खर्च विभाजन'
-                : '💰 Expense Breakdown'}
+                ? 'खर्च विभाजन'
+                : 'Expense Breakdown'}
             </h3>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
@@ -159,10 +159,10 @@ export default function Charts({ chartData, language }: ChartsProps) {
           <Card className="rounded-2xl">
             <h3 className="mb-4 text-xl font-semibold text-slate-900">
               {language === 'hi'
-                ? '📦 इन्वेंटरी मूल्य'
+                ? 'इन्वेंटरी मूल्य'
                 : language === 'mr'
-                ? '📦 इन्व्हेंटरी मूल्य'
-                : '📦 Inventory Value'}
+                ? 'इन्व्हेंटरी मूल्य'
+                : 'Inventory Value'}
             </h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={inventoryData} layout="vertical">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Language } from '@/lib/types';
 import { ChevronDown, Globe } from 'lucide-react';
 
@@ -22,6 +22,8 @@ export default function LanguageSelector({
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+  const selectedOptionId = `lang-opt-${currentLanguage}`;
 
   useEffect(() => {
     setMounted(true);
@@ -36,6 +38,13 @@ export default function LanguageSelector({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    // Move focus to current selection for keyboard users.
+    const el = document.getElementById(selectedOptionId) as HTMLButtonElement | null;
+    el?.focus?.();
+  }, [open, selectedOptionId]);
 
   const handleLanguageChange = (lang: Language) => {
     if (typeof window !== 'undefined') {
@@ -53,6 +62,9 @@ export default function LanguageSelector({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={menuId}
         className="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
       >
         <Globe className="h-4 w-4 text-sky-500" />
@@ -61,11 +73,41 @@ export default function LanguageSelector({
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+        <div
+          id={menuId}
+          role="menu"
+          aria-label="Language menu"
+          className="absolute right-0 z-50 mt-2 w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              setOpen(false);
+              return;
+            }
+
+            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+            e.preventDefault();
+
+            const ordered = languages;
+            const activeId = (document.activeElement as HTMLElement | null)?.id;
+            const currentIndex = ordered.findIndex((l) => `lang-opt-${l.code}` === activeId);
+            const nextIndex =
+              e.key === 'ArrowDown'
+                ? (currentIndex + 1 + ordered.length) % ordered.length
+                : (currentIndex - 1 + ordered.length) % ordered.length;
+
+            const nextEl = document.getElementById(`lang-opt-${ordered[nextIndex].code}`) as HTMLButtonElement | null;
+            nextEl?.focus?.();
+          }}
+        >
           {languages.map((lang) => (
             <button
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code)}
+              id={`lang-opt-${lang.code}`}
+              role="menuitemradio"
+              aria-checked={currentLanguage === lang.code}
+              tabIndex={currentLanguage === lang.code ? 0 : -1}
               className={`w-full rounded-2xl px-3 py-2 text-left text-sm transition-colors ${
                 currentLanguage === lang.code
                   ? 'bg-primary-50 text-primary-700 font-medium'

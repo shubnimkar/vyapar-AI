@@ -17,6 +17,10 @@ export default function ProfilePage() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   const checkAuth = async () => {
     if (!SessionManager.isAuthenticated()) {
       router.push('/login');

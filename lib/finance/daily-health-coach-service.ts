@@ -17,7 +17,9 @@ function getUserLanguage(): Language {
   if (typeof window === 'undefined') return 'en';
   
   try {
-    const stored = localStorage.getItem('vyapar-language');
+    const stored =
+      localStorage.getItem('vyapar-lang') ||
+      localStorage.getItem('vyapar-language');
     if (stored && ['en', 'hi', 'mr'].includes(stored)) {
       return stored as Language;
     }
