@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Eye, EyeOff } from 'lucide-react';
+
+const REMEMBER_ME_KEY = 'vyapar-remember-username';
 
 interface LoginFormProps {
   onSubmit: (usernameOrEmail: string, password: string, rememberDevice: boolean) => Promise<void>;
@@ -21,8 +23,22 @@ export default function LoginForm({ onSubmit, loading, error, language }: LoginF
   const [rememberDevice, setRememberDevice] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Restore saved username on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(REMEMBER_ME_KEY);
+    if (saved) {
+      setUsernameOrEmail(saved);
+      setRememberDevice(true);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (rememberDevice) {
+      localStorage.setItem(REMEMBER_ME_KEY, usernameOrEmail);
+    } else {
+      localStorage.removeItem(REMEMBER_ME_KEY);
+    }
     await onSubmit(usernameOrEmail, password, rememberDevice);
   };
 

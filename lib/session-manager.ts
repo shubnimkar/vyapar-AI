@@ -39,27 +39,33 @@ export function createSession(
 }
 
 /**
- * Saves session to localStorage
+ * Saves session to storage (localStorage or sessionStorage based on rememberDevice)
  */
 export function saveSession(session: UserSession): void {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    logger.debug('[Session Manager] Session saved for user', { username: session.username });
+    if (session.rememberDevice) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      sessionStorage.removeItem(SESSION_KEY);
+    } else {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      localStorage.removeItem(SESSION_KEY);
+    }
+    logger.debug('[Session Manager] Session saved for user', { username: session.username, rememberDevice: session.rememberDevice });
   } catch (error) {
     logger.error('[Session Manager] Failed to save session', { error });
   }
 }
 
 /**
- * Loads session from localStorage
+ * Loads session from storage (checks sessionStorage first, then localStorage)
  */
 export function loadSession(): UserSession | null {
   if (typeof window === 'undefined') return null;
   
   try {
-    const stored = localStorage.getItem(SESSION_KEY);
+    const stored = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
     if (!stored) return null;
     
     const session: UserSession = JSON.parse(stored);
@@ -71,13 +77,14 @@ export function loadSession(): UserSession | null {
 }
 
 /**
- * Clears session from localStorage
+ * Clears session from both storages
  */
 export function clearSession(): void {
   if (typeof window === 'undefined') return;
   
   try {
     localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
     logger.debug('[Session Manager] Session cleared');
   } catch (error) {
     logger.error('[Session Manager] Failed to clear session', { error });
