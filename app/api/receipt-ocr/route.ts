@@ -8,6 +8,14 @@ import {
   BODY_SIZE_LIMITS
 } from "@/lib/error-utils";
 
+// App Router route segment config
+// NOTE: body size limit for App Router is set in next.config.mjs under
+// experimental.serverActions / serverComponentsExternalPackages — NOT here.
+// The 'export const config' block only works in Pages Router and is ignored here.
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
 const s3Client = new S3Client({
   region: process.env.AWS_S3_REGION || process.env.AWS_REGION!,
   credentials: {
@@ -87,9 +95,27 @@ export async function POST(request: NextRequest) {
       timestamp: timestamp,
     });
   } catch (error) {
+    // PayloadTooLargeError — image exceeded Next.js body limit
+    // Return JSON 413 so the client never sees a raw HTML error page
+    const err = error as Error;
+    if (
+      err.message?.includes('Body exceeded') ||
+      err.message?.includes('too large') ||
+      (err as any).statusCode === 413
+    ) {
+      logger.warn('Upload body too large (caught in handler)', {
+        message: err.message,
+        path: '/api/receipt-ocr'
+      });
+      return NextResponse.json(
+        createErrorResponse(ErrorCode.BODY_TOO_LARGE, 'errors.bodyTooLarge'),
+        { status: 413 }
+      );
+    }
+
     return NextResponse.json(
       logAndReturnError(
-        error as Error,
+        err,
         ErrorCode.SERVER_ERROR,
         'errors.serverError',
         'en',

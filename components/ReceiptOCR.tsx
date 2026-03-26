@@ -150,10 +150,20 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
         body: formData,
       });
 
+      // Guard against HTML error pages (e.g. 413 from Next.js before route handler runs)
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(
+          response.status === 413
+            ? "Image is too large. Please use a photo under 10MB."
+            : `Server error (${response.status}). Please try again.`
+        );
+      }
+
       const result = await response.json();
 
       if (!result.success) {
-        throw new Error(result.error);
+        throw new Error(result.message || result.error || "Upload failed");
       }
 
       setStatus("processing");

@@ -20,10 +20,12 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: '/icons/icon-96x96.svg', sizes: '96x96', type: 'image/svg+xml' },
       { src: '/icons/icon-128x128.svg', sizes: '128x128', type: 'image/svg+xml' },
       { src: '/icons/icon-144x144.svg', sizes: '144x144', type: 'image/svg+xml' },
-      { src: '/icons/icon-152x152.svg', sizes: '152x152', type: 'image/svg+xml' },
-      { src: '/icons/icon-192x192.svg', sizes: '192x192', type: 'image/svg+xml' },
+      { src: '/icons/icon-152x152.png?v=1.1.0', sizes: '152x152', type: 'image/png' },
+      { src: '/icons/icon-192x192.png?v=1.1.0', sizes: '192x192', type: 'image/png' },
+      { src: '/icons/icon-192x192.png?v=1.1.0', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
       { src: '/icons/icon-384x384.svg', sizes: '384x384', type: 'image/svg+xml' },
-      { src: '/icons/icon-512x512.svg', sizes: '512x512', type: 'image/svg+xml' },
+      { src: '/icons/icon-512x512.png?v=1.1.0', sizes: '512x512', type: 'image/png' },
+      { src: '/icons/icon-512x512.png?v=1.1.0', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
     shortcuts: [
       {

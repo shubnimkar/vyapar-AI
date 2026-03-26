@@ -7,6 +7,14 @@ const nextConfig = {
   poweredByHeader: false,
   // Enable Turbopack explicitly
   turbopack: {},
+  // Raise body size limit for App Router API routes.
+  // Default is 4MB which is smaller than typical Android camera photos.
+  // This must be set here (next.config) for App Router — not in route.ts.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '15mb',
+    },
+  },
   async headers() {
     return [
       {
