@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Globe2, ShieldCheck, Sparkles } from 'lucide-react';
+import { Globe2, ShieldCheck, Building2 } from 'lucide-react';
 import SignupForm, { SignupData } from '@/components/auth/SignupForm';
 import LoginForm from '@/components/auth/LoginForm';
+import VyaparLogo from '@/components/VyaparLogo';
 import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
-import { logger } from '@/lib/logger';
 import { fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
 import { fullSync as creditFullSync } from '@/lib/credit-sync';
 
@@ -22,399 +22,231 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if already authenticated
-    if (SessionManager.isAuthenticated()) {
-      router.push('/');
-    }
-
-    // Load language preference
-    const savedLanguage = localStorage.getItem('vyapar-lang') as Language;
-    if (savedLanguage) {
-      setLanguage(savedLanguage);
-    }
+    if (SessionManager.isAuthenticated()) router.push('/');
+    const saved = localStorage.getItem('vyapar-lang') as Language;
+    if (saved) setLanguage(saved);
   }, [router]);
 
-  useEffect(() => {
-    document.documentElement.lang = language;
-  }, [language]);
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
 
-  const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage);
-    localStorage.setItem('vyapar-lang', newLanguage);
+  const handleLanguageChange = (l: Language) => {
+    setLanguage(l);
+    localStorage.setItem('vyapar-lang', l);
   };
 
   const handleSignup = async (data: SignupData) => {
-    setLoading(true);
-    setError('');
-    
+    setLoading(true); setError('');
     try {
-      logger.info('Submitting signup form', { username: data.username });
-      
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-      
+      const res = await fetch('/api/auth/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      const result = await res.json();
       if (result.success) {
-        logger.info('Account created successfully', { userId: result.userId });
-        
-        // Create session
-        const session = SessionManager.createSession(
-          result.userId,
-          result.username,
-          false
-        );
-        SessionManager.saveSession(session);
-        
-        // Save language preference
+        SessionManager.saveSession(SessionManager.createSession(result.userId, result.username, false));
         localStorage.setItem('vyapar-lang', data.language);
-        
-        // Redirect to home
         router.push('/');
-      } else {
-        logger.warn('Signup failed', { error: result.error });
-        setError(result.error || t('connectionError', language));
-      }
-    } catch (err) {
-      logger.error('Signup network error', { error: err });
-      setError(t('connectionError', language));
-    } finally {
-      setLoading(false);
-    }
+      } else { setError(result.error || t('connectionError', language)); }
+    } catch { setError(t('connectionError', language)); }
+    finally { setLoading(false); }
   };
 
   const handleLogin = async (username: string, password: string, rememberDevice: boolean) => {
-    setLoading(true);
-    setError('');
-    
+    setLoading(true); setError('');
     try {
-      logger.info('Submitting login form', { username });
-      
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, rememberDevice }),
-      });
-
-      const result = await response.json();
-      
+      const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, rememberDevice }) });
+      const result = await res.json();
       if (result.success && result.user) {
-        logger.info('Login successful', { userId: result.user.id });
-        
-        // Create session
-        const session = SessionManager.createSession(
-          result.user.id,
-          result.user.username,
-          rememberDevice
-        );
-        SessionManager.saveSession(session);
-
-        // Perform full sync of daily and credit data into local offline stores
-        try {
-          const [dailyResult, creditResult] = await Promise.all([
-            dailyFullSync(result.user.id).catch((err) => {
-              logger.warn('Daily full sync failed after login', { error: err });
-              return { pulled: 0, pushed: 0, failed: 1 };
-            }),
-            creditFullSync(result.user.id).catch((err) => {
-              logger.warn('Credit full sync failed after login', { error: err });
-              return { pulled: 0, pushed: 0, failed: 1 };
-            }),
-          ]);
-
-          logger.info('Full sync completed after login', {
-            userId: result.user.id,
-            daily: dailyResult,
-            credit: creditResult,
-          });
-        } catch (pullError) {
-          logger.warn('Failed to sync data after login', { error: pullError });
-        }
-        
-        // Check if profile exists
-        try {
-          const profileResponse = await fetch(`/api/profile?userId=${result.user.id}`);
-          const profileResult = await profileResponse.json();
-          
-          if (profileResult.success && profileResult.data) {
-            logger.info('Profile found, redirecting to home');
-            router.push('/');
-          } else {
-            logger.info('Profile not found, redirecting to home (profile can be completed inline)');
-            router.push('/');
-          }
-        } catch (profileError) {
-          logger.error('Error checking profile', { error: profileError });
-          router.push('/');
-        }
+        SessionManager.saveSession(SessionManager.createSession(result.user.id, result.user.username, rememberDevice));
+        try { await Promise.all([dailyFullSync(result.user.id).catch(() => null), creditFullSync(result.user.id).catch(() => null)]); } catch { /* non-blocking */ }
+        router.push('/');
       } else {
-        logger.warn('Login failed', { error: result.error, status: response.status });
-
-        if (response.status === 401) {
-          setError(t('authenticationFailed', language));
-          return;
-        }
-
-        if (result.message) {
-          setError(result.message);
-          return;
-        }
-
-        if (result.error) {
-          setError(result.error);
-          return;
-        }
-
-        setError(t('connectionError', language));
+        if (res.status === 401) { setError(t('authenticationFailed', language)); return; }
+        setError(result.message || result.error || t('connectionError', language));
       }
-    } catch (err) {
-      logger.error('Login network error', { error: err });
-      setError(t('connectionError', language));
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError(t('connectionError', language)); }
+    finally { setLoading(false); }
   };
 
-  const handleModeSwitch = (newMode: AuthMode) => {
-    setMode(newMode);
-    setError('');
+  const handleModeSwitch = (m: AuthMode) => { setMode(m); setError(''); };
+
+  const LangSwitcher = ({ theme }: { theme: 'dark' | 'light' }) => {
+    const options = ['en', 'hi', 'mr'] as Language[];
+    const activeColor = theme === 'dark' ? 'text-white font-semibold' : 'text-[#1a1c1d] font-semibold';
+    const inactiveColor = theme === 'dark' ? 'text-white/60 hover:text-white' : 'text-[#9a9a9e] hover:text-[#1a1c1d]';
+    const dotColor = theme === 'dark' ? 'text-white/30' : 'text-[#c8c8cc]';
+    return (
+      <div className="flex items-center gap-1.5 rounded-full border border-[#d1d1d6] bg-white/60 px-3 py-1.5 w-fit shrink-0 whitespace-nowrap">
+        {options.map((opt, i) => {
+          const label = opt === 'en' ? 'English' : opt === 'hi' ? 'हिंदी' : 'मराठी';
+          const active = language === opt;
+          return (
+            <span key={opt} className="flex items-center gap-1.5">
+              {i > 0 && <span className={`text-xs ${dotColor}`}>•</span>}
+              <button
+                onClick={() => handleLanguageChange(opt)}
+                className={`text-xs font-medium transition-colors text-center ${active ? (theme === 'dark' ? 'text-white' : 'text-[#1a1c1d]') : inactiveColor}`}
+                style={{ minWidth: opt === 'en' ? 42 : 32 }}
+              >
+                {label}
+              </button>
+            </span>
+          );
+        })}
+      </div>
+    );
   };
 
-  const authHeading =
-    mode === 'signin'
-      ? language === 'hi'
-        ? 'वापसी पर स्वागत है'
-        : language === 'mr'
-          ? 'पुन्हा स्वागत आहे'
-          : 'Welcome back'
-      : language === 'hi'
-        ? 'अपना खाता बनाएं'
-        : language === 'mr'
-          ? 'तुमचे खाते तयार करा'
-          : 'Create your account';
-
-  const authSubheading =
-    mode === 'signin'
-      ? language === 'hi'
-        ? 'अपने व्यवसाय को प्रबंधित करने के लिए साइन इन करें।'
-        : language === 'mr'
-          ? 'तुमचा व्यवसाय व्यवस्थापित करण्यासाठी साइन इन करा.'
-          : 'Sign in to continue managing your business.'
-      : language === 'hi'
-        ? 'कुछ आसान चरणों में Vyapar AI को अपनी दुकान के लिए सेट करें।'
-        : language === 'mr'
-        ? 'काही सोप्या टप्प्यांत Vyapar AI तुमच्या दुकानासाठी सेट करा.'
-          : 'Set up Vyapar AI for your shop in a few steps.';
+  const featureCards = [
+    {
+      icon: <Globe2 className="h-5 w-5 text-[#0b1a7d]" />,
+      title: language === 'hi' ? '3 भाषाओं में काम करता है' : language === 'mr' ? '3 भाषांमध्ये काम करते' : 'Works in 3 languages',
+      sub: 'English, हिंदी, मराठी',
+    },
+    {
+      icon: <ShieldCheck className="h-5 w-5 text-[#0b1a7d]" />,
+      title: language === 'hi' ? 'निजी और सुरक्षित' : language === 'mr' ? 'खाजगी आणि सुरक्षित' : 'Private and secure',
+      sub: language === 'hi' ? 'GST या सरकारी सिस्टम से नहीं जुड़ा' : language === 'mr' ? 'GST किंवा सरकारी प्रणालीशी जोडलेले नाही' : 'Not connected to GST or government systems',
+    },
+    {
+      icon: <Building2 className="h-5 w-5 text-[#0b1a7d]" />,
+      title: language === 'hi' ? 'छोटे व्यवसाय के लिए' : language === 'mr' ? 'लहान व्यवसायासाठी' : 'Built for small business',
+      sub: language === 'hi' ? 'दुकान, सेवाओं और रिटेल टीमों के लिए' : language === 'mr' ? 'दुकाने, सेवा आणि रिटेल टीमसाठी' : 'Designed for shops, services, and retail teams',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(99,102,241,0.16),_transparent_28%),linear-gradient(135deg,#f8fbff_0%,#eef3ff_45%,#f5f7ff_100%)]">
-      <div className="grid min-h-screen w-full overflow-hidden bg-white/80 shadow-[0_28px_80px_-32px_rgba(15,23,42,0.35)] backdrop-blur lg:grid-cols-[1.08fr_0.92fr]">
-          <section className="relative overflow-hidden bg-[linear-gradient(160deg,#0f1b4d_0%,#16367a_48%,#2b63ff_100%)] px-6 py-8 text-white sm:px-10 sm:py-12 lg:px-12 lg:py-14">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.22),_transparent_22%),radial-gradient(circle_at_bottom_left,_rgba(147,197,253,0.22),_transparent_28%)]" />
-            <div className="absolute -right-24 top-12 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-blue-300/20 blur-3xl" />
+    <div className="min-h-screen bg-[#f3f4f8] lg:grid lg:grid-cols-2">
 
-            <div className="relative flex h-full flex-col justify-between gap-10">
-              <div className="space-y-8">
-                <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-blue-50">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/16">
-                    <Building2 className="h-5 w-5" />
-                  </span>
-                  <span>{t('appTitle', language)}</span>
-                </div>
+      {/* ── LEFT: Hero ── */}
+      <section
+        className="relative hidden lg:flex flex-col overflow-hidden px-14 pt-6 pb-12"
+        style={{ background: 'linear-gradient(160deg, #eef0f8 0%, #f3f4f8 60%, #ede8f5 100%)' }}
+      >
+        {/* Logo — top left, lang switcher — top right */}
+        <div className="flex items-center justify-between">
+          <img
+            src="/background-removed.png"
+            alt="Vyapar AI"
+            style={{ height: 100, width: 'auto' }}
+            className="shrink-0"
+          />
+          <LangSwitcher theme="light" />
+        </div>
 
-                <div className="max-w-2xl space-y-4">
-                  <p className="inline-flex items-center gap-2 rounded-full border border-blue-200/20 bg-blue-100/10 px-3 py-1 text-xs font-semibold tracking-[0.08em] text-blue-100/90">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {language === 'hi'
-                      ? 'स्मार्ट बिज़नेस ऑपरेटिंग सिस्टम'
-                      : language === 'mr'
-                        ? 'स्मार्ट बिझनेस ऑपरेटिंग सिस्टम'
-                        : 'Smart Business Operating System'}
-                  </p>
-                  <h1 className="max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">
-                    {language === 'hi'
-                      ? 'बिक्री, खर्च, उधार और फॉलो-अप को एक ही जगह संभालें।'
-                      : language === 'mr'
-                        ? 'विक्री, खर्च, उधारी आणि फॉलो-अप एकाच ठिकाणी सांभाळा.'
-                        : 'Track sales, expenses, credit, and collections in one place.'}
-                  </h1>
-                  <p className="max-w-lg text-base leading-7 text-blue-100/88 sm:text-lg">
-                    {language === 'hi'
-                      ? 'छोटे व्यवसायों के लिए बनाया गया सरल, तेज और भरोसेमंद कार्यक्षेत्र।'
-                      : language === 'mr'
-                        ? 'लहान व्यवसायांसाठी तयार केलेले सोपे, जलद आणि विश्वासार्ह कार्यक्षेत्र.'
-                        : 'A calmer, faster workspace for shop owners who need clarity every day.'}
-                  </p>
-                </div>
+        {/* Content — vertically centered */}
+        <div className="mt-12 flex-1 flex flex-col justify-center">
 
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                    <Globe2 className="mb-3 h-5 w-5 text-blue-100" />
-                    <p className="text-sm font-semibold leading-6">
-                      {language === 'hi'
-                        ? '3 भाषाओं में काम करता है'
-                        : language === 'mr'
-                          ? '3 भाषांमध्ये काम करते'
-                          : 'Works in 3 languages'}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-blue-100/80">English, हिंदी, मराठी</p>
-                  </div>
-                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                    <ShieldCheck className="mb-3 h-5 w-5 text-blue-100" />
-                    <p className="text-sm font-semibold leading-6">
-                      {language === 'hi'
-                        ? 'निजी और सुरक्षित'
-                        : language === 'mr'
-                          ? 'खाजगी आणि सुरक्षित'
-                          : 'Private and secure'}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-blue-100/80">
-                      {language === 'hi'
-                        ? 'सरकारी सिस्टम से जुड़ा नहीं'
-                        : language === 'mr'
-                          ? 'सरकारी सिस्टीमशी जोडलेले नाही'
-                          : 'Not connected to GST or government systems'}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-                    <Building2 className="mb-3 h-5 w-5 text-blue-100" />
-                    <p className="text-sm font-semibold leading-6">
-                      {language === 'hi'
-                        ? 'छोटे व्यापार के लिए बना'
-                        : language === 'mr'
-                          ? 'लहान व्यवसायांसाठी बनवलेले'
-                          : 'Built for small business'}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-blue-100/80">
-                      {language === 'hi'
-                        ? 'दुकान, सेवा और रिटेल उपयोग के लिए'
-                        : language === 'mr'
-                          ? 'दुकान, सेवा आणि रिटेल वापरासाठी'
-                          : 'Designed for shops, services, and retail teams'}
-                    </p>
-                  </div>
+          {/* Headline */}
+          <div className="min-h-[13rem]">
+            <h1 className="font-headline text-4xl md:text-5xl font-extrabold leading-[1.15] text-[#0b1a7d] max-w-xl">
+              {language === 'hi'
+                ? <>बिक्री, खर्च, उधार और<br />फॉलो-अप <span style={{ color: '#c9a227' }}>एक ही जगह।</span></>
+                : language === 'mr'
+                  ? <>विक्री, खर्च, उधारी आणि<br />फॉलो-अप <span style={{ color: '#c9a227' }}>एकाच ठिकाणी.</span></>
+                  : <>Track sales, expenses,<br />credit, and collections<br /><span style={{ color: '#c9a227' }}>in one place.</span></>}
+            </h1>
+            <p className="mt-4 text-base leading-7 max-w-md text-[#4a4c4e]">
+              {language === 'hi'
+                ? 'छोटे व्यवसायों के लिए बनाया गया सरल, तेज और भरोसेमंद कार्यक्षेत्र।'
+                : language === 'mr'
+                  ? 'लहान व्यवसायांसाठी तयार केलेले सोपे, जलद आणि विश्वासार्ह कार्यक्षेत्र.'
+                  : 'A calmer, faster workspace for shop owners who need clarity every day.'}
+            </p>
+          </div>
+
+          {/* Feature cards */}
+          <div className="grid grid-cols-3 gap-4 mt-2">
+            {featureCards.map((c, i) => (
+              <div key={i} className="rounded-2xl bg-white/80 border border-white px-4 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0b1a7d]/5 mb-3">
+                  {c.icon}
                 </div>
+                <p className="text-sm font-bold text-[#1a1c1d] leading-5">{c.title}</p>
+                <p className="mt-1.5 text-xs leading-5 text-[#7a7c7e]">{c.sub}</p>
               </div>
+            ))}
+          </div>
 
-              <div className="relative rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15">
-                    <ShieldCheck className="h-6 w-6 text-blue-50" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      {language === 'hi'
-                        ? 'आपका व्यवसाय डेटा निजी रहता है'
-                        : language === 'mr'
-                          ? 'तुमचा व्यवसाय डेटा खाजगी राहतो'
-                          : 'Your business data stays private'}
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-blue-100/82">
-                      {t('trustBanner', language)}
-                    </p>
-                  </div>
-                </div>
-              </div>
+          {/* Trust banner */}
+          <div className="mt-6 flex items-center gap-3 rounded-2xl bg-white/80 border border-white px-5 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b1a7d]/5">
+              <ShieldCheck className="h-5 w-5 text-[#0b1a7d]" />
             </div>
-          </section>
-
-          <section className="flex min-h-screen flex-col bg-white/90 px-5 py-6 sm:px-8 sm:py-8 lg:px-10 lg:py-10">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600/80">
-                  {t('appTitle', language)}
-                </p>
-                <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                  {authHeading}
-                </h2>
-                <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">
-                  {authSubheading}
-                </p>
-              </div>
-
-              <div className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 p-1 shadow-sm">
-                {(['en', 'hi', 'mr'] as Language[]).map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => handleLanguageChange(option)}
-                    className={`rounded-xl px-3 py-2 text-sm font-semibold transition-all ${
-                      language === option
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:bg-white hover:text-slate-900'
-                    }`}
-                  >
-                    {option === 'en' ? 'EN' : option === 'hi' ? 'हिं' : 'मर'}
-                  </button>
-                ))}
-              </div>
+            <div>
+              <p className="text-sm font-semibold text-[#1a1c1d]">
+                {language === 'hi' ? 'आपका व्यवसाय डेटा निजी रहता है' : language === 'mr' ? 'तुमचा व्यवसाय डेटा खाजगी राहतो' : 'Your business data stays private'}
+              </p>
+              <p className="mt-0.5 text-xs text-[#7a7c7e]">{t('trustBanner', language)}</p>
             </div>
+          </div>
 
-            <div className="mb-6 inline-flex rounded-2xl border border-slate-200 bg-slate-100 p-1">
-              <button
-                onClick={() => handleModeSwitch('signin')}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                  mode === 'signin'
-                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                {t('loginButton', language)}
-              </button>
-              <button
-                onClick={() => handleModeSwitch('signup')}
-                className={`flex-1 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                  mode === 'signup'
-                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                {t('signupButton', language)}
-              </button>
-            </div>
+        </div>
+      </section>
 
-            <div className="min-h-0 flex-1 overflow-y-auto pr-1 lg:max-h-[calc(100vh-13rem)]">
-              {mode === 'signup' ? (
-                <SignupForm
-                  onSubmit={handleSignup}
-                  loading={loading}
-                  error={error}
-                  language={language}
-                />
-              ) : (
-                <LoginForm
-                  onSubmit={handleLogin}
-                  loading={loading}
-                  error={error}
-                  language={language}
-                />
-              )}
-            </div>
+      {/* ── RIGHT: Auth card ── */}
+      <section className="flex flex-col justify-center bg-[#f8f8fc] px-6 py-10 lg:px-12 lg:py-12">
 
-            <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                  <ShieldCheck className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {language === 'hi'
-                      ? 'विश्वास के साथ उपयोग करें'
-                      : language === 'mr'
-                        ? 'विश्वासाने वापरा'
-                        : 'Use with confidence'}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    {t('trustBanner', language)}
-                  </p>
-                </div>
-              </div>
+        {/* Mobile: logo + lang switcher */}
+        <div className="flex items-center justify-between mb-6 lg:hidden">
+          <VyaparLogo variant="full" height={38} />
+          <LangSwitcher theme="light" />
+        </div>
+
+        {/* Card */}
+        <div className="w-full max-w-md mx-auto rounded-3xl bg-white px-8 py-8 shadow-[0_4px_32px_0_rgba(11,26,125,0.10)]">
+
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b1a7d] mb-2">
+            {t('appTitle', language)}
+          </p>
+
+          <h2 className="text-3xl font-extrabold text-[#1a1c1d] font-headline leading-tight">
+            {mode === 'signin'
+              ? (language === 'hi' ? 'वापसी पर स्वागत है' : language === 'mr' ? 'पुन्हा स्वागत आहे' : 'Welcome back')
+              : (language === 'hi' ? 'अपना खाता बनाएं' : language === 'mr' ? 'तुमचे खाते तयार करा' : 'Create your account')}
+          </h2>
+          <p className="mt-1 mb-5 text-sm text-[#7a7c7e]">
+            {mode === 'signin'
+              ? (language === 'hi' ? 'अपने व्यवसाय को प्रबंधित करने के लिए साइन इन करें।' : language === 'mr' ? 'तुमचा व्यवसाय व्यवस्थापित करण्यासाठी साइन इन करा.' : 'Sign in to continue managing your business.')
+              : (language === 'hi' ? 'कुछ आसान चरणों में Vyapar AI सेट करें।' : language === 'mr' ? 'काही सोप्या टप्प्यांत Vyapar AI सेट करा.' : 'Set up Vyapar AI for your shop in a few steps.')}
+          </p>
+
+          {/* Tab switcher */}
+          <div className="mb-6 flex rounded-full bg-[#ebebee] p-1 gap-1">
+            <button
+              onClick={() => handleModeSwitch('signin')}
+              className={`flex-1 rounded-full py-2 text-sm font-semibold transition-all ${mode === 'signin' ? 'bg-[#c9a227] text-[#1a1c1d] shadow-sm' : 'text-[#4a4c4e] hover:text-[#1a1c1d]'}`}
+            >
+              {t('loginButton', language)}
+            </button>
+            <button
+              onClick={() => handleModeSwitch('signup')}
+              className={`flex-1 rounded-full py-2 text-sm font-semibold transition-all ${mode === 'signup' ? 'bg-[#c9a227] text-[#1a1c1d] shadow-sm' : 'text-[#4a4c4e] hover:text-[#1a1c1d]'}`}
+            >
+              {t('signupButton', language)}
+            </button>
+          </div>
+
+          {/* Form */}
+          <div className={mode === 'signup' ? 'max-h-[55vh] overflow-y-auto' : ''}>
+            {mode === 'signup'
+              ? <SignupForm onSubmit={handleSignup} loading={loading} error={error} language={language} />
+              : <LoginForm onSubmit={handleLogin} loading={loading} error={error} language={language} />}
+          </div>
+
+          {/* Trust footer */}
+          <div className="mt-5 flex items-center gap-3 rounded-2xl bg-[#f5f5f7] px-4 py-3.5">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0b1a7d]/10">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#0b1a7d]" />
             </div>
-          </section>
-      </div>
+            <div>
+              <p className="text-sm font-semibold text-[#1a1c1d]">
+                {language === 'hi' ? 'विश्वास के साथ उपयोग करें' : language === 'mr' ? 'विश्वासाने वापरा' : 'Use with confidence'}
+              </p>
+              <p className="mt-0.5 text-xs text-[#7a7c7e]">{t('trustBanner', language)}</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
     </div>
   );
 }

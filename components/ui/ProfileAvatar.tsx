@@ -37,7 +37,7 @@ export default function ProfileAvatar({
 
   return (
     <div
-      className={`overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold flex items-center justify-center ${sizeClasses[size]} ${className}`}
+      className={`overflow-hidden rounded-full bg-gradient-to-br from-primary-500 to-primary-container text-white font-bold flex items-center justify-center ${sizeClasses[size]} ${className}`}
     >
       {showImage ? (
         <img

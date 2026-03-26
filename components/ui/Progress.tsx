@@ -35,7 +35,7 @@ const variantStyles: Record<ProgressVariant, string> = {
   default: 'bg-primary-600',
   success: 'bg-success-600',
   warning: 'bg-warning-600',
-  error: 'bg-error-600',
+  error:   'bg-error-600',
 };
 
 /**

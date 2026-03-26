@@ -231,14 +231,14 @@ export default function BenchmarkDisplay({
       <div className="mb-5">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Health Score section */}
-          <div className="w-full md:w-1/3 flex flex-col items-center justify-center space-y-4 md:border-r border-gray-50 md:pr-4">
+          <div className="w-full md:w-1/3 flex flex-col items-center justify-center space-y-4 md:border-r border-neutral-50 md:pr-4">
             <div className="relative w-32 h-32">
               <svg
                 className="w-full h-full transform -rotate-90"
                 viewBox="0 0 36 36"
               >
                 <path
-                  className="stroke-current text-gray-100"
+                  className="stroke-current text-neutral-100"
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none"
                   strokeWidth="3"
@@ -253,7 +253,7 @@ export default function BenchmarkDisplay({
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-numeric text-slate-800">
+                <span className="text-numeric text-neutral-800">
                   {comparison.healthScoreComparison.userValue}
                 </span>
                 <span className="text-caption text-neutral-400 tracking-wider uppercase">
@@ -295,7 +295,7 @@ export default function BenchmarkDisplay({
             </div>
 
             {/* Profit Margin Detail */}
-            <div className="mt-6 pt-6 border-t border-gray-100">
+            <div className="mt-6 pt-6 border-t border-neutral-100">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${marginColors.dot}`} />
@@ -334,7 +334,7 @@ export default function BenchmarkDisplay({
       </div>
 
       {/* Divider and insights button */}
-      <div className="border-t border-gray-100 pt-4">
+      <div className="border-t border-neutral-100 pt-4">
         {/* AI Insights Button */}
         {!showExplanation ? (
           <button
@@ -342,7 +342,7 @@ export default function BenchmarkDisplay({
             disabled={isExplaining || !userId}
             className={`w-full flex items-center justify-center gap-3 py-2.5 px-8 rounded-[18px] font-bold text-base tracking-tight transition-all duration-300 group active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-offset-2 ${
               isExplaining || !userId
-                ? 'bg-gray-200 text-neutral-500 cursor-not-allowed'
+                ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
                 : 'bg-gradient-to-r from-[#2D60FF] to-[#604BFF] hover:from-[#2550D6] hover:to-[#503ED6] text-white shadow-[0_8px_20px_-6px_rgba(45,96,255,0.4)] focus:ring-[#2D60FF]'
             }`}
           >
@@ -367,11 +367,11 @@ export default function BenchmarkDisplay({
 
             {/* Loading skeleton while fetching all 3 languages */}
             {isExplaining && !Object.keys(explanations).length && (
-              <div className="p-4 bg-primary-50 border border-blue-100 rounded-xl animate-pulse">
+              <div className="p-4 bg-primary-50 border border-primary-100 rounded-xl animate-pulse">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="w-3 h-3 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-3 h-3 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-3 h-3 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '300ms' }} />
                   <span className="text-xs text-primary-600 ml-1">
                     {language === 'hi'
                       ? 'AI तीनों भाषाओं में विश्लेषण तैयार कर रहा है…'
@@ -381,11 +381,11 @@ export default function BenchmarkDisplay({
                   </span>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 bg-blue-200 rounded w-full" />
-                  <div className="h-3 bg-blue-200 rounded w-5/6" />
-                  <div className="h-3 bg-blue-200 rounded w-4/6" />
-                  <div className="h-3 bg-blue-200 rounded w-full mt-3" />
-                  <div className="h-3 bg-blue-200 rounded w-3/4" />
+                  <div className="h-3 bg-primary-200 rounded w-full" />
+                  <div className="h-3 bg-primary-200 rounded w-5/6" />
+                  <div className="h-3 bg-primary-200 rounded w-4/6" />
+                  <div className="h-3 bg-primary-200 rounded w-full mt-3" />
+                  <div className="h-3 bg-primary-200 rounded w-3/4" />
                 </div>
               </div>
             )}
@@ -403,7 +403,7 @@ export default function BenchmarkDisplay({
               };
 
               return anyText ? (
-                <div className="bg-primary-50 border border-blue-100 rounded-xl p-4">
+                <div className="bg-primary-50 border border-primary-100 rounded-xl p-4">
                   <p className="text-sm text-neutral-700 whitespace-pre-line leading-relaxed">{anyText}</p>
                   {isFallback && (
                     <p className="mt-2 text-xs text-primary-600 italic">

@@ -115,7 +115,7 @@ export default function FileUpload({
     <Card className="h-full rounded-2xl">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-2xl">{fileTypeIcons[fileType]}</span>
-        <h3 className="text-2xl font-semibold text-slate-900">
+        <h3 className="text-2xl font-semibold text-neutral-900">
           {fileTypeLabels[fileType]}
         </h3>
       </div>
@@ -126,7 +126,7 @@ export default function FileUpload({
           type="file"
           accept=".csv"
           onChange={handleFileSelect}
-          className="block w-full text-sm text-slate-600 file:mr-4 file:h-10 file:rounded-xl file:border-0 file:bg-primary-50 file:px-4 file:text-sm file:font-semibold file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer"
+          className="block w-full text-sm text-neutral-600 file:mr-4 file:h-10 file:rounded-xl file:border-0 file:bg-primary-50 file:px-4 file:text-sm file:font-semibold file:text-primary-700 hover:file:bg-primary-100 file:cursor-pointer"
         />
 
         <button
@@ -139,17 +139,17 @@ export default function FileUpload({
 
         {preview && (
           <div className="mt-3">
-            <p className="text-sm text-gray-600 mb-2">
+            <p className="text-sm text-neutral-600 mb-2">
               {t('preview', language)} ({preview.totalRows} {t('rowsUploaded', language)})
             </p>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-xs border border-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full text-xs border border-neutral-200">
+                <thead className="bg-neutral-50">
                   <tr>
                     {preview.headers.map((header, idx) => (
                       <th
                         key={idx}
-                        className="px-2 py-1 text-left font-medium text-gray-700 border-b"
+                        className="px-2 py-1 text-left font-medium text-neutral-700 border-b"
                       >
                         {header}
                       </th>
@@ -160,7 +160,7 @@ export default function FileUpload({
                   {preview.rows.map((row, idx) => (
                     <tr key={idx} className="border-b">
                       {preview.headers.map((header, colIdx) => (
-                        <td key={colIdx} className="px-2 py-1 text-gray-600">
+                        <td key={colIdx} className="px-2 py-1 text-neutral-600">
                           {String(row[header] ?? '')}
                         </td>
                       ))}

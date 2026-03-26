@@ -136,7 +136,7 @@ export default function AffordabilityPlanner({
           {t('indices.affordabilityIndex', language)}
         </h3>
       </div>
-      <p className="text-body-sm text-slate-500 mb-8">
+      <p className="text-body-sm text-neutral-500 mb-8">
         {language === 'hi'
           ? 'आपके नकदी प्रवाह और बचत लक्ष्यों के आधार पर बड़ी खरीद की क्षमता जांचें।'
           : language === 'mr'
@@ -155,7 +155,7 @@ export default function AffordabilityPlanner({
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <span className="text-slate-400 font-medium">₹</span>
+              <span className="text-neutral-400 font-medium">₹</span>
             </div>
             <input
               id="plannedCost"
@@ -164,7 +164,7 @@ export default function AffordabilityPlanner({
               onChange={(e) => setPlannedCost(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={t('indices.enterAmount', language)}
-              className="block w-full pl-9 pr-4 py-3 bg-white border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-300 disabled:bg-neutral-100"
+              className="block w-full pl-9 pr-4 py-3 bg-white border border-neutral-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-neutral-800 placeholder:text-neutral-300 disabled:bg-neutral-100"
               disabled={isLoading}
               min="0"
               step="1"
@@ -177,8 +177,8 @@ export default function AffordabilityPlanner({
           disabled={isLoading || !plannedCost}
           className={`w-full py-3 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-[0.98] ${
             isLoading || !plannedCost
-              ? 'bg-slate-400 cursor-not-allowed'
-              : 'bg-primary-600 hover:bg-primary-700 shadow-blue-200'
+              ? 'bg-neutral-400 cursor-not-allowed'
+              : 'bg-primary-600 hover:bg-primary-700 shadow-primary-100'
           }`}
         >
           {isLoading
@@ -199,10 +199,10 @@ export default function AffordabilityPlanner({
             {/* Score & Category */}
             <div className="flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="text-caption uppercase tracking-widest text-slate-400">
+                <span className="text-caption uppercase tracking-widest text-neutral-400">
                   {t('indices.score', language)}
                 </span>
-                <span className="text-numeric-lg text-slate-800">
+                <span className="text-numeric-lg text-neutral-800">
                   {Math.round(result.score)}/100
                 </span>
               </div>
@@ -216,12 +216,12 @@ export default function AffordabilityPlanner({
             </div>
 
             {/* Breakdown */}
-            <div className="border-t border-slate-100 pt-4 space-y-3 text-sm">
+            <div className="border-t border-neutral-100 pt-4 space-y-3 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-neutral-600">
                   {t('indices.costToProfitRatio', language)}
                 </span>
-                <span className="font-medium text-slate-800">
+                <span className="font-medium text-neutral-800">
                   {result.breakdown.costToProfitRatio.toFixed(2)}
                 </span>
               </div>
@@ -230,7 +230,7 @@ export default function AffordabilityPlanner({
                 <span className="text-neutral-600">
                   {t('indices.avgMonthlyProfit', language)}
                 </span>
-                <span className="font-medium text-slate-800">
+                <span className="font-medium text-neutral-800">
                   ₹{result.inputParameters.avgMonthlyProfit.toLocaleString('en-IN')}
                 </span>
               </div>
@@ -239,12 +239,12 @@ export default function AffordabilityPlanner({
                 <span className="text-neutral-600">
                   {t('indices.plannedExpense', language)}
                 </span>
-                <span className="font-medium text-slate-800">
+                <span className="font-medium text-neutral-800">
                   ₹{result.inputParameters.plannedCost.toLocaleString('en-IN')}
                 </span>
               </div>
 
-              <div className="pt-2 text-xs text-slate-400 text-right">
+              <div className="pt-2 text-xs text-neutral-400 text-right">
                 {t('indices.calculatedAt', language)}:{' '}
                 {new Date(result.calculatedAt).toLocaleString(
                   language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN',
@@ -264,7 +264,7 @@ export default function AffordabilityPlanner({
               <div className="w-8 h-8 rounded-full bg-primary-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-primary-600">
                 AI
               </div>
-              <div className="w-8 h-8 rounded-full bg-slate-800 border-2 border-white flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-neutral-800 border-2 border-white flex items-center justify-center">
                 <svg
                   className="w-4 h-4 text-white"
                   fill="none"
@@ -280,7 +280,7 @@ export default function AffordabilityPlanner({
                 </svg>
               </div>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-neutral-500 leading-relaxed">
               {language === 'hi'
                 ? 'हमारा एल्गोरिदम आपके औसत मासिक लाभ और आने वाले दायित्वों को ध्यान में रखता है।'
                 : language === 'mr'

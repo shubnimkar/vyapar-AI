@@ -101,7 +101,7 @@ export default function StressIndexDisplay({
             r={radius}
             strokeWidth="12"
             fill="transparent"
-            className="text-slate-100"
+            className="text-neutral-100"
             stroke="currentColor"
           />
           {/* Progress track */}
@@ -128,8 +128,8 @@ export default function StressIndexDisplay({
 
         {/* Score Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center transform rotate-0">
-          <span className="text-numeric-lg text-slate-800">{clampedScore}</span>
-          <span className="text-caption text-slate-400 uppercase tracking-widest">
+          <span className="text-numeric-lg text-neutral-800">{clampedScore}</span>
+          <span className="text-caption text-neutral-400 uppercase tracking-widest">
             {t('indices.score', language)}
           </span>
         </div>
@@ -161,7 +161,7 @@ export default function StressIndexDisplay({
         </button>
 
         {showBreakdown && (
-          <div className="w-full pt-4 border-t border-slate-100 space-y-3">
+          <div className="w-full pt-4 border-t border-neutral-100 space-y-3">
             <h4 className="text-label text-neutral-700 mb-1">
               {t('indices.breakdown', language)}
             </h4>
@@ -181,7 +181,7 @@ export default function StressIndexDisplay({
                     }}
                   />
                 </div>
-                <span className="text-label text-slate-800 w-12 text-right">
+                <span className="text-label text-neutral-800 w-12 text-right">
                   {Math.round(stressIndex.breakdown.creditRatioScore)}/40
                 </span>
               </div>
@@ -202,7 +202,7 @@ export default function StressIndexDisplay({
                     }}
                   />
                 </div>
-                <span className="text-label text-slate-800 w-12 text-right">
+                <span className="text-label text-neutral-800 w-12 text-right">
                   {Math.round(stressIndex.breakdown.cashBufferScore)}/35
                 </span>
               </div>
@@ -223,7 +223,7 @@ export default function StressIndexDisplay({
                     }}
                   />
                 </div>
-                <span className="text-label text-slate-800 w-12 text-right">
+                <span className="text-label text-neutral-800 w-12 text-right">
                   {Math.round(stressIndex.breakdown.expenseVolatilityScore)}/25
                 </span>
               </div>
@@ -231,8 +231,8 @@ export default function StressIndexDisplay({
           </div>
         )}
 
-        <div className="w-full pt-6 border-t border-slate-100 flex justify-center">
-          <p className="text-caption text-slate-400 italic">
+        <div className="w-full pt-6 border-t border-neutral-100 flex justify-center">
+          <p className="text-caption text-neutral-400 italic">
             {t('indices.calculatedAt', language)}: {calculatedDate}
           </p>
         </div>

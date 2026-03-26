@@ -367,15 +367,15 @@ export default function IndicesDashboard({
               <div className="p-4 bg-primary-50 border border-primary-200 rounded-2xl animate-pulse">
                 <div className="flex items-center gap-2 mb-3">
                   <div
-                    className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
+                    className="w-4 h-4 rounded-full bg-primary-300 animate-bounce"
                     style={{ animationDelay: '0ms' }}
                   />
                   <div
-                    className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
+                    className="w-4 h-4 rounded-full bg-primary-300 animate-bounce"
                     style={{ animationDelay: '150ms' }}
                   />
                   <div
-                    className="w-4 h-4 rounded-full bg-blue-300 animate-bounce"
+                    className="w-4 h-4 rounded-full bg-primary-300 animate-bounce"
                     style={{ animationDelay: '300ms' }}
                   />
                   <span className="text-xs text-primary-600 ml-1">
@@ -387,11 +387,11 @@ export default function IndicesDashboard({
                   </span>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 bg-blue-200 rounded w-full" />
-                  <div className="h-3 bg-blue-200 rounded w-5/6" />
-                  <div className="h-3 bg-blue-200 rounded w-4/6" />
-                  <div className="h-3 bg-blue-200 rounded w-full mt-3" />
-                  <div className="h-3 bg-blue-200 rounded w-3/4" />
+                  <div className="h-3 bg-primary-200 rounded w-full" />
+                  <div className="h-3 bg-primary-200 rounded w-5/6" />
+                  <div className="h-3 bg-primary-200 rounded w-4/6" />
+                  <div className="h-3 bg-primary-200 rounded w-full mt-3" />
+                  <div className="h-3 bg-primary-200 rounded w-3/4" />
                 </div>
               </div>
             )}

@@ -404,7 +404,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
     return (
       <Card className="rounded-3xl">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 rounded bg-slate-200" />
+          <div className="h-8 w-48 rounded bg-neutral-200" />
           <div className="grid gap-4 md:grid-cols-3">
             <div className="h-28 rounded-2xl bg-neutral-100" />
             <div className="h-28 rounded-2xl bg-neutral-100" />
@@ -426,7 +426,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             size="sm"
             onClick={() => setSelectedReport(null)}
             icon={<ChevronLeft className="h-4 w-4" />}
-            className="px-0 text-primary-700 hover:bg-transparent hover:text-blue-800"
+            className="px-0 text-primary-700 hover:bg-transparent hover:text-primary-800"
           >
             {t.back}
           </Button>
@@ -438,7 +438,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
               {t[selectedReport.reportType]}
             </div>
             <h3 className="text-section-heading text-neutral-900">{formatPeriod(selectedReport)}</h3>
-            <p className="text-body-sm text-slate-500">
+            <p className="text-body-sm text-neutral-500">
               {t.generatedAt}: {formatDateTime(selectedReport.generatedAt)}
             </p>
           </div>
@@ -452,8 +452,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
         <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
           <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-            <h4 className="text-label uppercase tracking-wide text-slate-500">{t.summary}</h4>
-            <p className="mt-3 text-body text-slate-800 leading-7">
+            <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.summary}</h4>
+            <p className="mt-3 text-body text-neutral-800 leading-7">
               {selectedReport.summary || selectedReport.insights}
             </p>
 
@@ -466,7 +466,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
           <section className="space-y-4">
             <div className="rounded-2xl border border-neutral-200 p-5">
-              <h4 className="text-label uppercase tracking-wide text-slate-500">{t.period}</h4>
+              <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.period}</h4>
               <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
                 <DetailRow label={t.entries} value={`${selectedReport.entryCount || 0}`} />
                 <DetailRow label={t.expenses} value={formatCurrency(selectedReport.totalExpenses)} />
@@ -478,21 +478,21 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             </div>
 
             <div className="rounded-2xl border border-neutral-200 p-5">
-              <h4 className="text-label uppercase tracking-wide text-slate-500">{t.comparison}</h4>
+              <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.comparison}</h4>
               {selectedReport.comparison ? (
                 <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
                   <DetailRow label={t.sales} value={`${selectedReport.comparison.salesChangePct.toFixed(1)}%`} />
                   <DetailRow label={t.expenses} value={`${selectedReport.comparison.expenseChangePct.toFixed(1)}%`} />
                   <DetailRow label={selectedReport.netProfit >= 0 ? t.profit : t.loss} value={`${selectedReport.comparison.profitChangePct.toFixed(1)}%`} />
-                  <p className="text-xs text-slate-500">{selectedReport.comparison.previousLabel}</p>
+                  <p className="text-xs text-neutral-500">{selectedReport.comparison.previousLabel}</p>
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-slate-500">—</p>
+                <p className="mt-3 text-sm text-neutral-500">—</p>
               )}
             </div>
 
             <div className="rounded-2xl border border-neutral-200 p-5">
-              <h4 className="text-label uppercase tracking-wide text-slate-500">{t.insights}</h4>
+              <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.insights}</h4>
               <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
                 <DetailRow
                   label={t.bestDay}
@@ -539,8 +539,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
             <h4 className="text-section-heading text-neutral-900">{t.automation}</h4>
           </div>
           <p className="mt-2 text-body-sm text-neutral-600">{t.automationHint}</p>
-          <p className="mt-1 flex items-start gap-1.5 text-xs text-slate-500">
-            <span className="mt-0.5 shrink-0 text-blue-400">ℹ</span>
+          <p className="mt-1 flex items-start gap-1.5 text-xs text-neutral-500">
+            <span className="mt-0.5 shrink-0 text-primary-400">ℹ</span>
             {t.automationNote}
           </p>
 
@@ -560,13 +560,13 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
               onClick={() => setAutomationEnabled((value) => !value)}
               className={`flex h-12 items-center gap-3 rounded-xl border px-4 text-sm font-medium transition ${
                 automationEnabled
-                  ? 'border-primary-200 bg-primary-50 text-blue-900'
+                  ? 'border-primary-200 bg-primary-50 text-primary-900'
                   : 'border-neutral-200 bg-white text-neutral-700'
               }`}
             >
               <span
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                  automationEnabled ? 'bg-primary-600' : 'bg-slate-300'
+                  automationEnabled ? 'bg-primary-600' : 'bg-neutral-300'
                 }`}
               >
                 <span
@@ -645,7 +645,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-section-heading text-neutral-900">{t.latestReports}</h4>
-          <span className="text-body-sm text-slate-500">{t.lastUpdated}: {reports[0] ? formatDateTime(reports[0].generatedAt) : '—'}</span>
+          <span className="text-body-sm text-neutral-500">{t.lastUpdated}: {reports[0] ? formatDateTime(reports[0].generatedAt) : '—'}</span>
         </div>
 
         {reports.length === 0 ? (
@@ -667,7 +667,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
                       <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
                         {t[report.reportType]}
                       </span>
-                      <span className="text-sm text-slate-500">{formatPeriod(report)}</span>
+                      <span className="text-sm text-neutral-500">{formatPeriod(report)}</span>
                     </div>
                     <p className="max-w-3xl text-sm leading-6 text-neutral-700">
                       {report.summary || report.insights}
@@ -694,7 +694,7 @@ function MetricCard({ label, value, tone }: { label: string; value: string; tone
     tone === 'emerald'
       ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
       : tone === 'blue'
-        ? 'border-primary-200 bg-primary-50 text-blue-900'
+        ? 'border-primary-200 bg-primary-50 text-primary-900'
         : tone === 'amber'
           ? 'border-warning-200 bg-warning-50 text-amber-900'
           : 'border-neutral-200 bg-neutral-50 text-neutral-900';
@@ -722,7 +722,7 @@ function OverviewCard({
     tone === 'emerald'
       ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
       : tone === 'blue'
-        ? 'border-primary-200 bg-primary-50 text-blue-900'
+        ? 'border-primary-200 bg-primary-50 text-primary-900'
         : tone === 'amber'
           ? 'border-warning-200 bg-warning-50 text-amber-900'
           : 'border-neutral-200 bg-neutral-50 text-neutral-900';
@@ -741,7 +741,7 @@ function OverviewCard({
 function MiniMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl bg-neutral-100 px-3 py-2">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">{label}</p>
       <p className="mt-1 text-sm font-semibold text-neutral-900">{value}</p>
     </div>
   );
@@ -750,7 +750,7 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-neutral-500">{label}</span>
       <span className="text-right font-medium text-neutral-900">{value}</span>
     </div>
   );
@@ -764,13 +764,13 @@ function ListBlock({ title, items, emptyLabel }: { title: string; items: string[
         <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-700">
           {items.map((item, index) => (
             <li key={`${title}-${index}`} className="flex gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-blue-500" />
+              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary-500" />
               <span>{item}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="mt-3 text-sm text-slate-500">{emptyLabel}</p>
+        <p className="mt-3 text-sm text-neutral-500">{emptyLabel}</p>
       )}
     </div>
   );
@@ -780,7 +780,7 @@ function EmptyState({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-neutral-300 px-6 py-12 text-center">
       <p className="text-section-heading text-neutral-900">{title}</p>
-      <p className="mx-auto mt-2 max-w-xl text-body-sm text-slate-500 leading-6">{subtitle}</p>
+      <p className="mx-auto mt-2 max-w-xl text-body-sm text-neutral-500 leading-6">{subtitle}</p>
     </div>
   );
 }

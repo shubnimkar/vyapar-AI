@@ -397,12 +397,12 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
       )}
 
       {/* Messages */}
-      <div className="max-h-[34rem] space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+      <div className="max-h-[34rem] space-y-4 overflow-y-auto rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4">
         {messages.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+          <div className="rounded-2xl border border-dashed border-neutral-300 bg-white px-6 py-12 text-center">
             {hasAnyData ? (
               <>
-                <p className="mx-auto mb-5 max-w-2xl text-sm leading-6 text-slate-500">
+                <p className="mx-auto mb-5 max-w-2xl text-sm leading-6 text-neutral-500">
                   {t('questionPlaceholder', language)}
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
@@ -413,7 +413,7 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
                       disabled={loading}
                       variant="secondary"
                       size="sm"
-                      className="rounded-full text-blue-700"
+                      className="rounded-full text-primary-700"
                     >
                       {q}
                     </Button>
@@ -421,7 +421,7 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
                 </div>
               </>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-neutral-500">
                 {t('qaEmptyState', language)}
               </p>
             )}
@@ -436,13 +436,13 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
 
               if (structuredAnswer) {
                 return (
-                  <div className="w-full max-w-full rounded-2xl border border-blue-100 bg-blue-50/70 px-5 py-4 text-slate-800 shadow-sm sm:max-w-[88%]">
+                  <div className="w-full max-w-full rounded-2xl border border-primary-100 bg-primary-50/70 px-5 py-4 text-neutral-800 shadow-sm sm:max-w-[88%]">
                     <div className="space-y-4 text-sm">
                       {sourceChips && sourceChips.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-2 border-b border-blue-100 pb-3">
-                          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t('qaSourceHeading', language)}</p>
+                        <div className="flex flex-wrap items-center gap-2 border-b border-primary-100 pb-3">
+                          <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">{t('qaSourceHeading', language)}</p>
                           {sourceChips.map((source) => (
-                            <span key={source} className="rounded-full border border-blue-100 bg-white px-2.5 py-1 text-xs font-medium text-blue-700">
+                            <span key={source} className="rounded-full border border-primary-100 bg-white px-2.5 py-1 text-xs font-medium text-primary-700">
                               {dataSourceLabels[source]}
                             </span>
                           ))}
@@ -450,19 +450,19 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
                       )}
                       {structuredAnswer.conclusion && (
                         <div>
-                          <p className="text-sm font-semibold text-slate-900">{answerLabels.conclusion}</p>
+                          <p className="text-sm font-semibold text-neutral-900">{answerLabels.conclusion}</p>
                           <p className="mt-1 whitespace-pre-wrap leading-relaxed">{structuredAnswer.conclusion}</p>
                         </div>
                       )}
                       {structuredAnswer.why && (
                         <div>
-                          <p className="text-sm font-semibold text-slate-900">{answerLabels.why}</p>
+                          <p className="text-sm font-semibold text-neutral-900">{answerLabels.why}</p>
                           <p className="mt-1 whitespace-pre-wrap leading-relaxed">{structuredAnswer.why}</p>
                         </div>
                       )}
                       {structuredAnswer.nextStep && (
                         <div>
-                          <p className="text-sm font-semibold text-slate-900">{answerLabels.nextStep}</p>
+                          <p className="text-sm font-semibold text-neutral-900">{answerLabels.nextStep}</p>
                           <p className="mt-1 whitespace-pre-wrap leading-relaxed">{structuredAnswer.nextStep}</p>
                         </div>
                       )}
@@ -475,15 +475,15 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
                 <div
                   className={`w-full max-w-full rounded-2xl px-4 py-3 shadow-sm sm:max-w-[84%] ${
                     msg.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'border border-slate-200 bg-white text-slate-800'
+                      ? 'bg-primary-600 text-white'
+                      : 'border border-neutral-200 bg-white text-neutral-800'
                   }`}
                 >
                   {msg.role === 'assistant' && sourceChips && sourceChips.length > 0 && (
-                    <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-slate-100 pb-3">
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{t('qaSourceHeading', language)}</p>
+                    <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-neutral-100 pb-3">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-neutral-500">{t('qaSourceHeading', language)}</p>
                       {sourceChips.map((source) => (
-                        <span key={source} className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700">
+                        <span key={source} className="rounded-full border border-primary-100 bg-primary-50 px-2.5 py-1 text-[11px] font-medium text-primary-700">
                           {dataSourceLabels[source]}
                         </span>
                       ))}
@@ -498,8 +498,8 @@ export default function QAChat({ sessionId, language, initialMessages, dataSourc
 
         {(loading || translatingHistory) && (
           <div className="flex justify-start">
-            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-              <p className="text-sm text-slate-500">...</p>
+            <div className="rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-sm">
+              <p className="text-sm text-neutral-500">...</p>
             </div>
           </div>
         )}

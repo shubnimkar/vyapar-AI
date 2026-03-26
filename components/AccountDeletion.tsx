@@ -261,7 +261,7 @@ export default function AccountDeletion({
   // Initial state - show delete button
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 max-w-2xl mx-auto">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+      <h2 className="text-xl font-semibold text-neutral-800 mb-4">
         {t('settings.deleteAccount', language)}
       </h2>
       

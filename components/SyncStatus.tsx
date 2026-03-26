@@ -233,7 +233,7 @@ export default function SyncStatus({ language }: SyncStatusProps) {
   };
 
   const getStatusColor = () => {
-    if (!online) return 'text-slate-500';
+    if (!online) return 'text-neutral-500';
     if (syncing) return 'text-primary-600';
     
     switch (syncStatus) {
@@ -244,12 +244,12 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       case 'pending':
         return 'text-warning-700';
       default:
-        return 'text-slate-500';
+        return 'text-neutral-500';
     }
   };
 
   const getStatusBadgeClass = () => {
-    if (!online) return 'border border-slate-200 bg-slate-50';
+    if (!online) return 'border border-neutral-200 bg-neutral-50';
     if (syncing) return 'border border-primary-200 bg-primary-50';
 
     switch (syncStatus) {
@@ -260,7 +260,7 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       case 'pending':
         return 'border border-warning-200 bg-warning-50';
       default:
-        return 'border border-slate-200 bg-slate-50';
+        return 'border border-neutral-200 bg-neutral-50';
     }
   };
 
@@ -274,15 +274,15 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       {online && !syncing && syncStatus !== 'syncing' && (
         <button
           onClick={handleSync}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white transition-colors hover:bg-slate-50"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-colors hover:bg-neutral-50"
           title={language === 'hi' ? 'अभी सिंक करें' : language === 'mr' ? 'आता सिंक करा' : 'Sync now'}
         >
-          <RefreshCw className="h-4 w-4 text-slate-500" />
+          <RefreshCw className="h-4 w-4 text-neutral-500" />
         </button>
       )}
       
       {lastSyncTime && syncStatus === 'synced' && (
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-neutral-500">
           {language === 'hi' 
             ? `अंतिम: ${lastSyncTime.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}` 
             : language === 'mr' 

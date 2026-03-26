@@ -57,7 +57,7 @@ export default function Charts({ chartData, language }: ChartsProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold text-slate-900">
+      <h2 className="text-2xl font-semibold text-neutral-900">
         {language === 'hi'
           ? 'दृश्य विश्लेषण'
           : language === 'mr'
@@ -69,7 +69,7 @@ export default function Charts({ chartData, language }: ChartsProps) {
         {/* Profit Trend */}
         {profitData.length > 0 && (
           <Card className="rounded-2xl">
-            <h3 className="mb-4 text-xl font-semibold text-slate-900">
+            <h3 className="mb-4 text-xl font-semibold text-neutral-900">
               {language === 'hi'
                 ? 'लाभ रुझान'
                 : language === 'mr'
@@ -98,7 +98,7 @@ export default function Charts({ chartData, language }: ChartsProps) {
         {/* Product Sales */}
         {productData.length > 0 && (
           <Card className="rounded-2xl">
-            <h3 className="mb-4 text-xl font-semibold text-slate-900">
+            <h3 className="mb-4 text-xl font-semibold text-neutral-900">
               {language === 'hi'
                 ? 'उत्पाद बिक्री'
                 : language === 'mr'
@@ -125,7 +125,7 @@ export default function Charts({ chartData, language }: ChartsProps) {
         {/* Expense Breakdown */}
         {expenseData.length > 0 && (
           <Card className="rounded-2xl">
-            <h3 className="mb-4 text-xl font-semibold text-slate-900">
+            <h3 className="mb-4 text-xl font-semibold text-neutral-900">
               {language === 'hi'
                 ? 'खर्च विभाजन'
                 : language === 'mr'
@@ -157,7 +157,7 @@ export default function Charts({ chartData, language }: ChartsProps) {
         {/* Inventory Value */}
         {inventoryData.length > 0 && (
           <Card className="rounded-2xl">
-            <h3 className="mb-4 text-xl font-semibold text-slate-900">
+            <h3 className="mb-4 text-xl font-semibold text-neutral-900">
               {language === 'hi'
                 ? 'इन्वेंटरी मूल्य'
                 : language === 'mr'

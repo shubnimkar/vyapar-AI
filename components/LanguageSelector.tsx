@@ -65,7 +65,7 @@ export default function LanguageSelector({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
-        className="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+        className="flex h-12 items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50"
       >
         <Globe className="h-4 w-4 text-sky-500" />
         <span>{current?.nativeName ?? 'English'}</span>
@@ -77,7 +77,7 @@ export default function LanguageSelector({
           id={menuId}
           role="menu"
           aria-label="Language menu"
-          className="absolute right-0 z-50 mt-2 w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+          className="absolute right-0 z-50 mt-2 w-40 rounded-xl border border-neutral-200 bg-white p-1 shadow-lg"
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               e.preventDefault();
@@ -111,7 +111,7 @@ export default function LanguageSelector({
               className={`w-full rounded-2xl px-3 py-2 text-left text-sm transition-colors ${
                 currentLanguage === lang.code
                   ? 'bg-primary-50 text-primary-700 font-medium'
-                  : 'text-slate-700 hover:bg-slate-50'
+                  : 'text-neutral-700 hover:bg-neutral-50'
               }`}
             >
               {lang.nativeName}

@@ -80,7 +80,7 @@ export default function BedrockTest() {
           </button>
           
           {healthCheck && (
-            <div className="mt-4 p-4 bg-gray-50 rounded border">
+            <div className="mt-4 p-4 bg-neutral-50 rounded border">
               <h3 className="font-semibold mb-2">Configuration Status</h3>
               <pre className="text-sm overflow-auto">
                 {JSON.stringify(healthCheck, null, 2)}
@@ -96,7 +96,7 @@ export default function BedrockTest() {
           <button
             onClick={() => runTest('basic')}
             disabled={loading}
-            className="w-full px-4 py-3 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-neutral-300 disabled:cursor-not-allowed"
           >
             {loading ? 'Testing...' : 'Basic Test (Simple Response)'}
           </button>
@@ -104,7 +104,7 @@ export default function BedrockTest() {
           <button
             onClick={() => runTest('math')}
             disabled={loading}
-            className="w-full px-4 py-3 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-neutral-300 disabled:cursor-not-allowed"
           >
             {loading ? 'Testing...' : 'Math Test (Calculation)'}
           </button>
@@ -112,7 +112,7 @@ export default function BedrockTest() {
           <button
             onClick={() => runTest('json')}
             disabled={loading}
-            className="w-full px-4 py-3 bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-primary-500 text-white rounded hover:bg-primary-600 disabled:bg-neutral-300 disabled:cursor-not-allowed"
           >
             {loading ? 'Testing...' : 'JSON Test (Structured Output)'}
           </button>

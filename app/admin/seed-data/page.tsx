@@ -28,12 +28,12 @@ export default function SeedDataPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-neutral-50 p-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Seed Benchmark Data</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 mb-4">Seed Benchmark Data</h1>
           
-          <p className="text-gray-600 mb-6">
+          <p className="text-neutral-600 mb-6">
             This will populate DynamoDB with demo benchmark data for all 20 segment combinations
             (4 city tiers including rural × 5 business types).
           </p>
@@ -41,7 +41,7 @@ export default function SeedDataPage() {
           <button
             onClick={handleSeed}
             disabled={loading}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 disabled:bg-neutral-400 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Seeding...' : 'Seed Benchmark Data'}
           </button>

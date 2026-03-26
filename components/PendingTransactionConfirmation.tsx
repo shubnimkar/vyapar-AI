@@ -181,7 +181,7 @@ export default function PendingTransactionConfirmation({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between px-1">
-        <span className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
+        <span className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-400">
           {transactions.length}{' '}
           {transactions.length === 1 ? copy.pendingSingle : copy.pendingPlural}
         </span>

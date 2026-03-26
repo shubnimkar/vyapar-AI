@@ -89,8 +89,8 @@ export default function ProfileContent({ language, user, showBackButton = false 
     return (
       <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-          <p className="text-gray-600 font-medium">{t('profile.loading', language)}</p>
+          <div className="animate-spin h-10 w-10 border-4 border-primary-500 border-t-transparent rounded-full"></div>
+          <p className="text-neutral-600 font-medium">{t('profile.loading', language)}</p>
         </div>
       </div>
     );
@@ -106,11 +106,11 @@ export default function ProfileContent({ language, user, showBackButton = false 
             </svg>
           </div>
 
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+          <h3 className="text-2xl font-bold text-neutral-900 mb-3">
             {t('profile.fetchErrorTitle', language)}
           </h3>
 
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
+          <p className="text-neutral-600 mb-8 max-w-md mx-auto">
             {t('profile.fetchErrorDescription', language)}
           </p>
 
@@ -141,7 +141,7 @@ export default function ProfileContent({ language, user, showBackButton = false 
           <div className="mb-6">
             <button
               onClick={() => setIsEditMode(false)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -183,7 +183,7 @@ export default function ProfileContent({ language, user, showBackButton = false 
         {hasProfile ? (
           <>
             {/* Profile Header Section */}
-            <Card className="mb-8 rounded-3xl bg-gradient-to-br from-slate-50 via-white to-blue-50/70 p-8">
+            <Card className="mb-8 rounded-3xl bg-gradient-to-br from-surface-low via-white to-primary-50/30 p-8">
               <div className="flex flex-col items-center text-center">
                 <div className="relative group">
                   <ProfileAvatar
@@ -194,12 +194,12 @@ export default function ProfileContent({ language, user, showBackButton = false 
                   />
                 </div>
                 <div className="mt-5">
-                  <h2 className="text-4xl font-bold tracking-tight text-slate-900">{profileData!.shopName}</h2>
-                  <p className="mt-2 text-lg font-medium text-slate-500">
+                  <h2 className="text-4xl font-bold tracking-tight text-neutral-900">{profileData!.shopName}</h2>
+                  <p className="mt-2 text-lg font-medium text-neutral-500">
                     {profileData!.userName} • {getBusinessTypeLabel(profileData!.business_type || profileData!.businessType || 'other')}
                   </p>
                   {profileData!.city_tier && (
-                    <div className="mt-3 inline-flex items-center rounded-full bg-blue-50 px-4 py-1.5 text-sm font-semibold text-blue-700">
+                    <div className="mt-3 inline-flex items-center rounded-full bg-primary-50 px-4 py-1.5 text-sm font-semibold text-primary-700">
                       {profileData!.city_tier === 'tier1' && (language === 'hi' ? 'टियर 1 व्यापारी' : language === 'mr' ? 'टियर 1 व्यापारी' : 'Tier 1 Merchant')}
                       {profileData!.city_tier === 'tier2' && (language === 'hi' ? 'टियर 2 व्यापारी' : language === 'mr' ? 'टियर 2 व्यापारी' : 'Tier 2 Merchant')}
                       {profileData!.city_tier === 'tier3' && (language === 'hi' ? 'टियर 3 व्यापारी' : language === 'mr' ? 'टियर 3 व्यापारी' : 'Tier 3 Merchant')}
@@ -227,9 +227,9 @@ export default function ProfileContent({ language, user, showBackButton = false 
           {/* Content Grid */}
           <div className="space-y-6">
             {/* Business Information Card */}
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+              <div className="px-6 py-4 border-b border-neutral-100 flex items-center gap-2">
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <h3 className="font-bold text-lg">
@@ -238,32 +238,32 @@ export default function ProfileContent({ language, user, showBackButton = false 
               </div>
               <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                  <label className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">
                     {language === 'hi' ? 'दुकान का नाम' : language === 'mr' ? 'दुकानाचे नाव' : 'Shop Name'}
                   </label>
-                  <p className="text-slate-800 font-medium mt-1">{profileData!.shopName}</p>
+                  <p className="text-neutral-800 font-medium mt-1">{profileData!.shopName}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                  <label className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">
                     {t('profile.owner', language)}
                   </label>
-                  <p className="text-slate-800 font-medium mt-1">{profileData!.userName}</p>
+                  <p className="text-neutral-800 font-medium mt-1">{profileData!.userName}</p>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                  <label className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">
                     {language === 'hi' ? 'व्यवसाय का प्रकार' : language === 'mr' ? 'व्यवसाय प्रकार' : 'Business Type'}
                   </label>
-                  <p className="text-slate-800 font-medium mt-1">
+                  <p className="text-neutral-800 font-medium mt-1">
                     {getBusinessTypeLabel(profileData!.business_type || profileData!.businessType || 'other')}
                   </p>
                 </div>
                 {profileData!.city_tier && (
                   <div>
-                    <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                    <label className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">
                       {t('profile.tierLevel', language)}
                     </label>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-slate-800 font-medium">
+                      <span className="text-neutral-800 font-medium">
                         {profileData!.city_tier === 'tier1' && (language === 'hi' ? 'टियर 1' : language === 'mr' ? 'टियर 1' : 'Tier 1')}
                         {profileData!.city_tier === 'tier2' && (language === 'hi' ? 'टियर 2' : language === 'mr' ? 'टियर 2' : 'Tier 2')}
                         {profileData!.city_tier === 'tier3' && (language === 'hi' ? 'टियर 3' : language === 'mr' ? 'टियर 3' : 'Tier 3')}
@@ -279,9 +279,9 @@ export default function ProfileContent({ language, user, showBackButton = false 
             </section>
 
             {/* Contact & Location Card */}
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+              <div className="px-6 py-4 border-b border-neutral-100 flex items-center gap-2">
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <h3 className="font-bold text-lg">
@@ -291,36 +291,36 @@ export default function ProfileContent({ language, user, showBackButton = false 
               <div className="p-6">
                 <div className="space-y-4">
                   <div className="flex items-start gap-4">
-                    <div className="mt-1 bg-slate-100 p-2 rounded-2xl">
-                      <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="mt-1 bg-neutral-100 p-2 rounded-2xl">
+                      <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                      <label className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">
                         {t('profile.mobileNumber', language)}
                       </label>
                       {formatPhoneDisplay(profileData?.phoneNumber || '') ? (
-                        <p className="text-slate-800 font-medium">{formatPhoneDisplay(profileData!.phoneNumber)}</p>
+                        <p className="text-neutral-800 font-medium">{formatPhoneDisplay(profileData!.phoneNumber)}</p>
                       ) : (
-                        <p className="text-slate-400 italic text-sm">{t('profile.notProvided', language)}</p>
+                        <p className="text-neutral-400 italic text-sm">{t('profile.notProvided', language)}</p>
                       )}
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
-                    <div className="mt-1 bg-slate-100 p-2 rounded-2xl">
-                      <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="mt-1 bg-neutral-100 p-2 rounded-2xl">
+                      <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                      <label className="text-xs font-semibold text-neutral-400 uppercase tracking-widest">
                         {t('profile.emailAddress', language)}
                       </label>
                       {profileData?.email ? (
-                        <p className="text-slate-800 font-medium">{profileData.email}</p>
+                        <p className="text-neutral-800 font-medium">{profileData.email}</p>
                       ) : (
-                        <p className="text-slate-400 italic text-sm">{t('profile.notProvided', language)}</p>
+                        <p className="text-neutral-400 italic text-sm">{t('profile.notProvided', language)}</p>
                       )}
                     </div>
                   </div>
@@ -329,9 +329,9 @@ export default function ProfileContent({ language, user, showBackButton = false 
             </section>
 
             {/* Preferences Card */}
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+              <div className="px-6 py-4 border-b border-neutral-100 flex items-center gap-2">
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -342,8 +342,8 @@ export default function ProfileContent({ language, user, showBackButton = false 
               <div className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="bg-slate-100 p-2 rounded-2xl">
-                      <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="bg-neutral-100 p-2 rounded-2xl">
+                      <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                       </svg>
                     </div>
@@ -351,12 +351,12 @@ export default function ProfileContent({ language, user, showBackButton = false 
                       <p className="font-semibold">
                         {t('profile.appLanguage', language)}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-neutral-500">
                         {t('profile.chooseDisplayLanguage', language)}
                       </p>
                     </div>
                   </div>
-                  <span className="inline-flex items-center rounded-2xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+                  <span className="inline-flex items-center rounded-2xl bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700">
                     {getLanguageLabel(profileData!.language)}
                   </span>
                 </div>
@@ -368,17 +368,17 @@ export default function ProfileContent({ language, user, showBackButton = false 
         // Empty State
         <div className="max-w-2xl mx-auto">
           <Card className="p-12 text-center">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary-100 to-primary-container flex items-center justify-center">
+              <svg className="w-10 h-10 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            <h3 className="text-2xl font-bold text-neutral-900 mb-3">
               {t('profile.incompleteTitle', language)}
             </h3>
             
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            <p className="text-neutral-600 mb-8 max-w-md mx-auto">
               {t('profile.incompleteDescription', language)}
             </p>
 

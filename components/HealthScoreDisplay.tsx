@@ -153,7 +153,7 @@ export default function HealthScoreDisplay({
               stroke="currentColor"
               strokeWidth="12"
               fill="none"
-              className="text-gray-200"
+              className="text-neutral-200"
             />
             {/* Progress circle */}
             <circle
@@ -182,40 +182,40 @@ export default function HealthScoreDisplay({
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-label text-slate-500">{t('marginScore', language)}</span>
+            <span className="text-label text-neutral-500">{t('marginScore', language)}</span>
             <span className="text-label font-semibold text-neutral-900">{breakdown.marginScore}/30</span>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
+          <div className="w-full bg-neutral-200 rounded-full h-1.5">
             <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.marginScore / 30) * 100}%` }} />
           </div>
         </div>
 
         <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-label text-slate-500">{t('expenseScore', language)}</span>
+            <span className="text-label text-neutral-500">{t('expenseScore', language)}</span>
             <span className="text-label font-semibold text-neutral-900">{breakdown.expenseScore}/30</span>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
+          <div className="w-full bg-neutral-200 rounded-full h-1.5">
             <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.expenseScore / 30) * 100}%` }} />
           </div>
         </div>
 
         <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-label text-slate-500">{t('cashScore', language)}</span>
+            <span className="text-label text-neutral-500">{t('cashScore', language)}</span>
             <span className="text-label font-semibold text-neutral-900">{breakdown.cashScore}/20</span>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
+          <div className="w-full bg-neutral-200 rounded-full h-1.5">
             <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.cashScore / 20) * 100}%` }} />
           </div>
         </div>
 
         <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-label text-slate-500">{t('creditScore', language)}</span>
+            <span className="text-label text-neutral-500">{t('creditScore', language)}</span>
             <span className="text-label font-semibold text-neutral-900">{breakdown.creditScore}/20</span>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-1.5">
+          <div className="w-full bg-neutral-200 rounded-full h-1.5">
             <div className="h-full bg-primary-600 rounded-full transition-all duration-500" style={{ width: `${(breakdown.creditScore / 20) * 100}%` }} />
           </div>
         </div>
@@ -224,9 +224,9 @@ export default function HealthScoreDisplay({
       {explaining && (
         <div className="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-2xl animate-pulse">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-4 h-4 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+            <div className="w-4 h-4 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-4 h-4 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-4 h-4 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '300ms' }} />
             <span className="text-xs text-primary-600 ml-1">
               {language === 'hi' ? 'AI विश्लेषण तैयार हो रहा है…' :
                 language === 'mr' ? 'AI विश्लेषण तयार होत आहे…' :
@@ -234,11 +234,11 @@ export default function HealthScoreDisplay({
             </span>
           </div>
           <div className="space-y-2">
-            <div className="h-3 bg-blue-200 rounded w-full" />
-            <div className="h-3 bg-blue-200 rounded w-5/6" />
-            <div className="h-3 bg-blue-200 rounded w-4/6" />
-            <div className="h-3 bg-blue-200 rounded w-full mt-3" />
-            <div className="h-3 bg-blue-200 rounded w-3/4" />
+            <div className="h-3 bg-primary-200 rounded w-full" />
+            <div className="h-3 bg-primary-200 rounded w-5/6" />
+            <div className="h-3 bg-primary-200 rounded w-4/6" />
+            <div className="h-3 bg-primary-200 rounded w-full mt-3" />
+            <div className="h-3 bg-primary-200 rounded w-3/4" />
           </div>
         </div>
       )}

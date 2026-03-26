@@ -75,13 +75,10 @@ export function Header({
   return (
     <header
       className={cn(
-        // Sticky positioning (Requirement 8.1)
         'sticky top-0 z-40',
-        // Background and border
-        'bg-white border-b border-neutral-200',
-        // Padding - aligned with sidebar
+        // Glassmorphism header — floats over content
+        'bg-white/90 backdrop-blur-md',
         'px-6 py-4',
-        // Shadow for elevation
         'shadow-sm',
         className
       )}
@@ -95,16 +92,14 @@ export function Header({
             <button
               onClick={onMenuClick}
               className={cn(
-                'p-2 hover:bg-neutral-100 rounded-2xl transition-colors',
+                'p-2 hover:bg-neutral-100 rounded-xl transition-colors',
                 'desktop:hidden',
-                // Minimum 44px touch target (Requirement 8.8)
                 'min-w-[44px] min-h-[44px]',
-                // Focus styles for keyboard navigation
-                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
+                'focus:outline-none focus:ring-2 focus:ring-[rgba(11,26,125,0.40)] focus:ring-offset-2'
               )}
               aria-label="Open menu"
             >
-              <Menu className="w-6 h-6 text-neutral-700" />
+              <Menu className="w-6 h-6 text-[#4a4c4e]" />
             </button>
           )}
 

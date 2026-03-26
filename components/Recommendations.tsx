@@ -21,7 +21,7 @@ export default function Recommendations({
       case 'good':
         return 'bg-green-50 border-green-200 text-green-800';
       default:
-        return 'bg-blue-50 border-blue-200 text-blue-800';
+        return 'bg-primary-50 border-primary-200 text-primary-800';
     }
   };
 
@@ -47,7 +47,7 @@ export default function Recommendations({
 
   return (
     <Card className="rounded-2xl">
-      <h2 className="mb-4 text-2xl font-semibold text-slate-900">{title}</h2>
+      <h2 className="mb-4 text-2xl font-semibold text-neutral-900">{title}</h2>
 
       <div className="space-y-3">
         {recommendations.map((rec, idx) => (

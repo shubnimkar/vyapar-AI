@@ -1,11 +1,9 @@
 /**
- * Button Component
- * 
- * A versatile button component with multiple variants, sizes, and states.
- * Follows WCAG 2.1 AA accessibility standards with minimum 44px touch targets.
- * 
- * @see .kiro/specs/ui-ux-redesign/design.md for complete specifications
- * @see .kiro/specs/ui-ux-redesign/requirements.md - Requirements 5.1-5.9
+ * Button Component — "The Digital Concierge"
+ *
+ * Primary: Deep Indigo gradient (135°) — authoritative CTA
+ * Secondary: Soft Gold (#ffe088) — "Value" actions
+ * Ghost border fallback for outlined variants
  */
 
 import React from 'react';
@@ -16,65 +14,38 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'dan
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /** Visual style variant of the button */
   variant?: ButtonVariant;
-  /** Size of the button (affects padding and font size) */
   size?: ButtonSize;
-  /** Shows loading spinner and disables interaction */
   loading?: boolean;
-  /** Makes button take full width of container */
   fullWidth?: boolean;
-  /** Icon to display in the button */
   icon?: React.ReactNode;
-  /** Position of the icon relative to text */
   iconPosition?: 'left' | 'right';
 }
 
-/**
- * Variant styles mapping
- * Each variant has distinct colors for different states
- * Uses design tokens for brand consistency
- */
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500',
-  secondary: 'bg-neutral-50 text-neutral-900 border border-neutral-200 hover:bg-neutral-100 focus:ring-primary-500',
-  outline: 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 focus:ring-primary-500',
-  ghost: 'bg-transparent text-neutral-700 hover:bg-neutral-100 focus:ring-primary-500',
-  danger: 'bg-error-600 text-white hover:bg-error-700 focus:ring-error-500',
+  // Indigo-to-container gradient, uppercase tracked label
+  primary:
+    'bg-primary-gradient text-white hover:opacity-90 focus:ring-primary-600/40 ' +
+    'uppercase tracking-wide',
+  // Soft Gold — "Value" actions (discounts, delight moments)
+  secondary:
+    'bg-secondary-fixed text-secondary-700 hover:bg-secondary-400/30 focus:ring-secondary-400/40',
+  // Ghost border — surface-lowest bg, outline-variant border
+  outline:
+    'bg-surface-lowest border border-outline-variant text-on-surface ' +
+    'hover:bg-surface-high focus:ring-primary-600/30',
+  ghost:
+    'bg-transparent text-on-surface hover:bg-surface-high focus:ring-primary-600/30',
+  danger:
+    'bg-error-600 text-white hover:bg-error-700 focus:ring-error-500/40',
 };
 
-/**
- * Size styles mapping
- * Each size has appropriate padding and font size for different contexts
- */
 const buttonSizes: Record<ButtonSize, string> = {
   sm: 'h-10 px-4 text-sm',
   md: 'h-12 px-5 text-sm',
   lg: 'h-14 px-6 text-base',
 };
 
-/**
- * Button Component
- * 
- * Pure presentation component with no business logic (per Vyapar rules).
- * Uses React.forwardRef for ref forwarding to support form libraries.
- * 
- * @example
- * // Primary button
- * <Button variant="primary">Save</Button>
- * 
- * @example
- * // Button with loading state
- * <Button loading={true}>Processing...</Button>
- * 
- * @example
- * // Button with icon
- * <Button icon={<Plus />} iconPosition="left">Add Entry</Button>
- * 
- * @example
- * // Full width button for mobile forms
- * <Button fullWidth variant="primary">Submit</Button>
- */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -98,37 +69,22 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={isDisabled}
         className={cn(
-          // Base styles
           'inline-flex items-center justify-center gap-2 whitespace-nowrap',
-          'font-semibold rounded-xl',
+          'font-semibold rounded-md',
           'transition-all duration-base',
           'focus:outline-none focus:ring-2 focus:ring-offset-2',
           'disabled:opacity-50 disabled:cursor-not-allowed',
-          'min-h-[44px]', // Touch target (Requirement 5.8)
-
-          // Variant styles (Requirement 5.1)
+          'min-h-[44px]',
           buttonVariants[variant],
-          
-          // Size styles (Requirement 5.2)
           buttonSizes[size],
-          
-          // Full width (Requirement 5.9)
           fullWidth && 'w-full',
-          
           className
         )}
         {...props}
       >
-        {/* Loading spinner (Requirement 5.3) */}
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-        
-        {/* Icon on left (Requirement 5.5) */}
         {!loading && icon && iconPosition === 'left' && icon}
-        
-        {/* Button text */}
         {children}
-        
-        {/* Icon on right (Requirement 5.5) */}
         {!loading && icon && iconPosition === 'right' && icon}
       </button>
     );

@@ -62,13 +62,13 @@ interface SelectInputProps extends BaseInputProps, Omit<React.SelectHTMLAttribut
 export type InputProps = StandardInputProps | TextareaInputProps | SelectInputProps;
 
 /**
- * State-based border and ring color styles
- * Each state has distinct colors using design tokens for visual feedback
+ * State-based border and ring color styles — Ghost Border approach.
+ * Default uses outline-variant (20% opacity). Focus transitions to primary at 50%.
  */
 const stateStyles = {
-  default: 'border-neutral-200 focus:border-primary-500 focus:ring-primary-500/15',
-  error: 'border-error-500 focus:border-error-600 focus:ring-error-500/15',
-  success: 'border-success-500 focus:border-success-600 focus:ring-success-500/15',
+  default: 'border-[rgba(26,28,29,0.20)] focus:border-[rgba(11,26,125,0.50)] focus:ring-[rgba(11,26,125,0.08)]',
+  error:   'border-error-500 focus:border-error-600 focus:ring-error-500/10',
+  success: 'border-success-500 focus:border-success-600 focus:ring-success-500/10',
 };
 
 /**
@@ -125,15 +125,14 @@ export const Input = React.forwardRef<
   // Determine the actual input state based on error/success props
   const inputState = error ? 'error' : success ? 'success' : state;
 
-  // Base classes shared by all input types
+  // Base classes shared by all input types — Ghost Border style
   const baseClasses = cn(
-    // Base styles
-    'w-full rounded-xl border bg-white px-4 text-base text-neutral-900',
+    'w-full rounded-md border bg-white px-4 text-base text-[#1a1c1d]',
     'transition-all duration-base',
     'focus:outline-none focus:ring-2 focus:ring-offset-0',
-    'placeholder:text-neutral-400',
-    'disabled:bg-neutral-50 disabled:text-neutral-500 disabled:cursor-not-allowed',
-    'min-h-[44px]', // Touch target (Requirement 6.9)
+    'placeholder:text-[#ababab]',
+    'disabled:bg-neutral-50 disabled:text-[#ababab] disabled:cursor-not-allowed',
+    'min-h-[44px]',
     as === 'textarea' ? 'py-3 min-h-[120px]' : 'h-12',
     
     // State styles (Requirements 6.3, 6.4, 6.5)

@@ -1079,15 +1079,15 @@ export default function Home() {
         className="flex w-full items-center justify-between rounded-2xl border border-neutral-200 bg-white p-5 text-left shadow-sm transition-colors hover:bg-neutral-50"
       >
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-semibold text-slate-900">{t('advancedMode', language)}</span>
-          <span className="text-sm text-slate-500">
+          <span className="text-2xl font-semibold text-neutral-900">{t('advancedMode', language)}</span>
+          <span className="text-sm text-neutral-500">
             ({uploadedFiles.size} {language === 'hi' ? 'फाइलें' : language === 'mr' ? 'फाइल्स' : 'files'})
           </span>
         </div>
         {advancedModeExpanded ? (
-          <ChevronUp className="w-6 h-6 text-slate-500" />
+          <ChevronUp className="w-6 h-6 text-neutral-500" />
         ) : (
-          <ChevronDown className="w-6 h-6 text-slate-500" />
+          <ChevronDown className="w-6 h-6 text-neutral-500" />
         )}
       </button>
 
@@ -1095,7 +1095,7 @@ export default function Home() {
         <div className="space-y-6">
           <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-semibold text-slate-900">{t('uploadCSV', language)}</h3>
+              <h3 className="text-2xl font-semibold text-neutral-900">{t('uploadCSV', language)}</h3>
               <Button
                 onClick={handleLoadSampleData}
                 variant="secondary"
@@ -1165,7 +1165,7 @@ export default function Home() {
                   en: 'Analysis ready in all languages — switch language above to see it instantly.',
                 };
                 return (!isCached && hasOtherLanguages) ? (
-                  <p className="text-xs text-blue-500 italic text-center">
+                  <p className="text-xs text-primary-500 italic text-center">
                     {translateHint[language] || translateHint.en}
                   </p>
                 ) : null;
@@ -1187,18 +1187,14 @@ export default function Home() {
     <AuthGuard>
       <div className="min-h-screen overflow-hidden bg-neutral-50 flex flex-col lg:flex-row">
         {/* Sidebar */}
-        <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r border-neutral-200 bg-white lg:flex">
-          {/* Logo/Brand */}
-          <div className="flex items-center gap-3 border-b border-neutral-200 px-6 py-4">
-            <div className="rounded-xl bg-primary-600 p-3 text-white shadow-sm">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold leading-tight text-slate-900">{t('appTitle', language)}</h1>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Business</p>
-            </div>
+        <aside className="sticky top-0 hidden h-screen w-56 flex-col border-r border-neutral-200 bg-white lg:flex">
+          {/* Logo */}
+          <div className="flex items-center justify-center border-b border-neutral-200 px-4 h-16 shrink-0">
+            <img
+              src="/background-removed.png"
+              alt="Vyapar AI"
+              style={{ height: 55, width: 'auto', objectFit: 'contain' }}
+            />
           </div>
 
           {/* Navigation */}
@@ -1215,7 +1211,7 @@ export default function Home() {
                   aria-current={active ? 'page' : undefined}
                   className={`w-full flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${active
                     ? 'bg-primary-50 text-primary-700 shadow-sm ring-1 ring-primary-100'
-                    : 'text-slate-600 hover:bg-neutral-100 hover:text-slate-900'
+                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
                     }`}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
@@ -1239,25 +1235,25 @@ export default function Home() {
         {/* Main Content Area */}
         <main className="flex h-screen flex-1 flex-col overflow-hidden bg-neutral-50">
           {/* Header */}
-          <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-10">
-            <div className="flex items-center justify-between gap-6">
+          <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 px-4 backdrop-blur-md sm:px-6 lg:px-10 h-16 flex items-center">
+            <div className="flex w-full items-center justify-between gap-6">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 shrink-0">
+                  <h2 className="text-2xl font-bold tracking-tight text-neutral-900 shrink-0">
                     {activeSection === 'pending' ? t('nav.pending', language) : getSectionLabel(activeSection)}
                   </h2>
                   {activeSection === 'pending' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {t('pendingSubtitle', language)}
                     </p>
                   )}
                   {activeSection === 'chat' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {t('askAISubtitle', language)}
                     </p>
                   )}
                   {activeSection === 'reports' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {language === 'hi'
                         ? 'अवधि सारांश बनाएं, प्रदर्शन रुझान ट्रैक करें।'
                         : language === 'mr'
@@ -1266,7 +1262,7 @@ export default function Home() {
                     </p>
                   )}
                   {activeSection === 'analysis' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {language === 'hi'
                         ? 'CSV डेटा अपलोड करें और AI से अंतर्दृष्टि पाएं।'
                         : language === 'mr'
@@ -1275,7 +1271,7 @@ export default function Home() {
                     </p>
                   )}
                   {activeSection === 'credit' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {language === 'hi'
                         ? 'ग्राहकों का उधार ट्रैक करें, बकाया भुगतान का फॉलो-अप करें।'
                         : language === 'mr'
@@ -1284,7 +1280,7 @@ export default function Home() {
                     </p>
                   )}
                   {activeSection === 'entries' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {language === 'hi'
                         ? 'आज की बिक्री, खर्च और नकद दर्ज करें — आवाज, रसीद या मैन्युअल एंट्री से।'
                         : language === 'mr'
@@ -1293,7 +1289,7 @@ export default function Home() {
                     </p>
                   )}
                   {activeSection === 'dashboard' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {language === 'hi'
                         ? 'अपने व्यवसाय का आज का स्वास्थ्य और प्रमुख संकेतक देखें।'
                         : language === 'mr'
@@ -1302,7 +1298,7 @@ export default function Home() {
                     </p>
                   )}
                   {activeSection === 'health' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {language === 'hi'
                         ? 'तनाव सूचकांक, वहनीयता और नकदी प्रवाह पूर्वानुमान देखें।'
                         : language === 'mr'
@@ -1311,7 +1307,7 @@ export default function Home() {
                     </p>
                   )}
                   {activeSection === 'account' && (
-                    <p className="text-sm text-slate-500 truncate">
+                    <p className="text-sm text-neutral-500 truncate">
                       {language === 'hi'
                         ? 'अपनी प्रोफ़ाइल, व्यवसाय प्रकार और प्राथमिकताएं प्रबंधित करें।'
                         : language === 'mr'
@@ -1342,7 +1338,7 @@ export default function Home() {
                       className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-2 text-xs font-medium transition-all ${
                         active
                           ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
-                          : 'border-neutral-200 bg-white text-slate-700 hover:bg-neutral-50'
+                          : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
@@ -1362,7 +1358,7 @@ export default function Home() {
           {/* Scrollable Dashboard Content */}
           <div
             className={`flex-1 overflow-y-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 sm:pb-8 lg:px-10 lg:py-10 ${
-              activeSection === 'credit' ? 'bg-white' : 'bg-gray-50'
+              activeSection === 'credit' ? 'bg-white' : 'bg-neutral-50'
             }`}
           >
             <div
@@ -1403,11 +1399,11 @@ export default function Home() {
                         userId={user?.userId}
                       />
                     ) : (
-                      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200">
+                        <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                           {language === 'hi' ? 'स्वास्थ्य स्कोर' : language === 'mr' ? 'हेल्थ स्कोअर' : 'Health Score'}
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-neutral-600">
                           {language === 'hi'
                             ? 'दैनिक एंट्री के बाद स्कोर दिखेगा।'
                             : language === 'mr'
@@ -1489,7 +1485,7 @@ export default function Home() {
                     initialMessages={qaInitialMessages}
                   />
                 ) : (
-                  <div className="bg-white rounded-lg shadow-md p-6 text-slate-600">
+                  <div className="bg-white rounded-lg shadow-md p-6 text-neutral-600">
                     {language === 'hi'
                       ? 'चैट शुरू करने से पहले डेटा अपलोड करें।'
                       : language === 'mr'

@@ -78,18 +78,18 @@ export default function ResetPasswordClient() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-container px-4 py-6">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.reset.title', language)}</h1>
+        <h1 className="text-2xl font-bold text-neutral-900 mb-2">{t('auth.reset.title', language)}</h1>
 
         {validating ? (
-          <p className="text-sm text-gray-600">{t('auth.reset.validating', language)}</p>
+          <p className="text-sm text-neutral-600">{t('auth.reset.validating', language)}</p>
         ) : !valid ? (
           <div className="space-y-4">
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
               {t('auth.reset.invalidTitle', language)}
             </div>
-            <a className="text-blue-600 underline underline-offset-4" href="/forgot-password">
+            <a className="text-primary-600 underline underline-offset-4" href="/forgot-password">
               {t('auth.reset.requestNewLink', language)}
             </a>
           </div>
@@ -105,23 +105,23 @@ export default function ResetPasswordClient() {
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('auth.reset.newPasswordLabel', language)}</label>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">{t('auth.reset.newPasswordLabel', language)}</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none"
                 required
                 minLength={8}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('auth.reset.confirmPasswordLabel', language)}</label>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">{t('auth.reset.confirmPasswordLabel', language)}</label>
               <input
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 border-2 border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:outline-none"
                 required
                 minLength={8}
               />
@@ -129,7 +129,7 @@ export default function ResetPasswordClient() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full min-h-[44px] rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
+              className="w-full min-h-[44px] rounded-lg bg-primary-600 text-white font-semibold hover:bg-primary-700 disabled:opacity-60"
             >
               {loading ? t('auth.reset.updating', language) : t('auth.reset.updatePassword', language)}
             </button>

@@ -226,9 +226,9 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
           {explaining && !Object.keys(explanations).length && (
               <div className="rounded-xl border border-primary-200 bg-primary-50 p-4 animate-pulse">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-3 h-3 rounded-full bg-blue-300 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-3 h-3 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-3 h-3 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-3 h-3 rounded-full bg-primary-300 animate-bounce" style={{ animationDelay: '300ms' }} />
                 <span className="text-xs text-primary-600 ml-1">
                   {language === 'hi'
                     ? 'AI तीनों भाषाओं में विश्लेषण तैयार कर रहा है…'
@@ -238,11 +238,11 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
                 </span>
               </div>
               <div className="space-y-2">
-                <div className="h-3 bg-blue-200 rounded w-full" />
-                <div className="h-3 bg-blue-200 rounded w-5/6" />
-                <div className="h-3 bg-blue-200 rounded w-4/6" />
-                <div className="h-3 bg-blue-200 rounded w-full mt-3" />
-                <div className="h-3 bg-blue-200 rounded w-3/4" />
+                <div className="h-3 bg-primary-200 rounded w-full" />
+                <div className="h-3 bg-primary-200 rounded w-5/6" />
+                <div className="h-3 bg-primary-200 rounded w-4/6" />
+                <div className="h-3 bg-primary-200 rounded w-full mt-3" />
+                <div className="h-3 bg-primary-200 rounded w-3/4" />
               </div>
             </div>
           )}
@@ -300,7 +300,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
                   </div>
                     <div className="text-right">
                       <div className="text-2xl">{getTrendEmoji(prediction.trend)}</div>
-                    <div className="mt-1 text-xs text-slate-500">
+                    <div className="mt-1 text-xs text-neutral-500">
                       {Math.round(prediction.confidence * 100)}% {t.confidence}
                     </div>
                   </div>

@@ -3,9 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
-import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
 import { Eye, EyeOff } from 'lucide-react';
 
 const REMEMBER_ME_KEY = 'vyapar-remember-username';
@@ -23,109 +20,100 @@ export default function LoginForm({ onSubmit, loading, error, language }: LoginF
   const [rememberDevice, setRememberDevice] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Restore saved username on mount
   useEffect(() => {
     const saved = localStorage.getItem(REMEMBER_ME_KEY);
-    if (saved) {
-      setUsernameOrEmail(saved);
-      setRememberDevice(true);
-    }
+    if (saved) { setUsernameOrEmail(saved); setRememberDevice(true); }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rememberDevice) {
-      localStorage.setItem(REMEMBER_ME_KEY, usernameOrEmail);
-    } else {
-      localStorage.removeItem(REMEMBER_ME_KEY);
-    }
+    rememberDevice ? localStorage.setItem(REMEMBER_ME_KEY, usernameOrEmail) : localStorage.removeItem(REMEMBER_ME_KEY);
     await onSubmit(usernameOrEmail, password, rememberDevice);
   };
+
+  const inputCls = "w-full rounded-xl border border-[rgba(26,28,29,0.15)] bg-white px-4 py-3.5 text-base text-[#1a1c1d] placeholder:text-[#ababab] focus:border-[#0b1a7d] focus:outline-none focus:ring-2 focus:ring-[rgba(11,26,125,0.10)] disabled:bg-[#f3f3f5] disabled:cursor-not-allowed transition-all";
+  const labelCls = "block text-sm font-semibold text-[#1a1c1d] mb-2";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <Card className="border border-red-200 bg-red-50 shadow-none" density="compact">
-          <p className="text-sm font-medium text-red-700">{error}</p>
-        </Card>
+        <div className="rounded-xl bg-error-50 border border-error-200 px-4 py-3">
+          <p className="text-sm font-medium text-error-700">{error}</p>
+        </div>
       )}
 
-      <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-1">
-        <Input
+      {/* Username / email */}
+      <div>
+        <label className={labelCls}>
+          {language === 'hi' ? 'यूज़रनेम या ईमेल' : language === 'mr' ? 'वापरकर्तानाव किंवा ईमेल' : 'Username or email'}
+          <span className="text-error-500 ml-1">*</span>
+        </label>
+        <input
           type="text"
-          label={language === 'hi' ? 'यूज़रनेम या ईमेल' : language === 'mr' ? 'वापरकर्तानाव किंवा ईमेल' : 'Username or email'}
           value={usernameOrEmail}
           onChange={(e) => setUsernameOrEmail(e.target.value)}
+          className={inputCls}
           placeholder={language === 'hi' ? 'यूज़रनेम / name@business.com' : language === 'mr' ? 'वापरकर्तानाव / name@business.com' : 'username / name@business.com'}
           disabled={loading}
           required
           autoFocus
         />
+      </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-slate-700">
-            {t('passwordLabel', language)}
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3.5 pr-12 text-base text-slate-900 transition-all duration-base placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:bg-slate-100"
-              placeholder={language === 'hi' ? 'पासवर्ड' : language === 'mr' ? 'पासवर्ड' : 'Password'}
-              disabled={loading}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
-              tabIndex={-1}
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
-          </div>
+      {/* Password */}
+      <div>
+        <label className={labelCls}>{t('passwordLabel', language)}</label>
+        <div className="relative">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={`${inputCls} pr-12`}
+            placeholder={language === 'hi' ? 'पासवर्ड' : language === 'mr' ? 'पासवर्ड' : 'Password'}
+            disabled={loading}
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#7a7c7e] hover:text-[#1a1c1d] transition-colors"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <label className="flex cursor-pointer items-center gap-3">
+      {/* Remember + Forgot */}
+      <div className="flex items-center justify-between">
+        <label className="flex cursor-pointer items-center gap-2.5">
           <input
             type="checkbox"
             checked={rememberDevice}
             onChange={(e) => setRememberDevice(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+            className="h-4 w-4 rounded border-[rgba(26,28,29,0.25)] accent-[#0b1a7d]"
             disabled={loading}
           />
-          <span className="text-sm font-medium text-slate-700">
-            {t('rememberDevice', language)}
-          </span>
+          <span className="text-sm font-medium text-[#4a4c4e]">{t('rememberDevice', language)}</span>
         </label>
         <a
           href="/forgot-password"
-          className="text-sm font-semibold text-blue-600 underline decoration-blue-200 underline-offset-4 transition-colors hover:text-blue-700"
+          className="text-sm font-bold text-[#0b1a7d] hover:text-[#091563] transition-colors"
         >
-          {language === 'hi'
-            ? 'पासवर्ड भूल गए?'
-            : language === 'mr'
-              ? 'पासवर्ड विसरलात?'
-              : 'Forgot password?'}
+          {language === 'hi' ? 'पासवर्ड भूल गए?' : language === 'mr' ? 'पासवर्ड विसरलात?' : 'Forgot password?'}
         </a>
       </div>
 
-      <Button
+      {/* Submit — deep indigo, full width, large */}
+      <button
         type="submit"
         disabled={loading}
-        loading={loading}
-        fullWidth
-        variant="primary"
-        className="min-h-[52px] rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold text-white shadow-[0_18px_32px_-18px_rgba(37,99,235,0.65)] hover:from-blue-700 hover:to-indigo-700 focus:ring-blue-500"
+        className="w-full rounded-xl bg-[#0b1a7d] py-4 text-base font-semibold text-white transition-all hover:bg-[#091563] focus:outline-none focus:ring-2 focus:ring-[rgba(11,26,125,0.40)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px]"
       >
-        {loading 
+        {loading
           ? (language === 'hi' ? 'साइन इन हो रहा है...' : language === 'mr' ? 'साइन इन करत आहे...' : 'Signing in...')
-          : t('loginButton', language)
-        }
-      </Button>
+          : t('loginButton', language)}
+      </button>
     </form>
   );
 }

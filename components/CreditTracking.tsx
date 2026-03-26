@@ -266,7 +266,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       { bg: 'bg-purple-100', text: 'text-purple-600' },
       { bg: 'bg-success-100', text: 'text-success-600' },
       { bg: 'bg-pink-100', text: 'text-pink-600' },
-      { bg: 'bg-indigo-100', text: 'text-indigo-600' },
+      { bg: 'bg-primary-100', text: 'text-primary-600' },
       { bg: 'bg-teal-100', text: 'text-teal-600' },
     ];
     
@@ -320,7 +320,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <Search className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-neutral-400 w-4 h-4" />
           <Input
             placeholder={language === 'hi' ? 'ग्राहक या चालान खोजें...' : language === 'mr' ? 'ग्राहक किंवा चलन शोधा...' : "Search customers or invoices..."} 
             value={searchQuery}
@@ -351,9 +351,9 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <Landmark className="w-5 h-5 text-primary-600" />
               </div>
             </div>
-            <p className="mb-1 text-label text-slate-500">{t('totalOutstanding', language)}</p>
+            <p className="mb-1 text-label text-neutral-500">{t('totalOutstanding', language)}</p>
             <h3 className="mb-2 text-numeric-lg text-neutral-900">₹{summary.totalOutstanding.toLocaleString('en-IN')}</h3>
-            <p className="text-caption uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-caption uppercase tracking-[0.18em] text-neutral-500">
               {t('credit.updatedAgo', language)}
             </p>
           </CardBody>
@@ -368,7 +368,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <AlertCircle className="w-5 h-5 text-rose-600" />
               </div>
             </div>
-            <p className="mb-1 text-label text-slate-500">{t('totalOverdue', language)}</p>
+            <p className="mb-1 text-label text-neutral-500">{t('totalOverdue', language)}</p>
             <h3 className="mb-2 text-numeric-lg text-neutral-900">₹{summary.totalOverdue.toLocaleString('en-IN')}</h3>
             <p className="text-caption uppercase tracking-[0.18em] text-rose-700">
               {t('credit.requiresAction', language)}
@@ -385,7 +385,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <AlertTriangle className="w-5 h-5 text-warning-600" />
               </div>
             </div>
-            <p className="mb-1 text-label text-slate-500">
+            <p className="mb-1 text-label text-neutral-500">
               {t('credit.totalAlerts', language)}
             </p>
             <h3 className="mb-2 text-numeric-lg text-neutral-900">{summary.overdueCount}</h3>
@@ -491,7 +491,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 <th className="px-6 py-3 text-caption uppercase tracking-wider text-neutral-900 text-right">{t('credit.action', language)}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 bg-white">
+            <tbody className="divide-y divide-neutral-200 bg-white">
               {paginatedEntries.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-neutral-500 text-sm">{t('noCreditEntries', language)}</td>
@@ -562,7 +562,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
         {/* Pagination */}
         {filteredEntries.length > 0 && !showAllEntries && (
           <div className="px-6 py-4 bg-white border-t border-neutral-200 flex items-center justify-between">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-neutral-500">
               {formatTemplate(t('credit.showingLogs', language), {
                 start: showingStart,
                 end: showingEnd,

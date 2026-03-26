@@ -74,16 +74,12 @@ export function MobileNav({ items, className }: MobileNavProps) {
   return (
     <nav
       className={cn(
-        // Mobile-only display (Requirement 8.3)
         'desktop:hidden',
-        // Fixed bottom positioning (Requirement 8.3)
         'fixed bottom-0 left-0 right-0 z-40',
-        // Background and border
-        'bg-white border-t border-neutral-200',
-        // Padding
+        // Glassmorphism bottom bar
+        'bg-white/90 backdrop-blur-md',
         'px-2 py-2',
-        // Shadow for elevation
-        'shadow-lg',
+        'shadow-glass',
         className
       )}
       role="navigation"
@@ -98,18 +94,14 @@ export function MobileNav({ items, className }: MobileNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                // Base styles
-                'flex flex-col items-center gap-1 px-3 py-2 rounded-lg',
+                'flex flex-col items-center gap-1 px-3 py-2 rounded-xl',
                 'text-xs font-medium',
                 'transition-all duration-base',
-                // Minimum 44px touch target (Requirement 8.8)
                 'min-w-[60px] min-h-[44px]',
-                // Focus styles for keyboard navigation
-                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-                // Active state highlighting (Requirement 8.4)
+                'focus:outline-none focus:ring-2 focus:ring-[rgba(11,26,125,0.40)] focus:ring-offset-2',
                 isActive
-                  ? 'text-primary-600'
-                  : 'text-neutral-600'
+                  ? 'text-[#0b1a7d]'
+                  : 'text-[#7a7c7e]'
               )}
               aria-current={isActive ? 'page' : undefined}
               aria-label={`${item.label}${item.badge ? ` (${item.badge > 9 ? '9+' : item.badge} pending)` : ''}`}
@@ -119,7 +111,7 @@ export function MobileNav({ items, className }: MobileNavProps) {
                 {/* Icon with active state scale */}
                 <span className={cn(
                   'transition-transform duration-base',
-                  isActive && 'scale-110'
+                  isActive ? 'scale-110 text-[#0b1a7d]' : 'text-[#7a7c7e]'
                 )}>
                   {item.icon}
                 </span>

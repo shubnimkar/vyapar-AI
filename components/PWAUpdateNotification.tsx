@@ -81,7 +81,7 @@ export default function PWAUpdateNotification() {
 
   return (
     <div
-      className="fixed left-1/2 top-4 z-50 -translate-x-1/2 animate-in slide-in-from-top duration-base pointer-events-none"
+      className="fixed top-4 right-4 z-50 animate-in slide-in-from-top duration-base"
       role="status"
       aria-live="polite"
       aria-atomic="true"
@@ -89,49 +89,44 @@ export default function PWAUpdateNotification() {
       <Card
         elevation="elevated"
         className={cn(
-          'max-w-sm',
-          'bg-info-50 border-info-200'
+          'rounded-2xl',
+          'bg-info-50 border-info-200',
+          'max-w-[420px]'
         )}
-        style={{ pointerEvents: 'auto' }}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 px-4 py-3">
           {/* Icon */}
-          <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-info-100 rounded-2xl flex items-center justify-center">
-              <RefreshCw className="w-5 h-5 text-info-600" />
+          <div className="flex-shrink-0 mt-0.5">
+            <div className="w-9 h-9 bg-info-100 rounded-2xl flex items-center justify-center">
+              <RefreshCw className="w-4 h-4 text-info-600" />
             </div>
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm text-info-900 mb-1">
+            <h3 className="font-semibold text-sm text-info-900 leading-tight">
               {t('ui.pwa.updateAvailable', language)}
             </h3>
-            <p className="text-xs text-info-700 mb-3">
+            <p className="text-xs text-info-700 mt-1">
               {t('ui.pwa.updateMessage', language)}
             </p>
-            
+
             {/* Actions */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-3">
               <Button
                 onClick={handleUpdate}
                 variant="primary"
                 size="sm"
-                icon={<RefreshCw className="w-4 h-4" />}
               >
                 {t('ui.pwa.updateNow', language)}
               </Button>
-              <Button
-                onClick={handleDismiss}
-                variant="ghost"
-                size="sm"
-              >
+              <Button onClick={handleDismiss} variant="ghost" size="sm">
                 {t('ui.pwa.later', language)}
               </Button>
             </div>
           </div>
 
-          {/* Close button */}
+          {/* Close icon */}
           <button
             onClick={handleDismiss}
             className={cn(

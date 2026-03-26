@@ -242,13 +242,13 @@ export default function ProfileSetupForm({
     <div className="w-full h-full flex flex-col">
       {/* Header Section */}
       <div className="mb-6">
-        <h1 className="text-page-title text-slate-900">
+        <h1 className="text-page-title text-neutral-900">
           {isEditMode 
             ? (language === 'hi' ? 'प्रोफ़ाइल संपादित करें' : language === 'mr' ? 'प्रोफाइल संपादित करा' : 'Edit Profile')
             : t('profile.setup.title', language)
           }
         </h1>
-        <p className="text-body-sm text-slate-500 mt-1">
+        <p className="text-body-sm text-neutral-500 mt-1">
           {language === 'hi' 
             ? 'बेहतर AI इनसाइट्स पाने के लिए अपनी दुकान की जानकारी और व्यवसाय की प्राथमिकताएं अपडेट करें।'
             : language === 'mr'
@@ -271,7 +271,7 @@ export default function ProfileSetupForm({
 
           <form onSubmit={(e) => { e.preventDefault(); handleSubmit(false); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 
-            <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50/50 p-6">
+            <div className="md:col-span-2 rounded-2xl border border-neutral-200 bg-gradient-to-br from-surface-low via-white to-primary-50/30 p-6">
               <div className="flex flex-col gap-5 md:flex-row md:items-center">
                 <div className="flex flex-col items-center gap-3 md:w-40">
                   <div className="relative">
@@ -281,19 +281,19 @@ export default function ProfileSetupForm({
                       size="lg"
                       className="shadow-md ring-4 ring-white"
                     />
-                    <div className="absolute -bottom-1 -right-1 rounded-full border border-white bg-slate-900 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                    <div className="absolute -bottom-1 -right-1 rounded-full border border-white bg-neutral-900 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
                       {formData.avatarUrl ? t('profile.photo.badgeUploaded', language) : t('profile.photo.badgeDefault', language)}
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-sm font-semibold text-slate-900">{t('profile.photo.title', language)}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="text-sm font-semibold text-neutral-900">{t('profile.photo.title', language)}</p>
+                    <p className="mt-1 text-xs text-neutral-500">
                       {isProcessingPhoto ? t('profile.photo.processing', language) : t('profile.photo.subtitle', language)}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex-1 rounded-xl border border-dashed border-slate-300 bg-white/80 p-4">
+                <div className="flex-1 rounded-xl border border-dashed border-neutral-300 bg-white/80 p-4">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -337,9 +337,9 @@ export default function ProfileSetupForm({
                       )}
                     </div>
 
-                    <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                      <span className="rounded-full bg-slate-100 px-3 py-1">PNG / JPG / WEBP / HEIC</span>
-                      <span className="rounded-full bg-slate-100 px-3 py-1">Auto resized for profile use</span>
+                    <div className="flex flex-wrap gap-2 text-xs text-neutral-500">
+                      <span className="rounded-full bg-neutral-100 px-3 py-1">PNG / JPG / WEBP / HEIC</span>
+                      <span className="rounded-full bg-neutral-100 px-3 py-1">Auto resized for profile use</span>
                     </div>
 
                     {errors.avatarUrl && (
@@ -352,11 +352,11 @@ export default function ProfileSetupForm({
 
             {/* Shop Name */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-700" htmlFor="shop_name">
+              <label className="text-xs font-semibold text-neutral-700" htmlFor="shop_name">
                 {t('profile.setup.shopName', language)} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 <input
@@ -369,8 +369,8 @@ export default function ProfileSetupForm({
                     if (errors.shopName) setErrors({ ...errors, shopName: '' });
                   }}
                   className={`w-full pl-9 pr-3 py-2 text-sm rounded-2xl border ${
-                    errors.shopName ? 'border-red-500 bg-red-50' : 'border-slate-300'
-                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                    errors.shopName ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+                  } bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all`}
                   placeholder={language === 'hi' ? 'दुकान का नाम दर्ज करें' : language === 'mr' ? 'दुकानाचे नाव प्रविष्ट करा' : 'Enter shop name'}
                   required
                 />
@@ -387,11 +387,11 @@ export default function ProfileSetupForm({
 
             {/* Owner Name */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-700" htmlFor="owner_name">
+              <label className="text-xs font-semibold text-neutral-700" htmlFor="owner_name">
                 {t('profile.setup.userName', language)} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 <input
@@ -403,8 +403,8 @@ export default function ProfileSetupForm({
                     if (errors.userName) setErrors({ ...errors, userName: '' });
                   }}
                   className={`w-full pl-9 pr-3 py-2 text-sm rounded-2xl border ${
-                    errors.userName ? 'border-red-500 bg-red-50' : 'border-slate-300'
-                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                    errors.userName ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+                  } bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all`}
                   placeholder={language === 'hi' ? 'मालिक का नाम दर्ज करें' : language === 'mr' ? 'मालकाचे नाव प्रविष्ट करा' : 'Enter owner name'}
                   required
                 />
@@ -421,11 +421,11 @@ export default function ProfileSetupForm({
 
             {/* Phone Number */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-700" htmlFor="phone">
+              <label className="text-xs font-semibold text-neutral-700" htmlFor="phone">
                 {t('phoneNumber', language)} ({language === 'hi' ? 'भारतीय प्रारूप' : language === 'mr' ? 'भारतीय स्वरूप' : 'Indian Format'})
               </label>
               <div className="flex">
-                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-slate-500 text-xs font-medium">
+                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-neutral-300 bg-neutral-50 text-neutral-500 text-xs font-medium">
                   +91
                 </span>
                 <input
@@ -440,8 +440,8 @@ export default function ProfileSetupForm({
                   }}
                   pattern="[6-9][0-9]{9}"
                   className={`flex-1 px-3 py-2 text-sm rounded-r-lg border ${
-                    errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-slate-300'
-                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                    errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+                  } bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all`}
                   placeholder="9876543210"
                 />
               </div>
@@ -457,11 +457,11 @@ export default function ProfileSetupForm({
 
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-700" htmlFor="email">
+              <label className="text-xs font-semibold text-neutral-700" htmlFor="email">
                 {language === 'hi' ? 'ईमेल' : language === 'mr' ? 'ईमेल' : 'Email'}
               </label>
               <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <input
@@ -473,8 +473,8 @@ export default function ProfileSetupForm({
                     if (errors.email) setErrors({ ...errors, email: '' });
                   }}
                   className={`w-full pl-9 pr-3 py-2 text-sm rounded-2xl border ${
-                    errors.email ? 'border-red-500 bg-red-50' : 'border-slate-300'
-                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                    errors.email ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+                  } bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all`}
                   placeholder="name@business.com"
                 />
               </div>
@@ -490,11 +490,11 @@ export default function ProfileSetupForm({
 
             {/* Language Dropdown */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-700" htmlFor="language">
+              <label className="text-xs font-semibold text-neutral-700" htmlFor="language">
                 {t('profile.setup.language', language)} <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                 </svg>
                 <select
@@ -505,15 +505,15 @@ export default function ProfileSetupForm({
                     if (errors.language) setErrors({ ...errors, language: '' });
                   }}
                   className={`w-full pl-9 pr-8 py-2 text-sm rounded-2xl border ${
-                    errors.language ? 'border-red-500 bg-red-50' : 'border-slate-300'
-                  } bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all`}
+                    errors.language ? 'border-red-500 bg-red-50' : 'border-neutral-300'
+                  } bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none transition-all`}
                   required
                 >
                   <option value="en">English</option>
                   <option value="hi">हिंदी (Hindi)</option>
                   <option value="mr">मराठी (Marathi)</option>
                 </select>
-                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -529,11 +529,11 @@ export default function ProfileSetupForm({
 
             {/* Business Type Dropdown */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-700" htmlFor="business_type">
+              <label className="text-xs font-semibold text-neutral-700" htmlFor="business_type">
                 {t('profile.setup.businessType', language)}
               </label>
               <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                 </svg>
                 <select
@@ -546,7 +546,7 @@ export default function ProfileSetupForm({
                       business_type: e.target.value as BusinessType,
                     })
                   }
-                  className="w-full pl-9 pr-8 py-2 text-sm rounded-2xl border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
+                  className="w-full pl-9 pr-8 py-2 text-sm rounded-2xl border border-neutral-300 bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none transition-all"
                 >
                   <option value="">
                     {language === 'hi' ? 'प्रकार चुनें' : language === 'mr' ? 'प्रकार निवडा' : 'Select type'}
@@ -567,7 +567,7 @@ export default function ProfileSetupForm({
                     {language === 'hi' ? 'अन्य' : language === 'mr' ? 'इतर' : 'Other'}
                   </option>
                 </select>
-                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -575,11 +575,11 @@ export default function ProfileSetupForm({
 
             {/* City Tier Dropdown */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-700" htmlFor="city_tier">
+              <label className="text-xs font-semibold text-neutral-700" htmlFor="city_tier">
                 {language === 'hi' ? 'शहर का स्तर' : language === 'mr' ? 'शहर स्तर' : 'City Tier'}
               </label>
               <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
                 <select
@@ -592,7 +592,7 @@ export default function ProfileSetupForm({
                       city: e.target.value as CityTier | undefined,
                     })
                   }
-                  className="w-full pl-9 pr-8 py-2 text-sm rounded-2xl border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all"
+                  className="w-full pl-9 pr-8 py-2 text-sm rounded-2xl border border-neutral-300 bg-white text-neutral-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none transition-all"
                 >
                   <option value="">
                     {language === 'hi' ? 'स्तर चुनें' : language === 'mr' ? 'स्तर निवडा' : 'Select tier'}
@@ -610,14 +610,14 @@ export default function ProfileSetupForm({
                     {language === 'hi' ? 'ग्रामीण' : language === 'mr' ? 'ग्रामीण' : 'Rural'}
                   </option>
                 </select>
-                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-4 border-t border-slate-100 pt-4">
+            <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-4 border-t border-neutral-100 pt-4">
               <Button
                 type="submit"
                 disabled={isSubmitting}

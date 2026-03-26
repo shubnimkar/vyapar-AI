@@ -67,7 +67,7 @@ export default function ExpenseAlertBanner({ alert, onDismiss, language }: Expen
         </div>
         <button
           onClick={onDismiss}
-          className="ml-4 text-gray-500 hover:text-gray-700 font-bold text-xl"
+          className="ml-4 text-neutral-500 hover:text-neutral-700 font-bold text-xl"
           aria-label={t.dismiss}
         >
           ×

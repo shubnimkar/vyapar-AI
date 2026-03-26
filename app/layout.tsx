@@ -52,7 +52,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#0b1a7d" />
         <link rel="icon" href="/favicon.ico" />
         {/* Material Symbols Outlined font */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

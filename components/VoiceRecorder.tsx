@@ -287,18 +287,18 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
 
   return (
     <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">
+      <h3 className="text-lg font-semibold text-neutral-800">
         {language === 'hi' ? 'वॉइस एंट्री' : 'Voice Entry'}
       </h3>
 
       {/* Waveform Visualization */}
       {isRecording && (
-        <div className="flex items-center justify-center h-20 bg-gray-50 rounded-2xl">
+        <div className="flex items-center justify-center h-20 bg-neutral-50 rounded-2xl">
           <div className="flex items-end space-x-1 h-16">
             {waveformData.map((value, index) => (
               <div
                 key={index}
-                className="w-2 bg-blue-500 rounded-t transition-all duration-100"
+                className="w-2 bg-primary-500 rounded-t transition-all duration-100"
                 style={{ height: `${Math.max(value * 100, 5)}%` }}
               />
             ))}
@@ -312,7 +312,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
           <span className="text-2xl font-mono text-red-600">
             {formatDuration(recordingDuration)}
           </span>
-          <span className="ml-2 text-sm text-gray-600">{t.recording}...</span>
+          <span className="ml-2 text-sm text-neutral-600">{t.recording}...</span>
         </div>
       )}
 
@@ -321,7 +321,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
         {!isRecording && !audioBlob && (
           <button
             onClick={startRecording}
-            className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-2xl hover:bg-blue-700 transition-colors font-medium"
+            className="flex-1 bg-primary-600 text-white py-3 px-4 rounded-2xl hover:bg-primary-700 transition-colors font-medium"
           >
             🎤 {t.record}
           </button>
@@ -348,7 +348,7 @@ export default function VoiceRecorder({ onDataExtracted, language }: VoiceRecord
 
       {/* Status Messages */}
       {uploadStatus === 'uploading' && (
-        <div className="text-center text-blue-600 font-medium">
+        <div className="text-center text-primary-600 font-medium">
           ⏳ {t.uploading}...
         </div>
       )}

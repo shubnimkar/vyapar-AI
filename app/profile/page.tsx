@@ -50,8 +50,8 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-          <p className="text-gray-600 font-medium">
+          <div className="animate-spin h-10 w-10 border-4 border-primary-500 border-t-transparent rounded-full"></div>
+          <p className="text-neutral-600 font-medium">
             {t('profile.loading', language)}
           </p>
         </div>
@@ -62,12 +62,12 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-white border-b border-neutral-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="w-24"></div>
             
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-neutral-900">
               {t('profile.title', language)}
             </h1>
             

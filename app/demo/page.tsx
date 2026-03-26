@@ -90,13 +90,13 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-container p-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-neutral-800 mb-2">
             Vyapar AI - Demo Data Loader
           </h1>
-          <p className="text-gray-600 mb-8">
+          <p className="text-neutral-600 mb-8">
             Load comprehensive demo data for all features to prepare for your presentation.
           </p>
 
@@ -104,7 +104,7 @@ export default function DemoPage() {
             <button
               onClick={loadDemoData}
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -119,7 +119,7 @@ export default function DemoPage() {
             <button
               onClick={verifyDemoData}
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
+              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-neutral-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
             >
               🔍 Verify Demo Data
             </button>
@@ -127,22 +127,22 @@ export default function DemoPage() {
             <button
               onClick={clearDemoData}
               disabled={loading}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
+              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-neutral-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
             >
               🧹 Clear Demo Data
             </button>
 
             <button
               onClick={() => router.push('/')}
-              className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
+              className="w-full bg-neutral-600 hover:bg-neutral-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
             >
               ← Back to Dashboard
             </button>
           </div>
 
           {status && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-4">
-              <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-4">
+              <pre className="text-sm text-neutral-800 whitespace-pre-wrap font-mono">
                 {status}
               </pre>
             </div>
@@ -155,11 +155,11 @@ export default function DemoPage() {
             </div>
           )}
 
-          <div className="mt-8 bg-gray-50 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+          <div className="mt-8 bg-neutral-50 rounded-lg p-6">
+            <h2 className="text-xl font-bold text-neutral-800 mb-4">
               📋 What Gets Loaded:
             </h2>
-            <ul className="space-y-2 text-gray-700">
+            <ul className="space-y-2 text-neutral-700">
               <li>✅ Demo user profile (Rajesh Sharma, Sharma Kirana Store)</li>
               <li>✅ 90 days of daily entries with realistic variance</li>
               <li>✅ 6 credit entries (3 overdue for Follow-up Panel)</li>
@@ -174,10 +174,10 @@ export default function DemoPage() {
           </div>
 
           <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+            <h2 className="text-xl font-bold text-neutral-800 mb-4">
               🎯 Demo Walkthrough:
             </h2>
-            <ol className="space-y-2 text-gray-700 list-decimal list-inside">
+            <ol className="space-y-2 text-neutral-700 list-decimal list-inside">
               <li>Load demo data using the button above</li>
               <li>Refresh the page to see all data populated</li>
               <li>Navigate to Dashboard to see health score and suggestions</li>

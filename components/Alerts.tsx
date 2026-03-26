@@ -18,7 +18,7 @@ export default function Alerts({ alerts, language }: AlertsProps) {
       case 'good':
         return 'bg-success-50 border-success-300 text-green-900';
       default:
-        return 'bg-primary-50 border-primary-300 text-blue-900';
+        return 'bg-primary-50 border-primary-300 text-primary-900';
     }
   };
 

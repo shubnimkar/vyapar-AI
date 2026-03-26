@@ -29,7 +29,7 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+      <h3 className="text-lg font-semibold text-neutral-800 mb-4">{title}</h3>
 
       <div className="space-y-4">
         <div className={`text-center py-2 ${getPerformanceColor()} font-semibold`}>
@@ -73,9 +73,9 @@ export default function Benchmark({ benchmark, language }: BenchmarkProps) {
 
         {/* Visual Bar */}
         <div className="relative pt-4">
-          <div className="h-8 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-8 bg-neutral-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-orange-400 via-blue-500 to-green-500"
+              className="h-full bg-gradient-to-r from-orange-400 via-primary-500 to-green-500"
               style={{
                 width: `${(benchmark.yourMetric / benchmark.topPerformers) * 100}%`,
               }}

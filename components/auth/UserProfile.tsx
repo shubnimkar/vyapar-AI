@@ -139,7 +139,7 @@ export default function UserProfile({ language }: UserProfileProps) {
     <div className="space-y-2">
       {/* Profile Card - Compact */}
       <div 
-        className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm"
+        className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white px-3 py-3 shadow-sm"
       >
         {/* Avatar */}
         <ProfileAvatar
@@ -151,11 +151,11 @@ export default function UserProfile({ language }: UserProfileProps) {
         
         {/* User Info */}
         <div className="flex-1 min-w-0">
-          <p className="truncate text-sm font-semibold text-slate-900">
+          <p className="truncate text-sm font-semibold text-neutral-900">
             {showBusinessProfile ? profileData!.userName : user.username}
           </p>
           {showBusinessProfile && profileData!.shopName && (
-            <p className="flex items-center gap-1 truncate text-xs text-slate-500">
+            <p className="flex items-center gap-1 truncate text-xs text-neutral-500">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
@@ -178,27 +178,27 @@ export default function UserProfile({ language }: UserProfileProps) {
 
   // Full page version
   const renderFullVersion = () => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-2xl shadow-base p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           {showBusinessProfile ? (
             <>
               {/* Shop Name */}
               <div className="mb-4">
-                <p className="text-sm text-gray-500 mb-1">
+                <p className="text-sm text-[#7a7c7e] mb-1">
                   {language === 'hi' ? 'दुकान का नाम' : language === 'mr' ? 'दुकानाचे नाव' : 'Shop Name'}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-[#1a1c1d]">
                   {profileData!.shopName}
                 </p>
               </div>
 
               {/* Owner Name */}
               <div className="mb-4">
-                <p className="text-sm text-gray-500 mb-1">
+                <p className="text-sm text-[#7a7c7e] mb-1">
                   {language === 'hi' ? 'मालिक का नाम' : language === 'mr' ? 'मालकाचे नाव' : 'Owner Name'}
                 </p>
-                <p className="text-lg font-semibold text-gray-700">
+                <p className="text-lg font-semibold text-[#4a4c4e]">
                   {profileData!.userName}
                 </p>
               </div>
@@ -206,7 +206,7 @@ export default function UserProfile({ language }: UserProfileProps) {
               {/* Business Details */}
               {(profileData!.businessType || profileData!.city) && (
                 <div className="mb-4">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#4a4c4e]">
                     {[
                       profileData!.businessType && (
                         language === 'hi' ? 
@@ -231,9 +231,9 @@ export default function UserProfile({ language }: UserProfileProps) {
               )}
 
               {/* Phone */}
-              <div className="pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-500 mb-1">{t('phoneNumber', language)}</p>
-                <p className="text-base text-gray-700">
+              <div className="pt-4 border-t border-[rgba(26,28,29,0.12)]">
+                <p className="text-sm text-[#7a7c7e] mb-1">{t('phoneNumber', language)}</p>
+                <p className="text-base text-[#4a4c4e]">
                   {profileData?.phoneNumber ? formatPhoneDisplay(profileData.phoneNumber) : 'Not provided'}
                 </p>
               </div>
@@ -241,20 +241,20 @@ export default function UserProfile({ language }: UserProfileProps) {
           ) : (
             <>
               {profileLoading && (
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-[#7a7c7e] mb-4">
                   {language === 'hi' ? 'प्रोफ़ाइल लोड हो रहा है...' : 
                    language === 'mr' ? 'प्रोफाइल लोड होत आहे...' : 
                    'Loading profile...'}
                 </p>
               )}
               
-              <p className="text-sm text-gray-500 mb-1">{t('phoneNumber', language)}</p>
-              <p className="text-lg font-semibold text-gray-900 mb-4">
+              <p className="text-sm text-[#7a7c7e] mb-1">{t('phoneNumber', language)}</p>
+              <p className="text-lg font-semibold text-[#1a1c1d] mb-4">
                 {profileData?.phoneNumber ? formatPhoneDisplay(profileData.phoneNumber) : 'Not provided'}
               </p>
               
               {profileError === 'connection' && (
-                <p className="text-sm text-amber-600 mb-4">
+                <p className="text-sm text-warning-600 mb-4">
                   {language === 'hi' ? 'कनेक्शन की समस्या' :
                    language === 'mr' ? 'कनेक्शन समस्या' :
                    'Connection issue'}
@@ -267,7 +267,7 @@ export default function UserProfile({ language }: UserProfileProps) {
         <div className="flex flex-col gap-2">
           <button
             onClick={() => router.push('/profile')}
-            className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-[rgba(11,26,125,0.40)] transition-colors"
           >
             {language === 'hi' ? 'संपादित करें' : language === 'mr' ? 'संपादित करा' : 'Edit Profile'}
           </button>

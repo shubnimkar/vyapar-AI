@@ -339,7 +339,7 @@ export default function CSVUpload({
         </div>
         <div>
           <h3 className="text-lg font-bold tracking-tight text-neutral-900">{t.title}</h3>
-          <p className="text-sm text-slate-500">{t.description}</p>
+          <p className="text-sm text-neutral-500">{t.description}</p>
         </div>
       </div>
 
@@ -410,7 +410,7 @@ export default function CSVUpload({
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-neutral-400 shadow-sm">
               <Upload className="h-7 w-7" />
             </div>
             <p className="mb-2 text-neutral-700">
@@ -422,7 +422,7 @@ export default function CSVUpload({
                 {t.browse}
               </button>
             </p>
-            <p className="text-sm text-slate-500">{t.maxSize}</p>
+            <p className="text-sm text-neutral-500">{t.maxSize}</p>
             <input
               ref={fileInputRef}
               type="file"
@@ -448,7 +448,7 @@ export default function CSVUpload({
               <FileText className="h-5 w-5" />
               {t.trySampleData}
             </button>
-            <p className="mt-1 text-center text-xs leading-5 text-slate-500">{t.sampleDataDesc}</p>
+            <p className="mt-1 text-center text-xs leading-5 text-neutral-500">{t.sampleDataDesc}</p>
           </div>
         </>
       )}
@@ -465,7 +465,7 @@ export default function CSVUpload({
       {uploadResult && !uploadResult.success && (
         <button
           onClick={handleReset}
-          className="mt-4 w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+          className="mt-4 w-full rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
         >
           {t.tryAgain}
         </button>

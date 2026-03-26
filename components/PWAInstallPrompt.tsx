@@ -82,63 +82,64 @@ export default function PWAInstallPrompt() {
 
   return (
     <div
-      className="fixed left-0 right-0 z-50 p-4 animate-in slide-in-from-bottom duration-base pointer-events-none"
-      style={{ bottom: '0', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+      className="fixed left-0 right-0 bottom-0 z-50 p-4 animate-in slide-in-from-bottom duration-base"
+      style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
       role="status"
       aria-live="polite"
       aria-atomic="true"
     >
-      <Card
-        elevation="elevated"
-        className={cn(
-          'max-w-md mx-auto',
-          'bg-gradient-to-r from-primary-600 to-primary-700',
-          'border-primary-500'
-        )}
-        // Allow interaction with buttons inside while the backdrop uses pointer-events-none.
-        style={{ pointerEvents: 'auto' }}
-      >
-        <div className="flex items-center gap-4">
-          {/* Icon */}
-          <div className="flex-shrink-0">
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
-              <Smartphone className="w-6 h-6 text-primary-600" />
+      <div className="mx-auto w-full max-w-xl">
+        <div
+          className={cn(
+            'bg-gradient-to-r from-primary-600 to-primary-700 border border-primary-500',
+            'rounded-t-3xl overflow-hidden shadow-lg'
+          )}
+        >
+          {/* Drag handle (visual affordance) */}
+          <div className="h-2 bg-white/25 mx-auto w-12 rounded-full mt-2 mb-4" aria-hidden="true" />
+
+          <div className="px-4 pb-4">
+            <div className="flex items-start gap-4">
+              {/* Icon */}
+              <div className="flex-shrink-0 mt-1">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
+                  <Smartphone className="w-6 h-6 text-primary-600" />
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg text-white mb-1">
+                  {t('ui.pwa.installTitle', language)}
+                </h3>
+                <p className="text-sm text-primary-100">
+                  {t('ui.pwa.installMessage', language)}
+                </p>
+              </div>
+
+              {/* Dismiss */}
+              <button
+                onClick={handleDismiss}
+                className={cn(
+                  'p-2 text-white hover:bg-white/10 rounded-2xl transition-colors',
+                  'min-w-[44px] min-h-[44px]',
+                  'focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600'
+                )}
+                aria-label={t('ui.pwa.later', language)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Actions: WhatsApp-like stacked CTA */}
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button onClick={handleInstall} variant="secondary" size="md" fullWidth>
+                {t('ui.pwa.install', language)}
+              </Button>
             </div>
           </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg text-white mb-1">
-              {t('ui.pwa.installTitle', language)}
-            </h3>
-            <p className="text-sm text-primary-100">
-              {t('ui.pwa.installMessage', language)}
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex-shrink-0 flex gap-2">
-            <Button
-              onClick={handleInstall}
-              variant="secondary"
-              size="md"
-            >
-              {t('ui.pwa.install', language)}
-            </Button>
-            <button
-              onClick={handleDismiss}
-              className={cn(
-                'p-2 text-white hover:bg-white/10 rounded-2xl transition-colors',
-                'min-w-[44px] min-h-[44px]',
-                'focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600'
-              )}
-              aria-label={t('ui.pwa.later', language)}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

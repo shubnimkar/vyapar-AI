@@ -51,10 +51,10 @@ export default function Toast({ message, type, onClose, duration = 3000 }: Toast
     },
     info: {
       icon: Info,
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-800',
-      iconColor: 'text-blue-600',
+      bgColor: 'bg-primary-50',
+      borderColor: 'border-primary-200',
+      textColor: 'text-primary-800',
+      iconColor: 'text-primary-600',
     },
   };
 

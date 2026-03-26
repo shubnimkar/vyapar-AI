@@ -94,24 +94,22 @@ export function Sidebar({ items, footer, className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        // Desktop-only display (Requirement 8.2)
         'hidden desktop:flex flex-col',
-        // Fixed width (Requirement 8.2)
         'w-60 h-screen',
-        // Background and border
-        'bg-white border-r border-neutral-200',
-        // Sticky positioning
+        // Level 1 surface — no border, tonal separation from page background
+        'bg-[#f3f3f5]',
         'sticky top-0',
         className
       )}
       aria-label="Main navigation"
     >
-      {/* Header section - aligned with main header */}
-      <div className="px-6 py-4 border-b border-neutral-200 flex-shrink-0">
-        <h2 className="text-sm font-bold text-neutral-900 tracking-wide">
-          VYAPAR AI
-        </h2>
-        <p className="text-xs text-neutral-500 mt-1">BUSINESS</p>
+      {/* Header — logo */}
+      <div className="px-4 py-4 flex-shrink-0">
+        <img
+          src="/background-removed.png"
+          alt="Vyapar AI"
+          style={{ height: 64, width: 'auto' }}
+        />
       </div>
 
       {/* Navigation items section */}
@@ -129,28 +127,19 @@ export function Sidebar({ items, footer, className }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                // Base styles
-                'flex items-center gap-3 px-4 py-3 rounded-2xl',
+                'flex items-center gap-3 px-4 py-3 rounded-xl',
                 'text-sm font-medium',
                 'transition-all duration-base',
-                // Minimum 44px touch target (Requirement 8.8)
                 'min-h-[44px]',
-                // Focus styles for keyboard navigation (Requirement 8.6)
-                'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
-                // Active state highlighting (Requirement 8.4)
+                'focus:outline-none focus:ring-2 focus:ring-[rgba(11,26,125,0.40)] focus:ring-offset-2',
+                // Active: Level 2 surface (white) + indigo accent — no border-l
                 isActive
-                  ? 'bg-primary-50 text-primary-700 border-l-4 border-primary-600'
-                  : 'text-neutral-700 hover:bg-neutral-50'
+                  ? 'bg-white text-[#0b1a7d] shadow-base'
+                  : 'text-[#4a4c4e] hover:bg-[#e8e8ea]'
               )}
               aria-current={isActive ? 'page' : undefined}
             >
-              {/* Icon with active state color */}
-              <span
-                className={cn(
-                  'flex-shrink-0',
-                  isActive ? 'text-primary-600' : 'text-neutral-500'
-                )}
-              >
+              <span className={cn('flex-shrink-0', isActive ? 'text-[#0b1a7d]' : 'text-[#7a7c7e]')}>
                 {item.icon}
               </span>
 
@@ -168,9 +157,9 @@ export function Sidebar({ items, footer, className }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer section for user profile (Requirement 8.7) */}
+      {/* Footer — no border, spacing creates separation */}
       {footer && (
-        <div className="p-4 border-t border-neutral-200">
+        <div className="p-4">
           {footer}
         </div>
       )}

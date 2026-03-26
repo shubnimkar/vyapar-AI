@@ -142,8 +142,8 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-neutral-600">
             {language === 'hi' ? 'लोड हो रहा है...' : language === 'mr' ? 'लोड होत आहे...' : 'Loading...'}
           </p>
         </div>
@@ -162,10 +162,10 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-container py-8 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-6">
             {t('settings.title', language)}
           </h1>
 
@@ -183,43 +183,43 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
 
           {/* Profile Information Section */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+            <h2 className="text-xl font-semibold text-neutral-800 mb-4 border-b pb-2">
               {t('settings.profile', language)}
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   {t('profile.setup.shopName', language)}
                 </label>
                 <input
                   type="text"
                   value={editableData.shopName}
                   onChange={(e) => handleFieldChange('shopName', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   {t('profile.setup.userName', language)}
                 </label>
                 <input
                   type="text"
                   value={editableData.userName}
                   onChange={(e) => handleFieldChange('userName', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   {t('profile.setup.language', language)}
                 </label>
                 <select
                   value={editableData.language}
                   onChange={(e) => handleFieldChange('language', e.target.value as Language)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="en">English</option>
                   <option value="hi">हिंदी (Hindi)</option>
@@ -228,13 +228,13 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   {t('profile.setup.businessType', language)}
                 </label>
                 <select
                   value={editableData.businessType}
                   onChange={(e) => handleFieldChange('businessType', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="">
                     {language === 'hi' ? 'चुनें' : language === 'mr' ? 'निवडा' : 'Select'}
@@ -248,14 +248,14 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   {t('profile.setup.city', language)}
                 </label>
                 <input
                   type="text"
                   value={editableData.city}
                   onChange={(e) => handleFieldChange('city', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-neutral-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -263,26 +263,26 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
 
           {/* Account Information Section (Read-only) */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+            <h2 className="text-xl font-semibold text-neutral-800 mb-4 border-b pb-2">
               {t('settings.account', language)}
             </h2>
             
-            <div className="space-y-3 bg-gray-50 p-4 rounded-md">
+            <div className="space-y-3 bg-neutral-50 p-4 rounded-md">
               <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-600">{t('settings.phone', language)}:</span>
-                <span className="text-sm text-gray-900">{profile.phoneNumber}</span>
+                <span className="text-sm font-medium text-neutral-600">{t('settings.phone', language)}:</span>
+                <span className="text-sm text-neutral-900">{profile.phoneNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-600">{t('settings.createdAt', language)}:</span>
-                <span className="text-sm text-gray-900">
+                <span className="text-sm font-medium text-neutral-600">{t('settings.createdAt', language)}:</span>
+                <span className="text-sm text-neutral-900">
                   {new Date(profile.createdAt).toLocaleDateString(
                     language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN'
                   )}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-600">{t('settings.lastActive', language)}:</span>
-                <span className="text-sm text-gray-900">
+                <span className="text-sm font-medium text-neutral-600">{t('settings.lastActive', language)}:</span>
+                <span className="text-sm text-neutral-900">
                   {new Date(profile.lastActiveAt).toLocaleDateString(
                     language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : 'en-IN'
                   )}
@@ -293,13 +293,13 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
 
           {/* Data Preferences Section */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">
+            <h2 className="text-xl font-semibold text-neutral-800 mb-4 border-b pb-2">
               {t('settings.preferences', language)}
             </h2>
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
                   {t('settings.retentionDays', language)}: {editableData.dataRetentionDays}
                 </label>
                 <input
@@ -309,9 +309,9 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
                   step="1"
                   value={editableData.dataRetentionDays}
                   onChange={(e) => handleFieldChange('dataRetentionDays', parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-2xl appearance-none cursor-pointer"
+                  className="w-full h-2 bg-neutral-200 rounded-2xl appearance-none cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className="flex justify-between text-xs text-neutral-500 mt-1">
                   <span>30</span>
                   <span>90</span>
                   <span>180</span>
@@ -319,12 +319,12 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-md">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-neutral-700">
                     {t('settings.autoArchive', language)}
                   </label>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-neutral-500 mt-1">
                     {language === 'hi' 
                       ? 'पुराना डेटा स्वचालित रूप से संग्रहित करें'
                       : language === 'mr'
@@ -339,16 +339,16 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
                     onChange={(e) => handleFieldChange('autoArchive', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                 </label>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-md">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium text-neutral-700">
                     {t('settings.notifications', language)}
                   </label>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-neutral-500 mt-1">
                     {language === 'hi' 
                       ? 'महत्वपूर्ण अपडेट के लिए सूचनाएं प्राप्त करें'
                       : language === 'mr'
@@ -363,7 +363,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
                     onChange={(e) => handleFieldChange('notificationsEnabled', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                 </label>
               </div>
             </div>
@@ -374,7 +374,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
             <button
               onClick={handleSave}
               disabled={!hasChanges || isSaving}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {isSaving 
                 ? (language === 'hi' ? 'सहेज रहा है...' : language === 'mr' ? 'जतन करत आहे...' : 'Saving...')

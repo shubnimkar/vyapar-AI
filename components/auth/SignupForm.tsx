@@ -210,15 +210,15 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
         </Card>
       )}
 
-      <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
-        <p className="text-sm font-semibold text-slate-900">
+      <div className="rounded-2xl bg-surface-low p-4">
+        <p className="text-sm font-semibold text-[#1a1c1d]">
           {language === 'hi'
             ? 'खाता विवरण'
             : language === 'mr'
               ? 'खातेची माहिती'
               : 'Account details'}
         </p>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-[#4a4c4e]">
           {language === 'hi'
             ? 'लॉगिन के लिए उपयोग होने वाली जानकारी भरें।'
             : language === 'mr'
@@ -228,7 +228,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
 
         <div className="mt-4 space-y-4">
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
+            <label className="mb-2 block text-sm font-semibold text-[#4a4c4e]">
               {t('usernameLabel', language)} <span className="text-error-500">*</span>
             </label>
             <div className="relative">
@@ -236,10 +236,10 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
                 type="text"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className={`w-full rounded-2xl border bg-white px-4 py-3.5 pr-12 text-base text-slate-900 transition-all duration-base placeholder:text-slate-400 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 ${
+                className={`w-full rounded-md border bg-white px-4 py-3.5 pr-12 text-base text-[#1a1c1d] transition-all duration-base placeholder:text-[#ababab] focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-neutral-50 ${
                   errors.username
                     ? 'border-error-500 focus:border-error-500 focus:ring-red-100'
-                    : 'border-slate-300 focus:border-primary-500 focus:ring-blue-100'
+                    : 'border-[rgba(26,28,29,0.20)] focus:border-[rgba(11,26,125,0.50)] focus:ring-[rgba(11,26,125,0.08)]'
                 }`}
                 placeholder={language === 'hi' ? 'उपयोगकर्ता नाम' : language === 'mr' ? 'वापरकर्ता नाव' : 'Username'}
                 disabled={loading}
@@ -274,15 +274,15 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
         </div>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
-        <p className="text-sm font-semibold text-slate-900">
+      <div className="rounded-2xl bg-surface-low p-4">
+        <p className="text-sm font-semibold text-[#1a1c1d]">
           {language === 'hi'
             ? 'सुरक्षा'
             : language === 'mr'
               ? 'सुरक्षा'
               : 'Security'}
         </p>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-[#4a4c4e]">
           {language === 'hi'
             ? 'मजबूत पासवर्ड बनाएं और उसकी पुष्टि करें।'
             : language === 'mr'
@@ -292,7 +292,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
 
         <div className="mt-4 space-y-4">
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">
+        <label className="block text-sm font-semibold text-[#4a4c4e] mb-2">
           {t('passwordLabel', language)} <span className="text-error-500">*</span>
         </label>
         <div className="relative">
@@ -300,8 +300,8 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
             type={showPassword ? 'text' : 'password'}
             value={formData.password}
             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            className={`w-full rounded-2xl border bg-white px-4 py-3.5 pr-12 text-base text-slate-900 transition-all duration-base placeholder:text-slate-400 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 ${
-              errors.password ? 'border-error-500 focus:border-error-500 focus:ring-red-100' : 'border-slate-300 focus:border-primary-500 focus:ring-blue-100'
+            className={`w-full rounded-md border bg-white px-4 py-3.5 pr-12 text-base text-[#1a1c1d] transition-all duration-base placeholder:text-[#ababab] focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-neutral-50 ${
+              errors.password ? 'border-error-500 focus:border-error-500 focus:ring-red-100' : 'border-[rgba(26,28,29,0.20)] focus:border-[rgba(11,26,125,0.50)] focus:ring-[rgba(11,26,125,0.08)]'
             }`}
             placeholder={language === 'hi' ? 'पासवर्ड' : language === 'mr' ? 'पासवर्ड' : 'Password'}
             disabled={loading}
@@ -309,7 +309,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#ababab] hover:text-[#4a4c4e] transition-colors"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -340,19 +340,19 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
             
             {/* Password Requirements */}
             <div className="space-y-1 text-xs">
-              <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? 'text-success-600' : 'text-slate-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasMinLength ? 'text-success-600' : 'text-[#7a7c7e]'}`}>
                 {passwordStrength.hasMinLength ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' कम से कम 8 अक्षर' : language === 'mr' ? ' किमान 8 वर्ण' : ' At least 8 characters'}
               </div>
-              <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? 'text-success-600' : 'text-slate-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasUppercase ? 'text-success-600' : 'text-[#7a7c7e]'}`}>
                 {passwordStrength.hasUppercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' एक बड़ा अक्षर (A-Z)' : language === 'mr' ? ' एक मोठे अक्षर (A-Z)' : ' One uppercase letter (A-Z)'}
               </div>
-              <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? 'text-success-600' : 'text-slate-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasLowercase ? 'text-success-600' : 'text-[#7a7c7e]'}`}>
                 {passwordStrength.hasLowercase ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' एक छोटा अक्षर (a-z)' : language === 'mr' ? ' एक लहान अक्षर (a-z)' : ' One lowercase letter (a-z)'}
               </div>
-              <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? 'text-success-600' : 'text-slate-500'}`}>
+              <div className={`flex items-center gap-1 ${passwordStrength.hasNumber ? 'text-success-600' : 'text-[#7a7c7e]'}`}>
                 {passwordStrength.hasNumber ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
                 {language === 'hi' ? ' एक संख्या (0-9)' : language === 'mr' ? ' एक संख्या (0-9)' : ' One number (0-9)'}
               </div>
@@ -367,7 +367,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
 
       {/* Confirm Password */}
       <div>
-        <label className="block text-sm font-semibold text-slate-700 mb-2">
+        <label className="block text-sm font-semibold text-[#4a4c4e] mb-2">
           {t('confirmPasswordLabel', language)} <span className="text-error-500">*</span>
         </label>
         <div className="relative">
@@ -375,14 +375,14 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
             type={showConfirmPassword ? 'text' : 'password'}
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-            className={`w-full rounded-2xl border bg-white px-4 py-3.5 pr-12 text-base text-slate-900 transition-all duration-base placeholder:text-slate-400 focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 ${
+            className={`w-full rounded-md border bg-white px-4 py-3.5 pr-12 text-base text-[#1a1c1d] transition-all duration-base placeholder:text-[#ababab] focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-neutral-50 ${
               errors.confirmPassword 
                 ? 'border-error-500 focus:border-error-500 focus:ring-red-100' 
                 : passwordsMatch === true 
                 ? 'border-success-500 focus:border-success-500 focus:ring-green-100' 
                 : passwordsMatch === false 
                 ? 'border-error-500 focus:border-error-500 focus:ring-red-100' 
-                : 'border-slate-300 focus:border-primary-500 focus:ring-blue-100'
+                : 'border-[rgba(26,28,29,0.20)] focus:border-[rgba(11,26,125,0.50)] focus:ring-[rgba(11,26,125,0.08)]'
             }`}
             placeholder={language === 'hi' ? 'पासवर्ड की पुष्टि करें' : language === 'mr' ? 'पासवर्डची पुष्टी करा' : 'Confirm password'}
             disabled={loading}
@@ -390,7 +390,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#ababab] hover:text-[#4a4c4e] transition-colors"
             tabIndex={-1}
           >
             {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -421,15 +421,15 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
         </div>
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
-        <p className="text-sm font-semibold text-slate-900">
+      <div className="rounded-2xl bg-surface-low p-4">
+        <p className="text-sm font-semibold text-[#1a1c1d]">
           {language === 'hi'
             ? 'व्यवसाय जानकारी'
             : language === 'mr'
               ? 'व्यवसाय माहिती'
               : 'Business information'}
         </p>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-[#4a4c4e]">
           {language === 'hi'
             ? 'यह जानकारी आपके व्यवसाय प्रोफ़ाइल और रिपोर्टिंग के लिए उपयोग होगी।'
             : language === 'mr'
@@ -502,7 +502,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
         loading={loading}
         fullWidth
         variant="primary"
-        className="min-h-[52px] rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-base font-semibold text-white shadow-[0_18px_32px_-18px_rgba(37,99,235,0.65)] hover:from-blue-700 hover:to-indigo-700 focus:ring-blue-500"
+        className="min-h-[52px] rounded-md text-base shadow-[0_8px_24px_0_rgba(11,26,125,0.20)]"
       >
         {loading 
           ? (language === 'hi' ? 'खाता बना रहे हैं...' : language === 'mr' ? 'खाते तयार करत आहे...' : 'Creating account...')

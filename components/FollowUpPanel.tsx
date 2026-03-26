@@ -503,7 +503,7 @@ export default function FollowUpPanel({
             <p className="text-body-sm mt-1">{t('followUp.collectionsSubtitle', language)}</p>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-50 border border-neutral-200">
-            <span className="size-2 rounded-full bg-slate-400 animate-pulse"></span>
+            <span className="size-2 rounded-full bg-neutral-400 animate-pulse"></span>
             <span className="text-xs font-semibold text-neutral-600 uppercase tracking-wider">{t('followUp.loading', language)}</span>
           </div>
         </div>
@@ -523,7 +523,7 @@ export default function FollowUpPanel({
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h2 className="text-section-heading text-neutral-900">{t('followUp.collectionsQueue', language)}</h2>
-          <p className="text-body-sm text-slate-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
+          <p className="text-body-sm text-neutral-500 mt-1">{t('followUp.collectionsSubtitle', language)}</p>
         </div>
         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
           syncStatus.status === 'synced' ? 'bg-emerald-50 border-emerald-100' :
@@ -531,12 +531,12 @@ export default function FollowUpPanel({
           'bg-neutral-50 border-neutral-200'
         }`}>
           {isSyncing ? (
-            <span className="size-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span className="size-2 rounded-full bg-primary-500 animate-pulse"></span>
           ) : (
             <span className={`size-2 rounded-full ${
               syncStatus.status === 'synced' ? 'bg-emerald-500' :
               syncStatus.status === 'pending' ? 'bg-yellow-500' :
-              'bg-slate-400'
+              'bg-neutral-400'
             }`}></span>
           )}
           <span className={`text-xs font-semibold uppercase tracking-wider ${
@@ -574,7 +574,7 @@ export default function FollowUpPanel({
       <div className="rounded-2xl border border-neutral-200 bg-white p-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Search className="absolute left-4 top-1/2 z-10 -translate-y-1/2 text-neutral-400 w-4 h-4" />
             <Input
               placeholder={t('followUp.searchPlaceholder', language)}
               value={searchQuery}
@@ -600,11 +600,11 @@ export default function FollowUpPanel({
 
         {visibleCredits.length === 0 && (
           <div className="rounded-2xl border border-neutral-200 p-8 text-center">
-            <CheckCircle2 className="mx-auto mb-4 size-10 text-slate-400" aria-hidden="true" />
+            <CheckCircle2 className="mx-auto mb-4 size-10 text-neutral-400" aria-hidden="true" />
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">
               {overdueCredits.length === 0 ? t('followUp.noOverdue', language) : t('followUp.noMatching', language)}
             </h3>
-            <p className="text-slate-500">
+            <p className="text-neutral-500">
               {overdueCredits.length === 0
                 ? t('followUp.noOverdue', language)
                 : t('followUp.tryAnotherSearch', language)}
@@ -624,7 +624,7 @@ export default function FollowUpPanel({
                     <div className="flex flex-col gap-3">
                       <h4 className="text-section-heading text-neutral-900">{credit.customerName}</h4>
                       <div className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between min-w-[320px] text-caption text-slate-500">
+                        <div className="flex items-center justify-between min-w-[320px] text-caption text-neutral-500">
                           <span>{t('entryDate', language)}: {formatDate(credit.dateGiven)}</span>
                           <span>{t('dueDate', language)}: {formatDate(credit.dueDate)}</span>
                         </div>
@@ -643,7 +643,7 @@ export default function FollowUpPanel({
                           </span>
                         </div>
                         {credit.lastReminderAt ? (
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-neutral-400">
                             {t('followUp.lastReminder', language)}: {formatDate(credit.lastReminderAt)}
                             {credit.daysSinceReminder !== null && (
                               <span className="ml-1">
@@ -652,7 +652,7 @@ export default function FollowUpPanel({
                             )}
                           </p>
                         ) : (
-                          <p className="text-xs text-slate-400">{t('followUp.neverReminded', language)}</p>
+                          <p className="text-xs text-neutral-400">{t('followUp.neverReminded', language)}</p>
                         )}
                       </div>
                     </div>
