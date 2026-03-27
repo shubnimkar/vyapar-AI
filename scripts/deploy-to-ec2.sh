@@ -179,8 +179,8 @@ server {
     gzip_min_length 1024;
     gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/json application/javascript;
     
-    # Client body size limit
-    client_max_body_size 10M;
+    # Client body size limit (must be >= BODY_SIZE_LIMITS.UPLOAD in lib/error-utils.ts)
+    client_max_body_size 55M;
     
     # Proxy to Next.js
     location / {
