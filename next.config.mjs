@@ -12,7 +12,7 @@ const nextConfig = {
   // This must be set here (next.config) for App Router — not in route.ts.
   experimental: {
     serverActions: {
-      bodySizeLimit: '15mb',
+      bodySizeLimit: '50mb',
     },
   },
   async headers() {
