@@ -44,7 +44,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
       vendor: "Vendor",
       items: "Items",
       clickToUpload: "Click to upload or take photo",
-      maxSize: "Max size: 5MB",
+      maxSize: "Max size: 50MB",
       pendingSaved: "Transaction added to pending review",
       viewPending: "View Pending Transactions",
       duplicate: "This transaction has already been added",
@@ -65,7 +65,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
       vendor: "दुकान",
       items: "वस्तुएं",
       clickToUpload: "फोटो लेने या अपलोड करने के लिए क्लिक करें",
-      maxSize: "अधिकतम आकार: 5MB",
+      maxSize: "अधिकतम आकार: 50MB",
       pendingSaved: "लेनदेन समीक्षा के लिए जोड़ा गया",
       viewPending: "लंबित लेनदेन देखें",
       duplicate: "यह लेनदेन पहले से जोड़ा जा चुका है",
@@ -86,7 +86,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
       vendor: "दुकान",
       items: "वस्तू",
       clickToUpload: "फोटो घेण्यासाठी किंवा अपलोड करण्यासाठी क्लिक करा",
-      maxSize: "कमाल आकार: 5MB",
+      maxSize: "कमाल आकार: 50MB",
       pendingSaved: "व्यवहार पुनरावलोकनासाठी जोडला",
       viewPending: "प्रलंबित व्यवहार पहा",
       duplicate: "हा व्यवहार आधीच जोडला गेला आहे",
@@ -155,7 +155,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
       if (!contentType.includes("application/json")) {
         throw new Error(
           response.status === 413
-            ? "Image is too large. Please use a photo under 10MB."
+            ? "Image is too large. Please use a photo under 50MB."
             : `Server error (${response.status}). Please try again.`
         );
       }
