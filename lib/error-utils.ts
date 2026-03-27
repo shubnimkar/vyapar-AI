@@ -143,7 +143,7 @@ export function logAndReturnError(
  * - DEFAULT: 1MB default limit for other endpoints
  */
 export const BODY_SIZE_LIMITS = {
-  UPLOAD: 10 * 1024 * 1024,  // 10MB for uploads
+  UPLOAD: 50 * 1024 * 1024,  // 10MB for uploads
   AI: 1 * 1024 * 1024,        // 1MB for AI endpoints
   DEFAULT: 1 * 1024 * 1024    // 1MB default
 };
