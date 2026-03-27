@@ -16,14 +16,6 @@ const nextConfig = {
       bodySizeLimit: '20mb',
     },
   },
-  // Override the default 4MB body size limit for all API routes.
-  // This is the correct way for Next.js App Router API route handlers.
-  api: {
-    bodyParser: {
-      sizeLimit: '20mb',
-    },
-    responseLimit: '20mb',
-  },
   async headers() {
     return [
       {
