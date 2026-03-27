@@ -80,7 +80,8 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
   }, [initialData]);
 
   const loadEntries = () => {
-    const localEntries = getLocalEntries();
+    const user = SessionManager.getCurrentUser();
+    const localEntries = getLocalEntries(user?.userId);
     setEntries(localEntries);
   };
 
@@ -170,9 +171,9 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
               totalExpense: expenseValue,
               cashInHand: cashValue,
               notes: notes || undefined,
-            }, true); // Mark as synced
+            }, true, user.userId); // Mark as synced
           } else {
-            createDailyEntry(date, salesValue, expenseValue, cashValue, notes || undefined, true); // Mark as synced
+            createDailyEntry(date, salesValue, expenseValue, cashValue, notes || undefined, true, user.userId); // Mark as synced
           }
           
           setSuccess(isEditing ? t('success.profileUpdated', language) : t('daily.syncSuccess', language));
@@ -189,9 +190,9 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
             totalExpense: expenseValue,
             cashInHand: cashValue,
             notes: notes || undefined,
-          }, false); // Mark as pending
+          }, false, user.userId); // Mark as pending
         } else {
-          createDailyEntry(date, salesValue, expenseValue, cashValue, notes || undefined, false); // Mark as pending
+          createDailyEntry(date, salesValue, expenseValue, cashValue, notes || undefined, false, user.userId); // Mark as pending
         }
         
         setSuccess(t('daily.offlineMode', language));
@@ -257,7 +258,7 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
       }
 
       // Always delete from localStorage
-      deleteLocalEntry(entryDate);
+      deleteLocalEntry(entryDate, user.userId);
       loadEntries();
       setSuccess(t('daily.deleteEntry', language));
       setTimeout(() => setSuccess(''), 3000);
@@ -306,7 +307,8 @@ export default function DailyEntryForm({ language, onEntrySubmitted, initialData
     }
   };
 
-  const syncStatus = getSyncStatus();
+  const currentUser = SessionManager.getCurrentUser();
+  const syncStatus = getSyncStatus(currentUser?.userId);
   const pendingCount = entries.filter(e => e.syncStatus === 'pending' || e.syncStatus === 'error').length;
 
   return (

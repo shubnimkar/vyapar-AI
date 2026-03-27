@@ -2,8 +2,10 @@
 // Prevents showing the same transaction multiple times
 
 import crypto from 'crypto';
-import { InferredTransaction } from './types';
+import { InferredTransaction, TransactionSource, TransactionType } from './types';
 import { getLocalPendingTransactions } from './pending-transaction-store';
+import { getLocalEntries as getLocalDailyEntries, LocalDailyEntry } from './daily-entry-sync';
+import { SessionManager } from './session-manager';
 
 /**
  * Check if a transaction is a duplicate
@@ -55,7 +57,7 @@ function checkPending(hash: string, transaction: Omit<InferredTransaction, 'id' 
   }
   
   try {
-    const pending = getLocalPendingTransactions();
+    const pending = getLocalPendingTransactions(SessionManager.getCurrentUser()?.userId);
     
     // Check if any pending transaction matches by ID or by data hash
     return pending.some(t => {
@@ -91,13 +93,7 @@ function checkRecentEntries(hash: string): boolean {
   }
   
   try {
-    // Get daily entries from localStorage
-    const dailyEntriesStr = localStorage.getItem('daily_entries');
-    if (!dailyEntriesStr) {
-      return false;
-    }
-    
-    const dailyEntries = JSON.parse(dailyEntriesStr);
+    const dailyEntries = getLocalDailyEntries(SessionManager.getCurrentUser()?.userId);
     
     // Calculate date 30 days ago
     const thirtyDaysAgo = new Date();
@@ -106,21 +102,31 @@ function checkRecentEntries(hash: string): boolean {
     
     // Check if any transaction in recent entries matches the hash
     for (const entry of dailyEntries) {
+      const transactions = (entry as LocalDailyEntry & {
+        transactions?: Array<{
+          amount: number;
+          type: TransactionType;
+          vendor_name?: string;
+          source?: TransactionSource;
+          category?: string;
+        }>;
+      }).transactions;
+
       // Skip entries older than 30 days
       if (entry.date < cutoffDate) {
         continue;
       }
       
       // Check if entry has transactions array
-      if (entry.transactions && Array.isArray(entry.transactions)) {
-        for (const txn of entry.transactions) {
+      if (transactions && Array.isArray(transactions)) {
+        for (const txn of transactions) {
           // Generate hash for this transaction
           const txnHash = generateHash({
             date: entry.date,
             amount: txn.amount,
             type: txn.type,
             vendor_name: txn.vendor_name,
-            source: txn.source || 'manual',
+            source: txn.source || 'receipt',
             category: txn.category
           });
           

@@ -275,6 +275,40 @@ export class DynamoDBService {
       throw new Error('Failed to scan table');
     }
   }
+
+  /**
+   * Query items by GSI1 partition key.
+   */
+  static async queryByGSI1(
+    gsi1pk: string,
+    gsi1skPrefix?: string
+  ): Promise<Record<string, any>[]> {
+    try {
+      const params: any = {
+        TableName: TABLE_NAME,
+        IndexName: 'GSI1',
+        KeyConditionExpression: 'GSI1PK = :gsi1pk',
+        ExpressionAttributeValues: {
+          ':gsi1pk': gsi1pk,
+        },
+      };
+
+      if (gsi1skPrefix) {
+        params.KeyConditionExpression += ' AND begins_with(GSI1SK, :gsi1skPrefix)';
+        params.ExpressionAttributeValues[':gsi1skPrefix'] = gsi1skPrefix;
+      }
+
+      const result = await docClient.send(new QueryCommand(params));
+      return result.Items || [];
+    } catch (error) {
+      if (isCredentialError(error)) {
+        logger.warn('AWS credentials not configured, returning empty GSI results');
+        return [];
+      }
+      logger.error('GSI query error', { error });
+      throw new Error('Failed to query items from DynamoDB GSI');
+    }
+  }
 }
 
 // ============================================
@@ -298,48 +332,90 @@ export interface UserProfile {
   updatedAt: string;
 }
 
+function profilePrimaryKey(userId: string): { pk: string; sk: string } {
+  return {
+    pk: generatePK('USER', userId),
+    sk: 'PROFILE#METADATA',
+  };
+}
+
+function profileLegacyKey(userId: string): { pk: string; sk: string } {
+  return {
+    pk: generatePK('PROFILE', userId),
+    sk: 'METADATA',
+  };
+}
+
+function mapProfileItem(item: Record<string, unknown>): UserProfile {
+  return {
+    userId: item.userId as string,
+    shopName: item.shopName as string,
+    userName: item.userName as string,
+    email: item.email as string | undefined,
+    avatarUrl: item.avatarUrl as string | undefined,
+    phoneNumber: item.phoneNumber as string | undefined,
+    language: item.language as string,
+    businessType: item.businessType as string | undefined,
+    city: item.city as string | undefined,
+    business_type: (item.business_type || item.businessType) as string | undefined,
+    city_tier: item.city_tier as string | null | undefined,
+    explanation_mode: (item.explanation_mode || 'simple') as string,
+    createdAt: (item.createdAt || new Date().toISOString()) as string,
+    updatedAt: (item.updatedAt || new Date().toISOString()) as string,
+  };
+}
+
 export class ProfileService {
   /**
    * Create or update user profile
    */
   static async saveProfile(profile: UserProfile): Promise<void> {
-    const item = {
-      PK: generatePK('PROFILE', profile.userId),
-      SK: 'METADATA',
+    const baseItem = {
       entityType: 'PROFILE',
       ...profile,
       createdAt: profile.createdAt || new Date().toISOString(),
     };
-    await DynamoDBService.putItem(item);
+    const primaryKey = profilePrimaryKey(profile.userId);
+    const legacyKey = profileLegacyKey(profile.userId);
+
+    await Promise.all([
+      DynamoDBService.putItem({
+        PK: primaryKey.pk,
+        SK: primaryKey.sk,
+        schemaVersion: 2,
+        ...baseItem,
+      }),
+      DynamoDBService.putItem({
+        PK: legacyKey.pk,
+        SK: legacyKey.sk,
+        ...baseItem,
+      }),
+    ]);
   }
 
   /**
    * Get user profile
    */
   static async getProfile(userId: string): Promise<UserProfile | null> {
-    const item = await DynamoDBService.getItem(
-      generatePK('PROFILE', userId),
-      'METADATA'
-    );
-    
-    if (!item) return null;
+    const primaryKey = profilePrimaryKey(userId);
+    const legacyKey = profileLegacyKey(userId);
 
-    return {
-      userId: item.userId as string,
-      shopName: item.shopName as string,
-      userName: item.userName as string,
-      email: item.email as string | undefined,
-      avatarUrl: item.avatarUrl as string | undefined,
-      phoneNumber: item.phoneNumber as string | undefined,
-      language: item.language as string,
-      businessType: item.businessType as string | undefined,
-      city: item.city as string | undefined,
-      business_type: (item.business_type || item.businessType) as string | undefined,
-      city_tier: item.city_tier as string | null | undefined,
-      explanation_mode: (item.explanation_mode || 'simple') as string,
-      createdAt: (item.createdAt || new Date().toISOString()) as string,
-      updatedAt: (item.updatedAt || new Date().toISOString()) as string,
-    };
+    const primary = await DynamoDBService.getItem(primaryKey.pk, primaryKey.sk);
+    if (primary) {
+      return mapProfileItem(primary);
+    }
+
+    const legacy = await DynamoDBService.getItem(legacyKey.pk, legacyKey.sk);
+    if (!legacy) return null;
+
+    const mapped = mapProfileItem(legacy);
+
+    // Opportunistically backfill the new shape during reads.
+    void this.saveProfile(mapped).catch((error) => {
+      logger.warn('Failed to backfill canonical profile record', { error, userId });
+    });
+
+    return mapped;
   }
 
   /**
@@ -349,21 +425,29 @@ export class ProfileService {
     userId: string,
     updates: Partial<UserProfile>
   ): Promise<void> {
-    await DynamoDBService.updateItem(
-      generatePK('PROFILE', userId),
-      'METADATA',
-      updates
-    );
+    const primaryKey = profilePrimaryKey(userId);
+    const legacyKey = profileLegacyKey(userId);
+
+    await Promise.all([
+      DynamoDBService.updateItem(primaryKey.pk, primaryKey.sk, {
+        ...updates,
+        schemaVersion: 2,
+      }),
+      DynamoDBService.updateItem(legacyKey.pk, legacyKey.sk, updates),
+    ]);
   }
 
   /**
    * Delete user profile
    */
   static async deleteProfile(userId: string): Promise<void> {
-    await DynamoDBService.deleteItem(
-      generatePK('PROFILE', userId),
-      'METADATA'
-    );
+    const primaryKey = profilePrimaryKey(userId);
+    const legacyKey = profileLegacyKey(userId);
+
+    await Promise.all([
+      DynamoDBService.deleteItem(primaryKey.pk, primaryKey.sk),
+      DynamoDBService.deleteItem(legacyKey.pk, legacyKey.sk),
+    ]);
   }
 
 
@@ -669,87 +753,180 @@ export interface UserRecord {
   loginCount: number;
 }
 
+function authPrimaryKey(userId: string): { pk: string; sk: string } {
+  return {
+    pk: generatePK('USER', userId),
+    sk: 'AUTH#METADATA',
+  };
+}
+
+function authLegacyKey(username: string): { pk: string; sk: string } {
+  return {
+    pk: generatePK('USER', username.toLowerCase()),
+    sk: 'METADATA',
+  };
+}
+
+function usernameLookupKey(username: string): { pk: string; sk: string } {
+  return {
+    pk: generatePK('USERNAME', username.toLowerCase()),
+    sk: 'METADATA',
+  };
+}
+
+function mapUserItem(item: Record<string, unknown>): UserRecord {
+  return {
+    userId: item.userId as string,
+    username: item.username as string,
+    email: item.email as string | undefined,
+    passwordHash: item.passwordHash as string,
+    createdAt: item.createdAt as string,
+    updatedAt: item.updatedAt as string,
+    lastLoginAt: item.lastLoginAt as string | undefined,
+    loginCount: (item.loginCount as number) || 0,
+  };
+}
+
 export class UserService {
   /**
    * Create user account
    */
   static async createUser(user: UserRecord): Promise<void> {
-    const item = {
-      PK: generatePK('USER', user.username.toLowerCase()),
-      SK: 'METADATA',
+    const baseItem = {
+      ...user,
+      createdAt: user.createdAt || new Date().toISOString(),
+      loginCount: user.loginCount || 0,
+    };
+
+    const legacyItem = {
+      PK: authLegacyKey(user.username).pk,
+      SK: authLegacyKey(user.username).sk,
       entityType: 'USER',
       GSI1PK: generatePK('USER', user.userId),
       GSI1SK: 'METADATA',
-      ...user,
-      createdAt: user.createdAt || new Date().toISOString(),
-      loginCount: 0,
+      ...baseItem,
     };
-    await DynamoDBService.putItem(item);
+
+    const canonicalItem = {
+      PK: authPrimaryKey(user.userId).pk,
+      SK: authPrimaryKey(user.userId).sk,
+      entityType: 'AUTH_USER',
+      schemaVersion: 2,
+      ...baseItem,
+    };
+
+    const usernameLookupItem = {
+      PK: usernameLookupKey(user.username).pk,
+      SK: usernameLookupKey(user.username).sk,
+      entityType: 'USERNAME_LOOKUP',
+      userId: user.userId,
+      username: user.username,
+      email: user.email,
+      createdAt: baseItem.createdAt,
+      updatedAt: user.updatedAt,
+    };
+
+    await Promise.all([
+      DynamoDBService.putItem(legacyItem),
+      DynamoDBService.putItem(canonicalItem),
+      DynamoDBService.putItem(usernameLookupItem),
+    ]);
   }
 
   /**
    * Get user by username (case-insensitive)
    */
   static async getUserByUsername(username: string): Promise<UserRecord | null> {
-    const item = await DynamoDBService.getItem(
-      generatePK('USER', username.toLowerCase()),
-      'METADATA'
+    const lookup = await DynamoDBService.getItem(
+      usernameLookupKey(username).pk,
+      usernameLookupKey(username).sk
     );
-    
-    if (!item) return null;
 
-    return {
-      userId: item.userId as string,
-      username: item.username as string,
-      email: item.email as string | undefined,
-      passwordHash: item.passwordHash as string,
-      createdAt: item.createdAt as string,
-      updatedAt: item.updatedAt as string,
-      lastLoginAt: item.lastLoginAt as string | undefined,
-      loginCount: (item.loginCount as number) || 0,
-    };
+    if (lookup?.userId) {
+      const canonical = await this.getUserById(lookup.userId as string);
+      if (canonical) {
+        return canonical;
+      }
+    }
+
+    const legacy = await DynamoDBService.getItem(
+      authLegacyKey(username).pk,
+      authLegacyKey(username).sk
+    );
+
+    if (!legacy) return null;
+
+    const mapped = mapUserItem(legacy);
+
+    // Opportunistically backfill canonical auth + username lookup.
+    void this.createUser(mapped).catch((error) => {
+      logger.warn('Failed to backfill canonical auth record', {
+        error,
+        userId: mapped.userId,
+        username: mapped.username,
+      });
+    });
+
+    return mapped;
   }
 
   /**
    * Get user by userId
    */
   static async getUserById(userId: string): Promise<UserRecord | null> {
-    // Query GSI1 for userId lookup
-    const items = await DynamoDBService.queryByPK(
+    const canonical = await DynamoDBService.getItem(
+      authPrimaryKey(userId).pk,
+      authPrimaryKey(userId).sk
+    );
+
+    if (canonical) {
+      return mapUserItem(canonical);
+    }
+
+    const items = await DynamoDBService.queryByGSI1(
       generatePK('USER', userId),
-      undefined
+      'METADATA'
     );
     
     if (!items || items.length === 0) return null;
     
-    const item = items[0];
-    return {
-      userId: item.userId as string,
-      username: item.username as string,
-      email: item.email as string | undefined,
-      passwordHash: item.passwordHash as string,
-      createdAt: item.createdAt as string,
-      updatedAt: item.updatedAt as string,
-      lastLoginAt: item.lastLoginAt as string | undefined,
-      loginCount: (item.loginCount as number) || 0,
-    };
+    const mapped = mapUserItem(items[0]);
+
+    void this.createUser(mapped).catch((error) => {
+      logger.warn('Failed to backfill canonical auth record from userId lookup', {
+        error,
+        userId: mapped.userId,
+        username: mapped.username,
+      });
+    });
+
+    return mapped;
   }
 
   /**
    * Update login statistics
    */
-  static async updateLoginStats(_userId: string, username: string): Promise<void> {
+  static async updateLoginStats(userId: string, username: string): Promise<void> {
     const user = await this.getUserByUsername(username);
     if (!user) return;
 
-    await DynamoDBService.updateItem(
-      generatePK('USER', username.toLowerCase()),
-      'METADATA',
-      {
-        lastLoginAt: new Date().toISOString(),
-        loginCount: (user.loginCount || 0) + 1,
-      }
-    );
+    const updates = {
+      lastLoginAt: new Date().toISOString(),
+      loginCount: (user.loginCount || 0) + 1,
+    };
+
+    await Promise.all([
+      DynamoDBService.updateItem(
+        authLegacyKey(username).pk,
+        authLegacyKey(username).sk,
+        updates
+      ),
+      DynamoDBService.updateItem(
+        authPrimaryKey(userId).pk,
+        authPrimaryKey(userId).sk,
+        updates
+      ),
+    ]);
   }
 
   /**
@@ -761,9 +938,29 @@ export class UserService {
   }
 
   static async updateEmail(username: string, email: string | null): Promise<void> {
-    await DynamoDBService.updateItem(generatePK('USER', username.toLowerCase()), 'METADATA', {
+    const user = await this.getUserByUsername(username);
+    if (!user) {
+      return;
+    }
+
+    const updates = {
       email: email || undefined,
-    });
+    };
+
+    await Promise.all([
+      DynamoDBService.updateItem(authLegacyKey(username).pk, authLegacyKey(username).sk, updates),
+      DynamoDBService.updateItem(authPrimaryKey(user.userId).pk, authPrimaryKey(user.userId).sk, updates),
+      DynamoDBService.putItem({
+        PK: usernameLookupKey(username).pk,
+        SK: usernameLookupKey(username).sk,
+        entityType: 'USERNAME_LOOKUP',
+        userId: user.userId,
+        username: user.username,
+        email: email || undefined,
+        createdAt: user.createdAt,
+        updatedAt: new Date().toISOString(),
+      }),
+    ]);
   }
 }
 

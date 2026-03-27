@@ -7,6 +7,7 @@ import {
   removePendingTransaction,
   updatePendingTransaction,
 } from '@/lib/pending-transaction-store';
+import { SessionManager } from '@/lib/session-manager';
 import {
   Building2,
   Check,
@@ -110,7 +111,7 @@ export default function PendingTransactionConfirmation({
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const loadTransactions = useCallback(() => {
-    setTransactions(getLocalPendingTransactions());
+    setTransactions(getLocalPendingTransactions(SessionManager.getCurrentUser()?.userId));
   }, []);
 
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function PendingTransactionConfirmation({
     setLoadingId(transaction.id);
     try {
       if (onAdd) await onAdd(transaction);
-      removePendingTransaction(transaction.id);
+      removePendingTransaction(transaction.id, SessionManager.getCurrentUser()?.userId);
       loadTransactions();
     } catch {
       // Parent handles toast/error state.
@@ -135,14 +136,14 @@ export default function PendingTransactionConfirmation({
   };
 
   const handleLater = (transaction: InferredTransaction) => {
-    updatePendingTransaction(transaction.id, { deferred_at: new Date().toISOString() });
+    updatePendingTransaction(transaction.id, { deferred_at: new Date().toISOString() }, SessionManager.getCurrentUser()?.userId);
     if (onLater) onLater(transaction);
     loadTransactions();
   };
 
   const handleDiscard = (transaction: InferredTransaction) => {
     if (onDiscard) onDiscard(transaction);
-    removePendingTransaction(transaction.id);
+    removePendingTransaction(transaction.id, SessionManager.getCurrentUser()?.userId);
     loadTransactions();
   };
 

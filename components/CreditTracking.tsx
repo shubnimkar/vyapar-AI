@@ -60,7 +60,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
   }, []);
 
   const loadEntries = () => {
-    const localEntries = getLocalEntries();
+    const localEntries = getLocalEntries(userId);
     setEntries(localEntries);
     
     const calculatedSummary = calculateCreditSummary(localEntries);
@@ -132,7 +132,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           syncStatus: 'synced' as const,
           lastSyncAttempt: new Date().toISOString(),
         };
-        saveLocalEntry(localEntry);
+        saveLocalEntry(localEntry, userId);
         logger.info('[CreditTracking] Entry synced to cloud');
       } else {
         throw new Error(data.error || 'Failed to sync');
@@ -140,7 +140,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     } catch (error) {
       logger.error('[CreditTracking] Failed to sync, saving offline', { error });
       // API call failed - save to localStorage as pending with the SAME ID
-      createCreditEntry(customerName, parseFloat(amount), dueDate, today, phoneNumber || undefined, false);
+      createCreditEntry(customerName, parseFloat(amount), dueDate, today, phoneNumber || undefined, false, userId);
     }
 
     // Reload entries and reset form
@@ -184,7 +184,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
           lastSyncAttempt: new Date().toISOString(),
           paidAt: data.data.paidDate, // Alias for backward compatibility
         };
-        saveLocalEntry(localEntry);
+        saveLocalEntry(localEntry, userId);
         logger.info('[CreditTracking] Entry marked paid and synced');
       } else {
         throw new Error(data.error || 'Failed to sync');
@@ -192,7 +192,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
     } catch (error) {
       logger.error('[CreditTracking] Failed to sync, saving offline', { error });
       // API call failed - update localStorage as pending
-      updateCreditEntry(id, { isPaid: true, paidAt: new Date().toISOString() }, false);
+      updateCreditEntry(id, { isPaid: true, paidAt: new Date().toISOString() }, false, userId);
     }
 
     // Reload entries
@@ -239,7 +239,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       logger.error('[CreditTracking] Failed to delete from cloud', { error });
     } finally {
       // Delete from localStorage regardless
-      deleteLocalEntry(deleteTarget);
+      deleteLocalEntry(deleteTarget, userId);
 
       // Reload entries
       loadEntries();

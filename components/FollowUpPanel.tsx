@@ -26,6 +26,7 @@ import { generateReminderLink } from '@/lib/whatsapp-link-generator';
 import { recordReminder } from '@/lib/reminder-tracker';
 import { t } from '@/lib/translations';
 import { logger } from '@/lib/logger';
+import { getProfileLocalFirst } from '@/lib/profile-sync';
 import type { CreditEntry, OverdueCredit, Language } from '@/lib/types';
 
 interface FollowUpPanelProps {
@@ -145,11 +146,10 @@ export default function FollowUpPanel({
   useEffect(() => {
     const loadShopName = async () => {
       try {
-        const response = await fetch(`/api/profile?userId=${userId}`);
-        const result = await response.json();
+        const profile = await getProfileLocalFirst(userId);
 
-        if (result.success && result.data?.shopName) {
-          setShopName(result.data.shopName);
+        if (profile?.shopName) {
+          setShopName(profile.shopName);
           return;
         }
 
@@ -183,7 +183,7 @@ export default function FollowUpPanel({
       
       // Load from localStorage via credit-sync (offline-first)
       // LocalCreditEntry omits userId — all entries in localStorage belong to the current user
-      const allCredits = getLocalEntries();
+      const allCredits = getLocalEntries(userId);
       
       // Use Credit Manager to calculate and sort overdue credits (deterministic)
       const overdue = getOverdueCredits(allCredits as unknown as Parameters<typeof getOverdueCredits>[0], overdueThreshold);
@@ -417,7 +417,7 @@ export default function FollowUpPanel({
       
       // Update credit entry (optimistic update)
       // This works offline - updates localStorage and marks for sync
-      markCreditAsPaid(credit.id, false);
+      markCreditAsPaid(credit.id, false, userId);
 
       // Reload credits to remove from overdue list
       loadCredits();
@@ -455,7 +455,7 @@ export default function FollowUpPanel({
           const result = await response.json();
           if (response.ok && result.success) {
             // Mark as synced in localStorage
-            updateCreditEntry(credit.id, { isPaid: true, paidAt: new Date().toISOString() }, true);
+            updateCreditEntry(credit.id, { isPaid: true, paidAt: new Date().toISOString() }, true, userId);
             loadSyncStatus();
             logger.info('Credit payment synced to DynamoDB', { userId, creditId: credit.id });
           } else {

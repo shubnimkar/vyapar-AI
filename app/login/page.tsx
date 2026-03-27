@@ -9,8 +9,7 @@ import VyaparLogo from '@/components/VyaparLogo';
 import { SessionManager } from '@/lib/session-manager';
 import { Language } from '@/lib/types';
 import { t } from '@/lib/translations';
-import { fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
-import { fullSync as creditFullSync } from '@/lib/credit-sync';
+import { fullAppSync } from '@/lib/app-sync';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -63,7 +62,7 @@ export default function LoginPage() {
       const result = await res.json();
       if (result.success && result.user) {
         SessionManager.saveSession(SessionManager.createSession(result.user.id, result.user.username, rememberDevice));
-        try { await Promise.all([dailyFullSync(result.user.id).catch(() => null), creditFullSync(result.user.id).catch(() => null)]); } catch { /* non-blocking */ }
+        try { await fullAppSync(result.user.id, language); } catch { /* non-blocking */ }
         router.push('/');
       } else {
         if (res.status === 401) { setError(t('authenticationFailed', language)); return; }

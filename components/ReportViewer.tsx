@@ -7,6 +7,11 @@ import { Card } from '@/components/ui/Card';
 import { getLocalEntries } from '@/lib/daily-entry-sync';
 import { DailyReport, Language, ReportsListResponse } from '@/lib/types';
 import { logger } from '@/lib/logger';
+import {
+  cacheReportPreferences,
+  cacheReports,
+  getReportsLocalFirst,
+} from '@/lib/report-sync';
 
 interface ReportViewerProps {
   userId: string;
@@ -237,9 +242,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/reports?userId=${encodeURIComponent(userId)}&language=${encodeURIComponent(language)}`);
-      const result: ReportsListResponse = await response.json();
-
+      const result: ReportsListResponse = await getReportsLocalFirst(userId, language);
       if (!result.success) {
         throw new Error(result.error || t.loadFailed);
       }
@@ -295,6 +298,13 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
       setAutomationEnabled(Boolean(result.data?.automationEnabled));
       setReportTime(result.data?.reportTime || reportTime);
+      cacheReportPreferences({
+        userId,
+        automationEnabled: Boolean(result.data?.automationEnabled),
+        reportTime: result.data?.reportTime || reportTime,
+        language,
+        updatedAt: new Date().toISOString(),
+      });
       setNotice(t.preferencesSaved);
     } catch (saveError) {
       logger.error('Failed to save report preferences', { saveError, userId });
@@ -317,7 +327,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
           userId,
           language,
           reportType: selectedGenerateType,
-          dailyEntries: getLocalEntries(),
+          dailyEntries: getLocalEntries(userId),
         }),
       });
 
@@ -327,6 +337,10 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         throw new Error(result.error || t.generateFailed);
       }
 
+      if (result.data) {
+        const currentReports = await getReportsLocalFirst(userId, language);
+        cacheReports(userId, language, [result.data, ...(currentReports.data || []).filter((report) => report.id !== result.data.id)]);
+      }
       await fetchReports('refresh');
       setNotice(t.generatedSuccess);
 

@@ -8,6 +8,7 @@ import { t } from '@/lib/translations';
 import ProfileAvatar from './ui/ProfileAvatar';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
+import { getProfileLocalFirst } from '@/lib/profile-sync';
 
 interface ProfileContentProps {
   language: Language;
@@ -31,11 +32,10 @@ export default function ProfileContent({ language, user, showBackButton = false 
     setFetchError(false);
     setLoading(true);
     try {
-      const response = await fetch(`/api/profile?userId=${userId}`);
-      const result = await response.json();
-      
-      if (result.success && result.data) {
-        setProfileData(result.data);
+      const profile = await getProfileLocalFirst(userId);
+
+      if (profile) {
+        setProfileData(profile);
       } else {
         setProfileData(null);
         setFetchError(true);

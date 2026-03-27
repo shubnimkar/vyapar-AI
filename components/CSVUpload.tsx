@@ -8,6 +8,7 @@ import { isDuplicate } from '@/lib/duplicate-detector';
 import { InferredTransaction } from '@/lib/types';
 import { getDemoDataPaths } from '@/lib/demo-data-index';
 import { resolveProfileForDemoData } from '@/lib/demo-profile-resolver';
+import { SessionManager } from '@/lib/session-manager';
 
 interface CSVUploadProps {
   language: Language;
@@ -181,7 +182,7 @@ export default function CSVUpload({
       if (result.transactions && Array.isArray(result.transactions)) {
         for (const txn of result.transactions as InferredTransaction[]) {
           if (!isDuplicate(txn)) {
-            const saved = savePendingTransaction(txn);
+            const saved = savePendingTransaction(txn, SessionManager.getCurrentUser()?.userId);
             if (saved) savedCount++;
           }
         }
@@ -294,7 +295,7 @@ export default function CSVUpload({
           if (result.transactions && Array.isArray(result.transactions)) {
             for (const txn of result.transactions as InferredTransaction[]) {
               if (!isDuplicate(txn)) {
-                const saved = savePendingTransaction(txn);
+                const saved = savePendingTransaction(txn, SessionManager.getCurrentUser()?.userId);
                 if (saved) totalValid++;
               }
             }

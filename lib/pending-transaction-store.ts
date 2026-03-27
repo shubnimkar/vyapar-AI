@@ -2,6 +2,7 @@
 // Manages pending inferred transactions in localStorage
 
 import { InferredTransaction } from './types';
+import { resolveUserScopedKey } from './user-scoped-storage';
 
 const STORAGE_KEY = 'pending_transactions';
 const MAX_PENDING_TRANSACTIONS = 100;
@@ -14,13 +15,13 @@ interface PendingTransactionStore {
 /**
  * Get all pending transactions sorted by created_at descending (newest first)
  */
-export function getLocalPendingTransactions(): InferredTransaction[] {
+export function getLocalPendingTransactions(userId?: string): InferredTransaction[] {
   if (typeof window === 'undefined') {
     return [];
   }
 
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(resolveUserScopedKey(STORAGE_KEY, userId));
     if (!stored) {
       return [];
     }
@@ -50,13 +51,13 @@ function notifyStorageUpdate() {
  * Save a new pending transaction to localStorage
  * Enforces maximum 100 pending transactions limit
  */
-export function savePendingTransaction(transaction: InferredTransaction): boolean {
+export function savePendingTransaction(transaction: InferredTransaction, userId?: string): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
 
   try {
-    const existing = getLocalPendingTransactions();
+    const existing = getLocalPendingTransactions(userId);
     
     // Check limit
     if (existing.length >= MAX_PENDING_TRANSACTIONS) {
@@ -72,7 +73,7 @@ export function savePendingTransaction(transaction: InferredTransaction): boolea
       last_updated: new Date().toISOString()
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    localStorage.setItem(resolveUserScopedKey(STORAGE_KEY, userId), JSON.stringify(store));
     notifyStorageUpdate();
     return true;
   } catch (error) {
@@ -86,14 +87,15 @@ export function savePendingTransaction(transaction: InferredTransaction): boolea
  */
 export function updatePendingTransaction(
   id: string, 
-  updates: Partial<InferredTransaction>
+  updates: Partial<InferredTransaction>,
+  userId?: string
 ): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
 
   try {
-    const transactions = getLocalPendingTransactions();
+    const transactions = getLocalPendingTransactions(userId);
     const index = transactions.findIndex(t => t.id === id);
     
     if (index === -1) {
@@ -112,7 +114,7 @@ export function updatePendingTransaction(
       last_updated: new Date().toISOString()
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    localStorage.setItem(resolveUserScopedKey(STORAGE_KEY, userId), JSON.stringify(store));
     notifyStorageUpdate();
     return true;
   } catch (error) {
@@ -124,13 +126,13 @@ export function updatePendingTransaction(
 /**
  * Remove a pending transaction from localStorage
  */
-export function removePendingTransaction(id: string): boolean {
+export function removePendingTransaction(id: string, userId?: string): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
 
   try {
-    const transactions = getLocalPendingTransactions();
+    const transactions = getLocalPendingTransactions(userId);
     const filtered = transactions.filter(t => t.id !== id);
     
     if (filtered.length === transactions.length) {
@@ -143,7 +145,7 @@ export function removePendingTransaction(id: string): boolean {
       last_updated: new Date().toISOString()
     };
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    localStorage.setItem(resolveUserScopedKey(STORAGE_KEY, userId), JSON.stringify(store));
     notifyStorageUpdate();
     return true;
   } catch (error) {

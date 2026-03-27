@@ -6,6 +6,7 @@ import { t } from '@/lib/translations';
 import { SessionManager } from '@/lib/session-manager';
 import AccountDeletion from './AccountDeletion';
 import { logger } from '@/lib/logger';
+import { cacheProfile, getProfileLocalFirst } from '@/lib/profile-sync';
 
 interface UserSettingsProps {
   language: Language;
@@ -49,23 +50,22 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
         return;
       }
 
-      const response = await fetch(`/api/profile?userId=${currentUser.userId}`);
-      const result = await response.json();
+      const profileData = await getProfileLocalFirst(currentUser.userId);
 
-      if (result.success && result.data) {
-        setProfile(result.data);
+      if (profileData) {
+        setProfile(profileData);
         setEditableData({
-          shopName: result.data.shopName,
-          userName: result.data.userName,
-          language: result.data.language,
-          businessType: result.data.businessType || '',
-          city: result.data.city || '',
-          dataRetentionDays: result.data.preferences.dataRetentionDays,
-          autoArchive: result.data.preferences.autoArchive,
-          notificationsEnabled: result.data.preferences.notificationsEnabled,
+          shopName: profileData.shopName,
+          userName: profileData.userName,
+          language: profileData.language,
+          businessType: profileData.businessType || '',
+          city: profileData.city || '',
+          dataRetentionDays: profileData.preferences.dataRetentionDays,
+          autoArchive: profileData.preferences.autoArchive,
+          notificationsEnabled: profileData.preferences.notificationsEnabled,
         });
       } else {
-        setError(result.error || t('error.profileUpdateFailed', language));
+        setError(t('error.profileUpdateFailed', language));
       }
     } catch (err) {
       logger.error('[UserSettings] Error fetching profile', { error: err });
@@ -117,6 +117,7 @@ export default function UserSettings({ language, onLanguageChange }: UserSetting
 
       if (result.success) {
         setProfile(result.data);
+        cacheProfile(result.data);
         setHasChanges(false);
         
         // Update language if changed (must happen before success message)

@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import ProfileAvatar from './ui/ProfileAvatar';
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
+import { cacheProfile } from '@/lib/profile-sync';
 
 interface ProfileSetupFormProps {
   phoneNumber: string;
@@ -204,6 +205,9 @@ export default function ProfileSetupForm({
       const result = await response.json();
 
       if (result.success) {
+        if (result.data) {
+          cacheProfile(result.data);
+        }
         if (formData.language) {
           localStorage.setItem('vyapar-lang', formData.language);
           window.dispatchEvent(new Event('vyapar-lang-changed'));

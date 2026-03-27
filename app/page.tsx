@@ -47,12 +47,16 @@ import {
   Heart,
 } from 'lucide-react';
 import { SessionManager } from '@/lib/session-manager';
-import { getLocalEntries as getLocalDailyEntries, fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
-import { getLocalEntries as getLocalCreditEntries, fullSync as creditFullSync } from '@/lib/credit-sync';
+import { getLocalEntries as getLocalDailyEntries } from '@/lib/daily-entry-sync';
+import { getLocalEntries as getLocalCreditEntries } from '@/lib/credit-sync';
 import { getLocalPendingTransactions } from '@/lib/pending-transaction-store';
 import { calculateCreditSummary, calculateHealthScore } from '@/lib/calculations';
 import { usePendingTransactionCount } from '@/lib/hooks/usePendingTransactionCount';
 import { resolveProfileForDemoData } from '@/lib/demo-profile-resolver';
+import { fullAppSync } from '@/lib/app-sync';
+import { getProfileLocalFirst } from '@/lib/profile-sync';
+import { getReportsLocalFirst } from '@/lib/report-sync';
+import { isUserScopedKey } from '@/lib/user-scoped-storage';
 import IndicesDashboard from '@/components/IndicesDashboard';
 import BenchmarkDisplay from '@/components/BenchmarkDisplay';
 import CashFlowPredictor from '@/components/CashFlowPredictor';
@@ -189,22 +193,16 @@ export default function Home() {
         setUser(currentUser);
 
         try {
+          const preferredLanguage =
+            (typeof window !== 'undefined' && (localStorage.getItem('vyapar-lang') as Language | null)) ||
+            language;
+
           // Perform a full hybrid sync to ensure local stores and cloud are consistent
-          const [dailyResult, creditResult] = await Promise.all([
-            dailyFullSync(currentUser.userId).catch((error) => {
-              logger.warn('Initial daily full sync failed', { error });
-              return { pulled: 0, pushed: 0, failed: 1 };
-            }),
-            creditFullSync(currentUser.userId).catch((error) => {
-              logger.warn('Initial credit full sync failed', { error });
-              return { pulled: 0, pushed: 0, failed: 1 };
-            }),
-          ]);
+          const syncResult = await fullAppSync(currentUser.userId, preferredLanguage);
 
           logger.info('Initial full sync completed', {
             userId: currentUser.userId,
-            daily: dailyResult,
-            credit: creditResult,
+            ...syncResult,
           });
         } catch (syncError) {
           logger.warn('Initial sync failed', { error: syncError });
@@ -313,7 +311,7 @@ export default function Home() {
 
   useEffect(() => {
     const refreshPendingTransactions = () => {
-      setQaPendingTransactions(getLocalPendingTransactions());
+      setQaPendingTransactions(getLocalPendingTransactions(SessionManager.getCurrentUser()?.userId));
     };
 
     refreshPendingTransactions();
@@ -333,8 +331,7 @@ export default function Home() {
       }
 
       try {
-        const response = await fetch(`/api/reports?userId=${user.userId}&language=${language}`);
-        const result = await response.json();
+        const result = await getReportsLocalFirst(user.userId, language);
 
         if (result.success) {
           setQaReports(result.data || []);
@@ -354,8 +351,7 @@ export default function Home() {
       }
 
       try {
-        const response = await fetch(`/api/reports?userId=${user.userId}&language=${language}`);
-        const result = await response.json();
+        const result = await getReportsLocalFirst(user.userId, language);
 
         if (result.success) {
           setQaReports(result.data || []);
@@ -421,7 +417,7 @@ export default function Home() {
   // Listen for localStorage changes (e.g., when transactions are added from pending page)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'vyapar-daily-entries' && user) {
+      if (isUserScopedKey(e.key, 'vyapar-daily-entries') && user) {
         logger.debug('Daily entries changed in localStorage, refreshing');
         refreshHealthScore();
         recalculateIndices();
@@ -472,13 +468,11 @@ export default function Home() {
     if (!user) return;
 
     try {
-      const response = await fetch(`/api/profile?userId=${user.userId}`);
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        setUserProfile(result.data);
+      const profile = await getProfileLocalFirst(user.userId);
+      if (profile) {
+        setUserProfile(profile);
       } else {
-        logger.debug('Profile not found or incomplete', { error: result.error });
+        logger.debug('Profile not found or incomplete', { userId: user.userId });
         setUserProfile(null);
       }
     } catch (error) {
@@ -759,7 +753,7 @@ export default function Home() {
       }
 
       // Save to pending store
-      const saved = savePendingTransaction(inferredTransaction);
+      const saved = savePendingTransaction(inferredTransaction, SessionManager.getCurrentUser()?.userId);
 
       if (saved) {
         logger.info('Voice transaction saved to pending', {

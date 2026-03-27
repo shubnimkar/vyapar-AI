@@ -3,6 +3,7 @@
 
 import type { CreditEntry } from './types';
 import { logger } from './logger';
+import { resolveUserScopedKey } from './user-scoped-storage';
 
 const STORAGE_KEY = 'vyapar-credit-entries';
 const SYNC_STATUS_KEY = 'vyapar-credit-sync-status';
@@ -22,11 +23,11 @@ export interface SyncStatus {
 /**
  * Get all credit entries from localStorage
  */
-export function getLocalEntries(): LocalCreditEntry[] {
+export function getLocalEntries(userId?: string): LocalCreditEntry[] {
   if (typeof window === 'undefined') return [];
   
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(resolveUserScopedKey(STORAGE_KEY, userId));
     if (!stored) return [];
     
     const entries: LocalCreditEntry[] = JSON.parse(stored);
@@ -40,11 +41,11 @@ export function getLocalEntries(): LocalCreditEntry[] {
 /**
  * Save credit entries to localStorage
  */
-export function saveLocalEntries(entries: LocalCreditEntry[]): void {
+export function saveLocalEntries(entries: LocalCreditEntry[], userId?: string): void {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    localStorage.setItem(resolveUserScopedKey(STORAGE_KEY, userId), JSON.stringify(entries));
     logger.debug('Saved entries to localStorage', { count: entries.length });
     window.dispatchEvent(new CustomEvent('vyapar-credit-entries-changed', { detail: { count: entries.length } }));
   } catch (error) {
@@ -55,16 +56,16 @@ export function saveLocalEntries(entries: LocalCreditEntry[]): void {
 /**
  * Get single credit entry by ID from localStorage
  */
-export function getLocalEntry(id: string): LocalCreditEntry | null {
-  const entries = getLocalEntries();
+export function getLocalEntry(id: string, userId?: string): LocalCreditEntry | null {
+  const entries = getLocalEntries(userId);
   return entries.find(e => e.id === id) || null;
 }
 
 /**
  * Add or update credit entry in localStorage
  */
-export function saveLocalEntry(entry: LocalCreditEntry): void {
-  const entries = getLocalEntries();
+export function saveLocalEntry(entry: LocalCreditEntry, userId?: string): void {
+  const entries = getLocalEntries(userId);
   const existingIndex = entries.findIndex(e => e.id === entry.id);
   
   if (existingIndex >= 0) {
@@ -73,28 +74,28 @@ export function saveLocalEntry(entry: LocalCreditEntry): void {
     entries.push(entry);
   }
   
-  saveLocalEntries(entries);
+  saveLocalEntries(entries, userId);
 }
 
 /**
  * Delete credit entry from localStorage
  */
-export function deleteLocalEntry(id: string): void {
-  const entries = getLocalEntries();
+export function deleteLocalEntry(id: string, userId?: string): void {
+  const entries = getLocalEntries(userId);
   const filtered = entries.filter(e => e.id !== id);
-  saveLocalEntries(filtered);
+  saveLocalEntries(filtered, userId);
 }
 
 /**
  * Get sync status
  */
-export function getSyncStatus(): SyncStatus {
+export function getSyncStatus(userId?: string): SyncStatus {
   if (typeof window === 'undefined') {
     return { lastSyncTime: '', pendingCount: 0, errorCount: 0 };
   }
   
   try {
-    const stored = localStorage.getItem(SYNC_STATUS_KEY);
+    const stored = localStorage.getItem(resolveUserScopedKey(SYNC_STATUS_KEY, userId));
     if (!stored) {
       return { lastSyncTime: '', pendingCount: 0, errorCount: 0 };
     }
@@ -108,13 +109,13 @@ export function getSyncStatus(): SyncStatus {
 /**
  * Update sync status
  */
-export function updateSyncStatus(status: Partial<SyncStatus>): void {
+export function updateSyncStatus(status: Partial<SyncStatus>, userId?: string): void {
   if (typeof window === 'undefined') return;
   
   try {
-    const current = getSyncStatus();
+    const current = getSyncStatus(userId);
     const updated = { ...current, ...status };
-    localStorage.setItem(SYNC_STATUS_KEY, JSON.stringify(updated));
+    localStorage.setItem(resolveUserScopedKey(SYNC_STATUS_KEY, userId), JSON.stringify(updated));
   } catch (error) {
     logger.error('Failed to update sync status', { error });
   }
@@ -124,7 +125,7 @@ export function updateSyncStatus(status: Partial<SyncStatus>): void {
  * Sync pending credit entries to DynamoDB
  */
 export async function syncPendingEntries(userId: string): Promise<{ success: number; failed: number }> {
-  const entries = getLocalEntries();
+  const entries = getLocalEntries(userId);
   const pending = entries.filter(e => e.syncStatus === 'pending' || e.syncStatus === 'error');
   
   if (pending.length === 0) {
@@ -167,7 +168,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
       // Update local entry status
       localEntry.syncStatus = 'synced';
       localEntry.lastSyncAttempt = new Date().toISOString();
-      saveLocalEntry(localEntry);
+      saveLocalEntry(localEntry, userId);
       
       successCount++;
     } catch (error) {
@@ -176,7 +177,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
       // Update local entry status
       localEntry.syncStatus = 'error';
       localEntry.lastSyncAttempt = new Date().toISOString();
-      saveLocalEntry(localEntry);
+      saveLocalEntry(localEntry, userId);
       
       failedCount++;
     }
@@ -187,7 +188,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
     lastSyncTime: new Date().toISOString(),
     pendingCount: failedCount,
     errorCount: failedCount,
-  });
+  }, userId);
   
   logger.info('Sync complete', { success: successCount, failed: failedCount });
   
@@ -247,7 +248,7 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
     logger.info('Cloud entries retrieved', { count: cloudEntries.length });
     
     // Get local entries
-    const localEntries = getLocalEntries();
+    const localEntries = getLocalEntries(userId);
     const localMap = new Map(localEntries.map(e => [e.id, e]));
     
     console.log('[pullEntriesFromCloud] Local entries count:', localEntries.length);
@@ -267,7 +268,7 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
           syncStatus: 'synced',
           paidAt: cloudEntry.paidDate, // Alias for backward compatibility
         };
-        saveLocalEntry(newLocalEntry);
+        saveLocalEntry(newLocalEntry, userId);
         addedCount++;
       } else if (localEntry.syncStatus === 'synced') {
         // Both synced, use cloud version (source of truth)
@@ -276,7 +277,7 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
           syncStatus: 'synced',
           paidAt: cloudEntry.paidDate, // Alias for backward compatibility
         };
-        saveLocalEntry(updatedLocalEntry);
+        saveLocalEntry(updatedLocalEntry, userId);
         updatedCount++;
       }
       // If local is pending/error, keep local version (will sync later)
@@ -309,7 +310,7 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
     
     // Pull from cloud first
     await pullEntriesFromCloud(userId);
-    const cloudEntries = getLocalEntries().filter((entry) => entry.syncStatus === 'synced');
+    const cloudEntries = getLocalEntries(userId).filter((entry) => entry.syncStatus === 'synced');
     
     // Push pending entries
     const { success, failed } = await syncPendingEntries(userId);
@@ -363,7 +364,7 @@ export async function instantSyncCreditEntry(userId: string, entry: LocalCreditE
     // Update local entry status
     entry.syncStatus = 'synced';
     entry.lastSyncAttempt = new Date().toISOString();
-    saveLocalEntry(entry);
+    saveLocalEntry(entry, userId);
     
     logger.info('Instant sync succeeded');
     return true;
@@ -373,7 +374,7 @@ export async function instantSyncCreditEntry(userId: string, entry: LocalCreditE
     // Mark as pending for retry
     entry.syncStatus = 'pending';
     entry.lastSyncAttempt = new Date().toISOString();
-    saveLocalEntry(entry);
+    saveLocalEntry(entry, userId);
     
     return false;
   }
@@ -389,7 +390,8 @@ export function createCreditEntry(
   dueDate: string,
   dateGiven: string,
   phoneNumber?: string,
-  markAsSynced: boolean = false
+  markAsSynced: boolean = false,
+  userId?: string
 ): LocalCreditEntry {
   const now = new Date().toISOString();
   const entry: LocalCreditEntry = {
@@ -406,7 +408,7 @@ export function createCreditEntry(
     lastSyncAttempt: markAsSynced ? now : undefined,
   };
   
-  saveLocalEntry(entry);
+  saveLocalEntry(entry, userId);
   
   return entry;
 }
@@ -426,9 +428,10 @@ export function updateCreditEntry(
     phoneNumber?: string;
     lastReminderAt?: string;
   },
-  markAsSynced: boolean = false
+  markAsSynced: boolean = false,
+  userId?: string
 ): LocalCreditEntry | null {
-  const existing = getLocalEntry(id);
+  const existing = getLocalEntry(id, userId);
   if (!existing) return null;
   
   const now = new Date().toISOString();
@@ -440,7 +443,7 @@ export function updateCreditEntry(
     lastSyncAttempt: markAsSynced ? now : existing.lastSyncAttempt,
   };
   
-  saveLocalEntry(updated);
+  saveLocalEntry(updated, userId);
   
   return updated;
 }
@@ -451,7 +454,8 @@ export function updateCreditEntry(
  */
 export function markCreditAsPaid(
   id: string,
-  markAsSynced: boolean = false
+  markAsSynced: boolean = false,
+  userId?: string
 ): LocalCreditEntry | null {
   return updateCreditEntry(
     id,
@@ -459,7 +463,8 @@ export function markCreditAsPaid(
       isPaid: true,
       paidAt: new Date().toISOString(),
     },
-    markAsSynced
+    markAsSynced,
+    userId
   );
 }
 
@@ -479,7 +484,8 @@ export async function updateCreditReminder(
   const updated = updateCreditEntry(
     creditId,
     { lastReminderAt: reminderAt },
-    false // Mark as pending for sync
+    false, // Mark as pending for sync
+    userId
   );
   
   if (!updated) {
@@ -517,7 +523,7 @@ export async function updateCreditReminder(
     // Mark as synced
     updated.syncStatus = 'synced';
     updated.lastSyncAttempt = new Date().toISOString();
-    saveLocalEntry(updated);
+    saveLocalEntry(updated, userId);
     
     logger.info('Credit reminder synced to DynamoDB', { creditId });
   } catch (error) {
@@ -530,12 +536,12 @@ export async function updateCreditReminder(
 /**
  * Clear all local credit data (for logout)
  */
-export function clearLocalData(): void {
+export function clearLocalData(userId?: string): void {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(SYNC_STATUS_KEY);
+    localStorage.removeItem(resolveUserScopedKey(STORAGE_KEY, userId));
+    localStorage.removeItem(resolveUserScopedKey(SYNC_STATUS_KEY, userId));
     logger.info('Cleared all local data');
   } catch (error) {
     logger.error('Failed to clear local data', { error });

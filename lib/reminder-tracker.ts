@@ -19,7 +19,7 @@ export async function recordReminder(creditId: string, userId: string): Promise<
     logger.info('Recording reminder', { creditId, userId });
     
     // Get the credit entry from localStorage
-    const entry = getLocalEntry(creditId);
+    const entry = getLocalEntry(creditId, userId);
     if (!entry) {
       throw new Error(`Credit entry not found: ${creditId}`);
     }
@@ -35,7 +35,7 @@ export async function recordReminder(creditId: string, userId: string): Promise<
     };
     
     // Save to localStorage immediately (optimistic update)
-    saveLocalEntry(updated);
+    saveLocalEntry(updated, userId);
     
     logger.info('Reminder recorded successfully', { creditId, timestamp: now });
     
@@ -53,9 +53,9 @@ export async function recordReminder(creditId: string, userId: string): Promise<
  * @param creditId - The ID of the credit entry
  * @returns Date object if reminder exists, null otherwise
  */
-export function getLastReminder(creditId: string): Date | null {
+export function getLastReminder(creditId: string, userId?: string): Date | null {
   try {
-    const entry = getLocalEntry(creditId);
+    const entry = getLocalEntry(creditId, userId);
     if (!entry || !entry.lastReminderAt) {
       return null;
     }

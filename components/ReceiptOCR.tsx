@@ -6,6 +6,7 @@ import { logger } from "@/lib/logger";
 import { parseOCRResult } from "@/lib/parsers/ocr-result-parser";
 import { isDuplicate } from "@/lib/duplicate-detector";
 import { savePendingTransaction } from "@/lib/pending-transaction-store";
+import { SessionManager } from "@/lib/session-manager";
 
 interface ExtractedData {
   date: string;
@@ -210,7 +211,7 @@ export default function ReceiptOCR({ onDataExtracted, language, usePendingFlow =
           }
 
           // Save to pending store
-          const saved = savePendingTransaction(inferredTransaction);
+          const saved = savePendingTransaction(inferredTransaction, SessionManager.getCurrentUser()?.userId);
 
           if (saved) {
             setStatus("pending_saved");

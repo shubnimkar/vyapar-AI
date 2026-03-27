@@ -105,7 +105,10 @@ function stripSyncMetadata(data: StoredIndexData): IndexData {
  * 
  * @param indexData - Index data to save
  */
-export function saveIndexToLocalStorage(indexData: IndexData): void {
+export function saveIndexToLocalStorage(
+  indexData: IndexData,
+  syncStatus: StoredIndexData['syncStatus'] = 'pending'
+): void {
   const storage = getStorage();
   if (!storage) {
     return;
@@ -120,7 +123,7 @@ export function saveIndexToLocalStorage(indexData: IndexData): void {
 
   const storedData: StoredIndexData = {
     ...indexData,
-    syncStatus: 'pending',
+    syncStatus,
   };
 
   if (existingIndex >= 0) {
@@ -136,6 +139,40 @@ export function saveIndexToLocalStorage(indexData: IndexData): void {
 
   // Save to localStorage
   setLocalIndices(indices);
+}
+
+/**
+ * Merge indices from cloud into localStorage.
+ *
+ * Cloud data is treated as already synced and replaces older local data for the
+ * same user/date pair.
+ */
+export function mergeIndicesFromCloud(indicesFromCloud: IndexData[]): void {
+  if (indicesFromCloud.length === 0) {
+    return;
+  }
+
+  let indices = getLocalIndices();
+
+  for (const indexData of indicesFromCloud) {
+    const existingIndex = indices.findIndex(
+      item => item.userId === indexData.userId && item.date === indexData.date
+    );
+
+    const storedData: StoredIndexData = {
+      ...indexData,
+      syncStatus: 'synced',
+      lastSyncAttempt: new Date().toISOString(),
+    };
+
+    if (existingIndex >= 0) {
+      indices[existingIndex] = storedData;
+    } else {
+      indices.push(storedData);
+    }
+  }
+
+  setLocalIndices(pruneOldEntries(indices));
 }
 
 /**
@@ -633,3 +670,34 @@ export class IndexSyncManager {
  * Default singleton instance
  */
 export const indexSyncManager = new IndexSyncManager();
+
+/**
+ * Pull historical indices from cloud and mirror them into localStorage so the
+ * dashboard can keep working offline after the user has synced once.
+ */
+export async function pullIndicesFromCloud(
+  userId: string,
+  rangeDays: number = MAX_AGE_DAYS
+): Promise<IndexData[]> {
+  try {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - rangeDays);
+
+    const response = await fetch(
+      `/api/indices/history?userId=${encodeURIComponent(userId)}&startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`
+    );
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !Array.isArray(result.data)) {
+      logger.warn('Failed to pull indices from cloud', { userId, error: result.error });
+      return [];
+    }
+
+    mergeIndicesFromCloud(result.data as IndexData[]);
+    return result.data as IndexData[];
+  } catch (error) {
+    logger.warn('Failed to pull indices from cloud', { error, userId });
+    return [];
+  }
+}

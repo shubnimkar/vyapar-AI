@@ -3,6 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { getLocalPendingTransactions } from '../pending-transaction-store';
+import { SessionManager } from '../session-manager';
+import { isUserScopedKey } from '../user-scoped-storage';
 
 interface PendingTransactionCount {
   total: number;      // Total pending transactions (including deferred)
@@ -27,7 +29,7 @@ export function usePendingTransactionCount(): PendingTransactionCount {
   });
 
   const updateCounts = () => {
-    const transactions = getLocalPendingTransactions();
+    const transactions = getLocalPendingTransactions(SessionManager.getCurrentUser()?.userId);
     
     const total = transactions.length;
     const deferred = transactions.filter(t => t.deferred_at).length;
@@ -42,7 +44,7 @@ export function usePendingTransactionCount(): PendingTransactionCount {
 
     // Subscribe to localStorage changes
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'pending_transactions' || e.key === null) {
+      if (isUserScopedKey(e.key, 'pending_transactions') || e.key === null) {
         updateCounts();
       }
     };

@@ -4,6 +4,7 @@
 import type { DailyEntry } from './dynamodb-client';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from './logger';
+import { resolveUserScopedKey } from './user-scoped-storage';
 
 const STORAGE_KEY = 'vyapar-daily-entries';
 const SYNC_STATUS_KEY = 'vyapar-daily-sync-status';
@@ -22,11 +23,11 @@ export interface SyncStatus {
 /**
  * Get all entries from localStorage
  */
-export function getLocalEntries(): LocalDailyEntry[] {
+export function getLocalEntries(userId?: string): LocalDailyEntry[] {
   if (typeof window === 'undefined') return [];
   
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(resolveUserScopedKey(STORAGE_KEY, userId));
     if (!stored) return [];
     
     const entries: LocalDailyEntry[] = JSON.parse(stored);
@@ -40,11 +41,11 @@ export function getLocalEntries(): LocalDailyEntry[] {
 /**
  * Save entries to localStorage
  */
-export function saveLocalEntries(entries: LocalDailyEntry[]): void {
+export function saveLocalEntries(entries: LocalDailyEntry[], userId?: string): void {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    localStorage.setItem(resolveUserScopedKey(STORAGE_KEY, userId), JSON.stringify(entries));
     logger.debug('Saved entries to localStorage', { count: entries.length });
   } catch (error) {
     logger.error('Failed to save local entries', { error });
@@ -54,16 +55,16 @@ export function saveLocalEntries(entries: LocalDailyEntry[]): void {
 /**
  * Get single entry by date from localStorage
  */
-export function getLocalEntry(date: string): LocalDailyEntry | null {
-  const entries = getLocalEntries();
+export function getLocalEntry(date: string, userId?: string): LocalDailyEntry | null {
+  const entries = getLocalEntries(userId);
   return entries.find(e => e.date === date) || null;
 }
 
 /**
  * Add or update entry in localStorage
  */
-export function saveLocalEntry(entry: LocalDailyEntry): void {
-  const entries = getLocalEntries();
+export function saveLocalEntry(entry: LocalDailyEntry, userId?: string): void {
+  const entries = getLocalEntries(userId);
   const existingIndex = entries.findIndex(e => e.date === entry.date);
   
   if (existingIndex >= 0) {
@@ -72,7 +73,7 @@ export function saveLocalEntry(entry: LocalDailyEntry): void {
     entries.push(entry);
   }
   
-  saveLocalEntries(entries);
+  saveLocalEntries(entries, userId);
   
   // Dispatch custom event to notify other components
   if (typeof window !== 'undefined') {
@@ -85,10 +86,10 @@ export function saveLocalEntry(entry: LocalDailyEntry): void {
 /**
  * Delete entry from localStorage
  */
-export function deleteLocalEntry(date: string): void {
-  const entries = getLocalEntries();
+export function deleteLocalEntry(date: string, userId?: string): void {
+  const entries = getLocalEntries(userId);
   const filtered = entries.filter(e => e.date !== date);
-  saveLocalEntries(filtered);
+  saveLocalEntries(filtered, userId);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('vyapar-daily-entries-changed', { detail: { action: 'deleted', date } }));
   }
@@ -97,13 +98,13 @@ export function deleteLocalEntry(date: string): void {
 /**
  * Get sync status
  */
-export function getSyncStatus(): SyncStatus {
+export function getSyncStatus(userId?: string): SyncStatus {
   if (typeof window === 'undefined') {
     return { lastSyncTime: '', pendingCount: 0, errorCount: 0 };
   }
   
   try {
-    const stored = localStorage.getItem(SYNC_STATUS_KEY);
+    const stored = localStorage.getItem(resolveUserScopedKey(SYNC_STATUS_KEY, userId));
     if (!stored) {
       return { lastSyncTime: '', pendingCount: 0, errorCount: 0 };
     }
@@ -117,13 +118,13 @@ export function getSyncStatus(): SyncStatus {
 /**
  * Update sync status
  */
-export function updateSyncStatus(status: Partial<SyncStatus>): void {
+export function updateSyncStatus(status: Partial<SyncStatus>, userId?: string): void {
   if (typeof window === 'undefined') return;
   
   try {
-    const current = getSyncStatus();
+    const current = getSyncStatus(userId);
     const updated = { ...current, ...status };
-    localStorage.setItem(SYNC_STATUS_KEY, JSON.stringify(updated));
+    localStorage.setItem(resolveUserScopedKey(SYNC_STATUS_KEY, userId), JSON.stringify(updated));
   } catch (error) {
     logger.error('Failed to update sync status', { error });
   }
@@ -133,7 +134,7 @@ export function updateSyncStatus(status: Partial<SyncStatus>): void {
  * Sync pending entries to DynamoDB
  */
 export async function syncPendingEntries(userId: string): Promise<{ success: number; failed: number }> {
-  const entries = getLocalEntries();
+  const entries = getLocalEntries(userId);
   const pending = entries.filter(e => e.syncStatus === 'pending' || e.syncStatus === 'error');
   
   if (pending.length === 0) {
@@ -171,7 +172,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
       // Update local entry status
       localEntry.syncStatus = 'synced';
       localEntry.lastSyncAttempt = new Date().toISOString();
-      saveLocalEntry(localEntry);
+      saveLocalEntry(localEntry, userId);
       
       successCount++;
     } catch (error) {
@@ -180,7 +181,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
       // Update local entry status
       localEntry.syncStatus = 'error';
       localEntry.lastSyncAttempt = new Date().toISOString();
-      saveLocalEntry(localEntry);
+      saveLocalEntry(localEntry, userId);
       
       failedCount++;
     }
@@ -191,7 +192,7 @@ export async function syncPendingEntries(userId: string): Promise<{ success: num
     lastSyncTime: new Date().toISOString(),
     pendingCount: failedCount,
     errorCount: failedCount,
-  });
+  }, userId);
   
   logger.info('Sync complete', { success: successCount, failed: failedCount });
   
@@ -222,7 +223,7 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
     const cloudEntries: DailyEntry[] = result.data || [];
     
     // Get local entries
-    const localEntries = getLocalEntries();
+    const localEntries = getLocalEntries(userId);
     const localMap = new Map(localEntries.map(e => [e.date, e]));
     
     // Merge cloud entries with local
@@ -235,14 +236,14 @@ export async function pullEntriesFromCloud(userId: string): Promise<void> {
           ...cloudEntry,
           syncStatus: 'synced',
         };
-        saveLocalEntry(newLocalEntry);
+        saveLocalEntry(newLocalEntry, userId);
       } else if (localEntry.syncStatus === 'synced') {
         // Both synced, use cloud version (source of truth)
         const updatedLocalEntry: LocalDailyEntry = {
           ...cloudEntry,
           syncStatus: 'synced',
         };
-        saveLocalEntry(updatedLocalEntry);
+        saveLocalEntry(updatedLocalEntry, userId);
       }
       // If local is pending/error, keep local version (will sync later)
     }
@@ -263,7 +264,7 @@ export async function fullSync(userId: string): Promise<{ pulled: number; pushed
     
     // Pull from cloud first
     await pullEntriesFromCloud(userId);
-    const cloudEntries = getLocalEntries().filter((entry) => entry.syncStatus === 'synced');
+    const cloudEntries = getLocalEntries(userId).filter((entry) => entry.syncStatus === 'synced');
     
     // Push pending entries
     const { success, failed } = await syncPendingEntries(userId);
@@ -312,7 +313,7 @@ export async function instantSyncEntry(userId: string, entry: LocalDailyEntry): 
     // Update local entry status
     entry.syncStatus = 'synced';
     entry.lastSyncAttempt = new Date().toISOString();
-    saveLocalEntry(entry);
+    saveLocalEntry(entry, userId);
     
     logger.info('Instant sync succeeded');
     return true;
@@ -322,7 +323,7 @@ export async function instantSyncEntry(userId: string, entry: LocalDailyEntry): 
     // Mark as pending for retry
     entry.syncStatus = 'pending';
     entry.lastSyncAttempt = new Date().toISOString();
-    saveLocalEntry(entry);
+    saveLocalEntry(entry, userId);
     
     return false;
   }
@@ -338,7 +339,8 @@ export function createDailyEntry(
   totalExpense: number,
   cashInHand?: number,
   notes?: string,
-  markAsSynced: boolean = false
+  markAsSynced: boolean = false,
+  userId?: string
 ): LocalDailyEntry {
   const estimatedProfit = totalSales - totalExpense;
   const expenseRatio = totalSales > 0 ? totalExpense / totalSales : 0;
@@ -369,7 +371,7 @@ export function createDailyEntry(
     entry.suggestions = [];
   }
   
-  saveLocalEntry(entry);
+  saveLocalEntry(entry, userId);
   
   return entry;
 }
@@ -386,9 +388,10 @@ export function updateDailyEntry(
     cashInHand?: number;
     notes?: string;
   },
-  markAsSynced: boolean = false
+  markAsSynced: boolean = false,
+  userId?: string
 ): LocalDailyEntry | null {
-  const existing = getLocalEntry(date);
+  const existing = getLocalEntry(date, userId);
   if (!existing) return null;
   
   const totalSales = updates.totalSales ?? existing.totalSales;
@@ -420,7 +423,7 @@ export function updateDailyEntry(
     updated.suggestions = existing.suggestions || [];
   }
   
-  saveLocalEntry(updated);
+  saveLocalEntry(updated, userId);
   
   return updated;
 }
@@ -428,12 +431,12 @@ export function updateDailyEntry(
 /**
  * Clear all local data (for logout)
  */
-export function clearLocalData(): void {
+export function clearLocalData(userId?: string): void {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(SYNC_STATUS_KEY);
+    localStorage.removeItem(resolveUserScopedKey(STORAGE_KEY, userId));
+    localStorage.removeItem(resolveUserScopedKey(SYNC_STATUS_KEY, userId));
     logger.info('Cleared all local data');
   } catch (error) {
     logger.error('Failed to clear local data', { error });

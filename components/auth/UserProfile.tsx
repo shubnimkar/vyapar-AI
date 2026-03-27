@@ -6,9 +6,9 @@ import { SessionManager } from '@/lib/session-manager';
 import { Language, UserProfile as UserProfileType } from '@/lib/types';
 import { t } from '@/lib/translations';
 import { logger } from '@/lib/logger';
-import { fullSync as dailyFullSync } from '@/lib/daily-entry-sync';
-import { fullSync as creditFullSync } from '@/lib/credit-sync';
 import ProfileAvatar from '@/components/ui/ProfileAvatar';
+import { fullAppSync } from '@/lib/app-sync';
+import { getProfileLocalFirst } from '@/lib/profile-sync';
 
 interface UserProfileProps {
   language: Language;
@@ -40,15 +40,14 @@ export default function UserProfile({ language }: UserProfileProps) {
     setProfileError(null);
     
     try {
-      const response = await fetch(`/api/profile?userId=${userId}`);
-      const result = await response.json();
-      
-      if (result.success && result.data) {
-        setProfileData(result.data);
+      const profile = await getProfileLocalFirst(userId);
+
+      if (profile) {
+        setProfileData(profile);
       } else {
         // Profile not found or incomplete - user hasn't completed profile setup
         // This is normal for new users, so don't set it as an error
-        logger.debug('[UserProfile] Profile not found or incomplete', { error: result.error });
+        logger.debug('[UserProfile] Profile not found or incomplete', { userId });
         setProfileData(null);
       }
     } catch (error) {
@@ -76,21 +75,11 @@ export default function UserProfile({ language }: UserProfileProps) {
       if (user) {
         logger.info('[UserProfile] Syncing data before logout...');
         try {
-          const [dailyResult, creditResult] = await Promise.all([
-            dailyFullSync(user.userId).catch((error) => {
-              logger.error('[UserProfile] Daily full sync failed before logout', { error });
-              return { pulled: 0, pushed: 0, failed: 1 };
-            }),
-            creditFullSync(user.userId).catch((error) => {
-              logger.error('[UserProfile] Credit full sync failed before logout', { error });
-              return { pulled: 0, pushed: 0, failed: 1 };
-            }),
-          ]);
+          const syncResult = await fullAppSync(user.userId, language);
 
           logger.info('[UserProfile] Data synced successfully before logout', {
             userId: user.userId,
-            daily: dailyResult,
-            credit: creditResult,
+            ...syncResult,
           });
         } catch (syncError) {
           logger.error('[UserProfile] Failed to sync data before logout', { error: syncError });

@@ -83,8 +83,8 @@ export default function SyncStatus({ language }: SyncStatusProps) {
     }
 
     try {
-      const dailyStatus = getDailySyncStatus();
-      const creditStatus = getCreditSyncStatus();
+      const dailyStatus = getDailySyncStatus(userToCheck.userId);
+      const creditStatus = getCreditSyncStatus(userToCheck.userId);
       
       const totalPending = dailyStatus.pendingCount + creditStatus.pendingCount;
       const totalErrors = dailyStatus.errorCount + creditStatus.errorCount;

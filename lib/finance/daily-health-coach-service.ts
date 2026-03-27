@@ -9,6 +9,9 @@ import { DailyEntry, CreditEntry, DailySuggestion, Language } from '../types';
 import { generateDailySuggestions } from './generateDailySuggestions';
 import { buildSuggestionContext } from './suggestionContext';
 import { logger } from '../logger';
+import { getLocalEntries as getLocalCreditEntries } from '../credit-sync';
+import { getLocalEntries as getLocalDailyEntries } from '../daily-entry-sync';
+import { SessionManager } from '../session-manager';
 
 /**
  * Get user language preference from localStorage or default to English
@@ -34,40 +37,16 @@ function getUserLanguage(): Language {
  * Load credit entries from localStorage
  */
 function loadCreditEntries(): CreditEntry[] {
-  if (typeof window === 'undefined') return [];
-  
-  try {
-    const stored = localStorage.getItem('vyapar-credits');
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (error) {
-    logger.error('Failed to load credit entries', { error });
-  }
-  
-  return [];
+  const userId = SessionManager.getCurrentUser()?.userId || 'local-user';
+  return getLocalCreditEntries().map((entry) => ({ ...entry, userId }));
 }
 
 /**
  * Load historical daily entries from localStorage
  */
 function loadHistoricalEntries(): DailyEntry[] {
-  if (typeof window === 'undefined') return [];
-  
-  try {
-    const stored = localStorage.getItem('vyapar-daily-entries');
-    if (stored) {
-      const entries = JSON.parse(stored);
-      // Sort by date descending
-      return entries.sort((a: DailyEntry, b: DailyEntry) => 
-        b.date.localeCompare(a.date)
-      );
-    }
-  } catch (error) {
-    logger.error('Failed to load historical entries', { error });
-  }
-  
-  return [];
+  const userId = SessionManager.getCurrentUser()?.userId || 'local-user';
+  return getLocalDailyEntries().map((entry) => ({ ...entry, userId }));
 }
 
 /**

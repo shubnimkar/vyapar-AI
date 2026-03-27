@@ -23,6 +23,11 @@ import { Button } from './ui/Button';
 import { Spinner } from './ui/Spinner';
 import { ErrorState } from './ui/ErrorState';
 import { Badge } from './ui/Badge';
+import {
+  getLatestIndexFromLocalStorage,
+  pullIndicesFromCloud,
+  saveIndexToLocalStorage,
+} from '@/lib/index-sync';
 
 interface IndicesDashboardProps {
   userId: string;
@@ -81,11 +86,25 @@ export default function IndicesDashboard({
     setError(null);
 
     try {
+      const localIndex = getLatestIndexFromLocalStorage(userId);
+      if (localIndex) {
+        setIndexData(localIndex);
+      }
+
+      if (!navigator.onLine) {
+        if (!localIndex) {
+          setError(t('indices.error', language));
+        }
+        return;
+      }
+
       const response = await fetch(`/api/indices/latest?userId=${userId}`);
       const data = await response.json();
 
       if (data.success && data.data) {
         setIndexData(data.data);
+        saveIndexToLocalStorage(data.data, 'synced');
+        void pullIndicesFromCloud(userId);
       } else if (response.status === 404) {
         // No indices yet - need to calculate
         await calculateIndices();
@@ -133,6 +152,8 @@ export default function IndicesDashboard({
 
       if (data.success && data.data) {
         setIndexData(data.data);
+        saveIndexToLocalStorage(data.data, 'synced');
+        void pullIndicesFromCloud(userId);
       } else {
         // Check error code first
         // Handle both INSUFFICIENT_DATA (new) and INVALID_INPUT with insufficientData message (old)
@@ -179,6 +200,7 @@ export default function IndicesDashboard({
 
       if (data.success && data.data) {
         setIndexData(data.data);
+        saveIndexToLocalStorage(data.data, 'synced');
         return data.data.affordabilityIndex;
       }
 

@@ -36,14 +36,14 @@ export async function addTransactionToDailyEntry(
     });
 
     // Get existing entry for this date
-    let existingEntry = getLocalEntry(transaction.date);
+    let existingEntry = getLocalEntry(transaction.date, userId);
 
     let updatedEntry: LocalDailyEntry;
 
     if (existingEntry) {
       // Update existing entry
       const updates = calculateUpdates(existingEntry, transaction);
-      const result = updateDailyEntry(transaction.date, updates, false);
+      const result = updateDailyEntry(transaction.date, updates, false, userId);
 
       if (!result) {
         throw new Error('Failed to update daily entry');
@@ -60,13 +60,14 @@ export async function addTransactionToDailyEntry(
         totalExpense,
         undefined, // cashInHand
         undefined, // notes
-        false // markAsSynced
+        false, // markAsSynced
+        userId
       );
       logger.info('Created new daily entry', { date: transaction.date });
     }
 
     // Reload the entry to ensure we have the latest version
-    const finalEntry = getLocalEntry(transaction.date);
+    const finalEntry = getLocalEntry(transaction.date, userId);
     if (!finalEntry) {
       throw new Error('Failed to retrieve saved entry');
     }
@@ -81,7 +82,7 @@ export async function addTransactionToDailyEntry(
     }
 
     // Reload again after sync to get updated sync status
-    const syncedEntry = getLocalEntry(transaction.date);
+    const syncedEntry = getLocalEntry(transaction.date, userId);
 
     return {
       success: true,
