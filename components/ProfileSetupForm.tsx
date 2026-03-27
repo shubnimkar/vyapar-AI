@@ -13,7 +13,6 @@ interface ProfileSetupFormProps {
   userId: string;
   username?: string;
   onComplete: () => void;
-  onSkip: () => void;
   language: Language;
   initialData?: ProfileSetupData;
   isEditMode?: boolean;
@@ -172,7 +171,7 @@ export default function ProfileSetupForm({
     return isValid;
   };
 
-  const handleSubmit = async (skipOptional: boolean = false) => {
+  const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
@@ -194,10 +193,10 @@ export default function ProfileSetupForm({
             email: formData.email?.trim()?.toLowerCase() || undefined,
             avatarUrl: formData.avatarUrl,
             phoneNumber: phoneNumberValue || undefined,
-            businessType: skipOptional ? undefined : formData.businessType,
-          business_type: skipOptional ? formData.business_type ?? 'other' : formData.businessType ?? 'other',
-          city: skipOptional ? undefined : formData.city,
-          city_tier: skipOptional ? formData.city_tier ?? null : (formData.city_tier ?? null),
+            businessType: formData.businessType,
+          business_type: formData.businessType ?? 'other',
+          city: formData.city,
+          city_tier: formData.city_tier ?? null,
           explanation_mode: formData.explanation_mode ?? 'simple',
         }),
       });
@@ -207,6 +206,7 @@ export default function ProfileSetupForm({
       if (result.success) {
         if (formData.language) {
           localStorage.setItem('vyapar-lang', formData.language);
+          window.dispatchEvent(new Event('vyapar-lang-changed'));
         }
         onComplete();
       } else {
@@ -226,16 +226,6 @@ export default function ProfileSetupForm({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSkip = () => {
-    setFormData({
-      ...formData,
-      shopName: formData.shopName || 'My Shop',
-      userName: formData.userName || phoneNumber,
-    });
-    
-    handleSubmit(true);
   };
 
   return (
@@ -269,7 +259,7 @@ export default function ProfileSetupForm({
             </div>
           )}
 
-          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(false); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 
             <div className="md:col-span-2 rounded-2xl border border-neutral-200 bg-gradient-to-br from-surface-low via-white to-primary-50/30 p-6">
               <div className="flex flex-col gap-5 md:flex-row md:items-center">
@@ -616,6 +606,51 @@ export default function ProfileSetupForm({
               </div>
             </div>
 
+            {/* Explanation Mode */}
+            <div className="md:col-span-2 flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-semibold text-neutral-700">
+                  {language === 'hi' ? 'AI जवाब शैली' : language === 'mr' ? 'AI उत्तर शैली' : 'AI Response Style'}
+                </label>
+                <div className="relative group">
+                  <svg className="w-3.5 h-3.5 text-neutral-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-neutral-900 text-white text-xs rounded-xl p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 shadow-lg">
+                    <p className="font-semibold mb-1">{language === 'hi' ? 'सरल' : language === 'mr' ? 'साधे' : 'Simple'}</p>
+                    <p className="text-neutral-300 mb-2">{language === 'hi' ? '2-3 छोटे बिंदु, आसान भाषा, बिना जटिल शब्दों के।' : language === 'mr' ? '2-3 छोटे मुद्दे, सोपी भाषा, कठीण शब्दांशिवाय.' : '2-3 short insights, plain language, no jargon.'}</p>
+                    <p className="font-semibold mb-1">{language === 'hi' ? 'विस्तृत' : language === 'mr' ? 'तपशीलवार' : 'Detailed'}</p>
+                    <p className="text-neutral-300">{language === 'hi' ? '5-7 बिंदु, वित्तीय अवधारणाओं की गहरी व्याख्या।' : language === 'mr' ? '5-7 मुद्दे, आर्थिक संकल्पनांचे सखोल स्पष्टीकरण.' : '5-7 insights with deeper financial explanations.'}</p>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, explanation_mode: 'simple' })}
+                  className={`flex-1 py-2.5 px-4 rounded-2xl text-sm font-medium border transition-all ${
+                    (formData.explanation_mode ?? 'simple') === 'simple'
+                      ? 'bg-primary-600 border-primary-600 text-white shadow-sm'
+                      : 'bg-white border-neutral-300 text-neutral-700 hover:border-primary-400'
+                  }`}
+                >
+                  {language === 'hi' ? 'सरल' : language === 'mr' ? 'साधे' : 'Simple'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, explanation_mode: 'detailed' })}
+                  className={`flex-1 py-2.5 px-4 rounded-2xl text-sm font-medium border transition-all ${
+                    formData.explanation_mode === 'detailed'
+                      ? 'bg-primary-600 border-primary-600 text-white shadow-sm'
+                      : 'bg-white border-neutral-300 text-neutral-700 hover:border-primary-400'
+                  }`}
+                >
+                  {language === 'hi' ? 'विस्तृत' : language === 'mr' ? 'तपशीलवार' : 'Detailed'}
+                </button>
+              </div>
+            </div>
+
             {/* Action Buttons */}
             <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 mt-4 border-t border-neutral-100 pt-4">
               <Button
@@ -642,23 +677,6 @@ export default function ProfileSetupForm({
                   </>
                 )}
               </Button>
-              {!isEditMode && (
-                <Button
-                  type="button"
-                  onClick={handleSkip}
-                  disabled={isSubmitting}
-                  variant="secondary"
-                  size="md"
-                  fullWidth
-                  icon={
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  }
-                >
-                  {t('profile.setup.skip', language)}
-                </Button>
-              )}
             </div>
           </form>
         </div>

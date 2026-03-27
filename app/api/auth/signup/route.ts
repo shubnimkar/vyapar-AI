@@ -20,6 +20,7 @@ interface SignupRequest {
   ownerName: string;
   businessType: 'retail' | 'wholesale' | 'services' | 'manufacturing' | 'restaurant' | 'other';
   city: string;
+  cityTier?: 'tier1' | 'tier2' | 'tier3' | 'rural';
   phoneNumber?: string;
   language: 'en' | 'hi' | 'mr';
 }
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: SignupRequest = await request.json();
-    const { username, email, password, shopName, ownerName, businessType, city, phoneNumber, language } = body;
+    const { username, email, password, shopName, ownerName, businessType, city, cityTier, phoneNumber, language } = body;
 
     // Validate required fields
     if (!username || !email || !password || !shopName || !ownerName || !businessType || !city || !language) {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     const sanitizedShopName = InputSanitizer.sanitizeText(shopName);
     const sanitizedOwnerName = InputSanitizer.sanitizeText(ownerName);
     const sanitizedCity = InputSanitizer.sanitizeText(city);
-    const sanitizedPhone = phoneNumber ? InputSanitizer.sanitizePhoneNumber(phoneNumber) : undefined;
+    const sanitizedPhone = phoneNumber ? InputSanitizer.sanitizePhoneNumber(phoneNumber) : null;
 
     // Check for SQL injection attempts
     if (InputSanitizer.detectSqlKeywords(username) || 
@@ -186,8 +187,11 @@ export async function POST(request: NextRequest) {
       email: sanitizedEmail,
       businessType,
       city: sanitizedCity,
+      city_tier: cityTier || null,
       phoneNumber: sanitizedPhone,
       language,
+      business_type: businessType,   // same value, used by AI prompt builder
+      explanation_mode: 'simple',    // default, user can change in profile settings
       createdAt: now,
       updatedAt: now,
     };

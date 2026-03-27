@@ -289,7 +289,7 @@ export interface UserProfile {
   avatarUrl?: string;
   businessType?: string;
   city?: string;
-  phoneNumber?: string;
+  phoneNumber?: string | null;
   language: string;
   business_type?: string;
   city_tier?: string | null;

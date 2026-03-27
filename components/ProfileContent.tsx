@@ -157,7 +157,6 @@ export default function ProfileContent({ language, user, showBackButton = false 
           userId={user.userId}
           username={user.username}
           onComplete={handleEditComplete}
-          onSkip={() => setIsEditMode(false)}
           language={language}
           initialData={{
             shopName: profileData.shopName,
@@ -340,25 +339,64 @@ export default function ProfileContent({ language, user, showBackButton = false 
                 </h3>
               </div>
               <div className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-neutral-100 p-2 rounded-2xl">
-                      <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                      </svg>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-neutral-100 p-2 rounded-2xl">
+                        <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-semibold">
+                          {t('profile.appLanguage', language)}
+                        </p>
+                        <p className="text-xs text-neutral-500">
+                          {t('profile.chooseDisplayLanguage', language)}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold">
-                        {t('profile.appLanguage', language)}
-                      </p>
-                      <p className="text-xs text-neutral-500">
-                        {t('profile.chooseDisplayLanguage', language)}
-                      </p>
-                    </div>
+                    <span className="inline-flex items-center rounded-2xl bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700">
+                      {getLanguageLabel(profileData!.language)}
+                    </span>
                   </div>
-                  <span className="inline-flex items-center rounded-2xl bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700">
-                    {getLanguageLabel(profileData!.language)}
-                  </span>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-neutral-100 p-2 rounded-2xl">
+                        <svg className="w-5 h-5 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-semibold">
+                            {language === 'hi' ? 'AI जवाब शैली' : language === 'mr' ? 'AI उत्तर शैली' : 'AI Response Style'}
+                          </p>
+                          <div className="relative group">
+                            <svg className="w-3.5 h-3.5 text-neutral-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-neutral-900 text-white text-xs rounded-xl p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 shadow-lg">
+                              <p className="font-semibold mb-1">{language === 'hi' ? 'सरल' : language === 'mr' ? 'साधे' : 'Simple'}</p>
+                              <p className="text-neutral-300 mb-2">{language === 'hi' ? '2-3 छोटे बिंदु, आसान भाषा, बिना जटिल शब्दों के।' : language === 'mr' ? '2-3 छोटे मुद्दे, सोपी भाषा, कठीण शब्दांशिवाय.' : '2-3 short insights, plain language, no jargon.'}</p>
+                              <p className="font-semibold mb-1">{language === 'hi' ? 'विस्तृत' : language === 'mr' ? 'तपशीलवार' : 'Detailed'}</p>
+                              <p className="text-neutral-300">{language === 'hi' ? '5-7 बिंदु, वित्तीय अवधारणाओं की गहरी व्याख्या।' : language === 'mr' ? '5-7 मुद्दे, आर्थिक संकल्पनांचे सखोल स्पष्टीकरण.' : '5-7 insights with deeper financial explanations.'}</p>
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900" />
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-xs text-neutral-500">
+                          {language === 'hi' ? 'AI इनसाइट्स कितने विस्तृत हों' : language === 'mr' ? 'AI इनसाइट्स किती तपशीलवार असाव्यात' : 'How detailed AI insights should be'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center rounded-2xl bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700">
+                      {(profileData!.explanation_mode ?? 'simple') === 'simple'
+                        ? (language === 'hi' ? 'सरल' : language === 'mr' ? 'साधे' : 'Simple')
+                        : (language === 'hi' ? 'विस्तृत' : language === 'mr' ? 'तपशीलवार' : 'Detailed')}
+                    </span>
+                  </div>
                 </div>
               </div>
             </section>

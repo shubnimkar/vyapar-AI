@@ -26,6 +26,7 @@ export interface SignupData {
   ownerName: string;
   businessType: 'retail' | 'wholesale' | 'services' | 'manufacturing' | 'restaurant' | 'other';
   city: string;
+  cityTier?: 'tier1' | 'tier2' | 'tier3' | 'rural';
   phoneNumber?: string;
   language: Language;
 }
@@ -40,6 +41,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
     ownerName: '',
     businessType: 'retail',
     city: '',
+    cityTier: undefined,
     phoneNumber: '',
     language,
   });
@@ -559,6 +561,24 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
               placeholder="+91 9876543210"
               disabled={loading}
             />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="mb-2 block text-sm font-semibold text-[#4a4c4e]">
+              {language === 'hi' ? 'शहर का स्तर' : language === 'mr' ? 'शहर स्तर' : 'City Tier'}
+            </label>
+            <Input
+              as="select"
+              value={formData.cityTier ?? ''}
+              onChange={(e) => setFormData({ ...formData, cityTier: (e.target.value || undefined) as SignupData['cityTier'] })}
+              disabled={loading}
+            >
+              <option value="">{language === 'hi' ? 'स्तर चुनें (वैकल्पिक)' : language === 'mr' ? 'स्तर निवडा (पर्यायी)' : 'Select tier (optional)'}</option>
+              <option value="tier1">{language === 'hi' ? 'टियर 1 (मेट्रो)' : language === 'mr' ? 'टियर 1 (मेट्रो)' : 'Tier 1 (Metro)'}</option>
+              <option value="tier2">{language === 'hi' ? 'टियर 2' : language === 'mr' ? 'टियर 2' : 'Tier 2'}</option>
+              <option value="tier3">{language === 'hi' ? 'टियर 3' : language === 'mr' ? 'टियर 3' : 'Tier 3'}</option>
+              <option value="rural">{language === 'hi' ? 'ग्रामीण' : language === 'mr' ? 'ग्रामीण' : 'Rural'}</option>
+            </Input>
           </div>
         </div>
       </div>

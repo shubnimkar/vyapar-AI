@@ -279,6 +279,14 @@ export default function Home() {
       setLanguage(savedLang);
     }
 
+    const syncLang = () => {
+      const lang = localStorage.getItem('vyapar-lang') as Language;
+      if (lang && ['en', 'hi', 'mr'].includes(lang)) {
+        setLanguage(lang);
+      }
+    };
+    window.addEventListener('vyapar-lang-changed', syncLang);
+    return () => window.removeEventListener('vyapar-lang-changed', syncLang);
   }, []);
 
   useEffect(() => {

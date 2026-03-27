@@ -21,6 +21,22 @@ export default function ProfilePage() {
     document.documentElement.lang = language;
   }, [language]);
 
+  // Re-sync language from localStorage whenever it changes (e.g. after profile edit)
+  useEffect(() => {
+    const syncLang = () => {
+      const saved = localStorage.getItem('vyapar-lang') as Language;
+      if (saved && ['en', 'hi', 'mr'].includes(saved)) {
+        setLanguage(saved);
+      }
+    };
+    window.addEventListener('storage', syncLang);
+    window.addEventListener('vyapar-lang-changed', syncLang);
+    return () => {
+      window.removeEventListener('storage', syncLang);
+      window.removeEventListener('vyapar-lang-changed', syncLang);
+    };
+  }, []);
+
   const checkAuth = async () => {
     if (!SessionManager.isAuthenticated()) {
       router.push('/login');
