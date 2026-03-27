@@ -10,6 +10,7 @@ import { InputSanitizer } from '@/lib/input-sanitizer';
 import { RateLimiter, RATE_LIMITS } from '@/lib/rate-limiter';
 import { logger } from '@/lib/logger';
 import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-utils';
+import { sendWelcomeEmail, getAppBaseUrl } from '@/lib/ses-email';
 
 interface SignupRequest {
   username: string;
@@ -198,6 +199,21 @@ export async function POST(request: NextRequest) {
       await ProfileService.saveProfile(profileRecord);
       
       logger.info('User created successfully', { userId });
+
+      // Send welcome email — non-blocking, failure does not affect signup
+      try {
+        const baseUrl = getAppBaseUrl() || '';
+        if (typeof sendWelcomeEmail === 'function') {
+          sendWelcomeEmail({
+            to: sanitizedEmail,
+            username: sanitizedUsername,
+            shopName: sanitizedShopName,
+            loginUrl: `${baseUrl}/login`,
+          }).catch(() => null);
+        }
+      } catch {
+        // email is non-critical, swallow any error
+      }
       
       return NextResponse.json(
         { 

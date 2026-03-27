@@ -27,7 +27,15 @@ export default function LoginPage() {
     if (saved) setLanguage(saved);
   }, [router]);
 
-  useEffect(() => { document.documentElement.lang = language; }, [language]);
+  useEffect(() => {
+    // Lock page scroll — login is a fixed viewport experience
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const handleLanguageChange = (l: Language) => {
     setLanguage(l);
@@ -113,15 +121,16 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f3f4f8] lg:grid lg:grid-cols-2">
+    <div className="h-screen overflow-hidden bg-[#f3f4f8] flex flex-col">
+      <div className="flex-1 min-h-0 lg:grid lg:grid-cols-2">
 
       {/* ── LEFT: Hero ── */}
       <section
-        className="relative hidden lg:flex flex-col overflow-hidden px-14 pt-6 pb-12"
+        className="relative hidden lg:flex flex-col overflow-hidden px-14 pt-10 pb-12 h-full min-h-0"
         style={{ background: 'linear-gradient(160deg, #eef0f8 0%, #f3f4f8 60%, #ede8f5 100%)' }}
       >
         {/* Logo — top left, lang switcher — top right */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-10">
           <img
             src="/background-removed.png"
             alt="Vyapar AI"
@@ -131,19 +140,19 @@ export default function LoginPage() {
           <LangSwitcher theme="light" />
         </div>
 
-        {/* Content — vertically centered */}
-        <div className="mt-12 flex-1 flex flex-col justify-center">
+        {/* Content — anchored from top, overflow hidden so it never pushes past the section */}
+        <div className="mt-8 flex flex-col overflow-hidden">
 
-          {/* Headline */}
-          <div className="min-h-[13rem]">
+          {/* Headline — fixed height, same across all languages */}
+          <div style={{ height: '13rem', overflow: 'hidden' }}>
             <h1 className="font-headline text-4xl md:text-5xl font-extrabold leading-[1.15] text-[#0b1a7d] max-w-xl">
               {language === 'hi'
                 ? <>बिक्री, खर्च, उधार और<br />फॉलो-अप <span style={{ color: '#c9a227' }}>एक ही जगह।</span></>
                 : language === 'mr'
                   ? <>विक्री, खर्च, उधारी आणि<br />फॉलो-अप <span style={{ color: '#c9a227' }}>एकाच ठिकाणी.</span></>
-                  : <>Track sales, expenses,<br />credit, and collections<br /><span style={{ color: '#c9a227' }}>in one place.</span></>}
+                  : <>Track sales, expenses,<br />credit &amp; collections<br /><span style={{ color: '#c9a227' }}>in one place.</span></>}
             </h1>
-            <p className="mt-4 text-base leading-7 max-w-md text-[#4a4c4e]">
+            <p className="mt-3 text-base leading-6 max-w-md text-[#4a4c4e] line-clamp-2">
               {language === 'hi'
                 ? 'छोटे व्यवसायों के लिए बनाया गया सरल, तेज और भरोसेमंद कार्यक्षेत्र।'
                 : language === 'mr'
@@ -152,22 +161,22 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Feature cards */}
+          {/* Feature cards — flex column so icon stays top, text fills naturally, fixed height clips overflow */}
           <div className="grid grid-cols-3 gap-4 mt-2">
             {featureCards.map((c, i) => (
-              <div key={i} className="rounded-2xl bg-white/80 border border-white px-4 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0b1a7d]/5 mb-3">
+              <div key={i} className="rounded-2xl bg-white/80 border border-white px-4 pt-4 pb-3 flex flex-col" style={{ height: '9rem', boxShadow: '0 2px 16px rgba(11,26,125,0.06)', overflow: 'hidden' }}>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b1a7d]/5 mb-2.5">
                   {c.icon}
                 </div>
-                <p className="text-sm font-bold text-[#1a1c1d] leading-5">{c.title}</p>
-                <p className="mt-1.5 text-xs leading-5 text-[#7a7c7e]">{c.sub}</p>
+                <p className="text-sm font-bold text-[#1a1c1d] leading-[1.3] line-clamp-2">{c.title}</p>
+                <p className="mt-1 text-xs leading-[1.4] text-[#7a7c7e] line-clamp-2">{c.sub}</p>
               </div>
             ))}
           </div>
 
-          {/* Trust banner */}
-          <div className="mt-6 flex items-center gap-3 rounded-2xl bg-white/80 border border-white px-5 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b1a7d]/5">
+          {/* Trust banner — auto height, no clipping so full text is always visible */}
+          <div className="mt-6 flex items-start gap-3 rounded-2xl bg-white/80 border border-white px-5 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b1a7d]/5 mt-0.5">
               <ShieldCheck className="h-5 w-5 text-[#0b1a7d]" />
             </div>
             <div>
@@ -178,11 +187,24 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Use with confidence — moved from right card */}
+          <div className="mt-3 flex items-start gap-3 rounded-2xl bg-white/80 border border-white px-5 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b1a7d]/5 mt-0.5">
+              <ShieldCheck className="h-5 w-5 text-[#0b1a7d]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#1a1c1d]">
+                {language === 'hi' ? 'विश्वास के साथ उपयोग करें' : language === 'mr' ? 'विश्वासाने वापरा' : 'Use with confidence'}
+              </p>
+              <p className="mt-0.5 text-xs text-[#7a7c7e]">{t('trustBanner', language)}</p>
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ── RIGHT: Auth card ── */}
-      <section className="flex flex-col justify-center bg-[#f8f8fc] px-6 py-10 lg:px-12 lg:py-12">
+      <section className="flex flex-col bg-[#f8f8fc] px-6 pt-8 pb-6 lg:px-12 lg:pt-10 lg:pb-8 h-full min-h-0 overflow-y-auto">
 
         {/* Mobile: logo + lang switcher */}
         <div className="flex items-center justify-between mb-6 lg:hidden">
@@ -190,23 +212,28 @@ export default function LoginPage() {
           <LangSwitcher theme="light" />
         </div>
 
-        {/* Card */}
+        {/* Card — centered vertically when content is short, top-aligned when tall */}
+        <div className="flex-1 flex flex-col justify-center min-h-0">
         <div className="w-full max-w-md mx-auto rounded-3xl bg-white px-8 py-8 shadow-[0_4px_32px_0_rgba(11,26,125,0.10)]">
 
           <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b1a7d] mb-2">
             {t('appTitle', language)}
           </p>
 
-          <h2 className="text-3xl font-extrabold text-[#1a1c1d] font-headline leading-tight">
-            {mode === 'signin'
-              ? (language === 'hi' ? 'वापसी पर स्वागत है' : language === 'mr' ? 'पुन्हा स्वागत आहे' : 'Welcome back')
-              : (language === 'hi' ? 'अपना खाता बनाएं' : language === 'mr' ? 'तुमचे खाते तयार करा' : 'Create your account')}
-          </h2>
-          <p className="mt-1 mb-5 text-sm text-[#7a7c7e]">
-            {mode === 'signin'
-              ? (language === 'hi' ? 'अपने व्यवसाय को प्रबंधित करने के लिए साइन इन करें।' : language === 'mr' ? 'तुमचा व्यवसाय व्यवस्थापित करण्यासाठी साइन इन करा.' : 'Sign in to continue managing your business.')
-              : (language === 'hi' ? 'कुछ आसान चरणों में Vyapar AI सेट करें।' : language === 'mr' ? 'काही सोप्या टप्प्यांत Vyapar AI सेट करा.' : 'Set up Vyapar AI for your shop in a few steps.')}
-          </p>
+          {/* Heading block — fixed height covers all languages + both signin/signup modes */}
+          <div style={{ height: '7rem', overflow: 'hidden' }}>
+            <h2 className="text-[1.75rem] font-extrabold text-[#1a1c1d] font-headline leading-[1.2]">
+              {mode === 'signin'
+                ? (language === 'hi' ? 'वापसी पर स्वागत है' : language === 'mr' ? 'पुन्हा स्वागत आहे' : 'Welcome back')
+                : (language === 'hi' ? 'अपना खाता बनाएं' : language === 'mr' ? 'तुमचे खाते तयार करा' : 'Create your account')}
+            </h2>
+            <p className="mt-1.5 text-sm text-[#7a7c7e] leading-[1.5] line-clamp-2">
+              {mode === 'signin'
+                ? (language === 'hi' ? 'अपने व्यवसाय को प्रबंधित करने के लिए साइन इन करें।' : language === 'mr' ? 'तुमचा व्यवसाय व्यवस्थापित करण्यासाठी साइन इन करा.' : 'Sign in to continue managing your business.')
+                : (language === 'hi' ? 'कुछ आसान चरणों में Vyapar AI सेट करें।' : language === 'mr' ? 'काही सोप्या टप्प्यांत Vyapar AI सेट करा.' : 'Set up Vyapar AI for your shop in a few steps.')}
+            </p>
+          </div>
+          <div className="mb-4" />
 
           {/* Tab switcher */}
           <div className="mb-6 flex rounded-full bg-[#ebebee] p-1 gap-1">
@@ -231,21 +258,16 @@ export default function LoginPage() {
               : <LoginForm onSubmit={handleLogin} loading={loading} error={error} language={language} />}
           </div>
 
-          {/* Trust footer */}
-          <div className="mt-5 flex items-center gap-3 rounded-2xl bg-[#f5f5f7] px-4 py-3.5">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0b1a7d]/10">
-              <ShieldCheck className="h-3.5 w-3.5 text-[#0b1a7d]" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#1a1c1d]">
-                {language === 'hi' ? 'विश्वास के साथ उपयोग करें' : language === 'mr' ? 'विश्वासाने वापरा' : 'Use with confidence'}
-              </p>
-              <p className="mt-0.5 text-xs text-[#7a7c7e]">{t('trustBanner', language)}</p>
-            </div>
-          </div>
-
+        </div>
         </div>
       </section>
+
+      </div>
+
+      {/* Footer */}
+      <footer className="shrink-0 py-1.5 px-6 text-center bg-[#f3f4f8] border-t border-[rgba(26,28,29,0.08)]">
+        <p className="text-[11px] text-[#b0b0b4]">© 2026 Vyapar AI. All rights reserved.</p>
+      </footer>
 
     </div>
   );

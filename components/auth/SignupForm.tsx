@@ -48,6 +48,9 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
   const [usernameChecking, setUsernameChecking] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkTimeout, setCheckTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+  const [emailCheckTimeout, setEmailCheckTimeout] = useState<NodeJS.Timeout | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({
@@ -153,6 +156,40 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
     };
   }, [formData.username]);
 
+  // Check email availability (debounced)
+  useEffect(() => {
+    const emailVal = formData.email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      setEmailAvailable(null);
+      return;
+    }
+    if (emailCheckTimeout) clearTimeout(emailCheckTimeout);
+    const timeout = setTimeout(async () => {
+      setEmailChecking(true);
+      try {
+        const response = await fetch(`/api/auth/check-email?email=${encodeURIComponent(emailVal)}`);
+        const result = await response.json();
+        if (result.valid) {
+          setEmailAvailable(result.available);
+          if (!result.available) {
+            setErrors(prev => ({ ...prev, email: language === 'hi' ? 'यह ईमेल पहले से पंजीकृत है' : language === 'mr' ? 'हा ईमेल आधीच नोंदणीकृत आहे' : 'This email is already registered' }));
+          } else {
+            setErrors(prev => { const { email, ...rest } = prev; return rest; });
+          }
+        } else {
+          setEmailAvailable(false);
+          setErrors(prev => ({ ...prev, email: result.error || 'Invalid email' }));
+        }
+      } catch (err) {
+        logger.error('Email check error', { error: err });
+      } finally {
+        setEmailChecking(false);
+      }
+    }, 500);
+    setEmailCheckTimeout(timeout);
+    return () => { if (timeout) clearTimeout(timeout); };
+  }, [formData.email]);
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -196,6 +233,10 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
     }
 
     if (usernameAvailable === false) {
+      return;
+    }
+
+    if (emailAvailable === false) {
       return;
     }
 
@@ -262,15 +303,41 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
             )}
           </div>
 
-          <Input
-            type="email"
-            label={`${language === 'hi' ? 'ईमेल' : language === 'mr' ? 'ईमेल' : 'Email'} *`}
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            error={errors.email}
-            placeholder="name@business.com"
-            disabled={loading}
-          />
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-[#4a4c4e]">
+              {language === 'hi' ? 'ईमेल' : language === 'mr' ? 'ईमेल' : 'Email'} <span className="text-error-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className={`w-full rounded-md border bg-white px-4 py-3.5 pr-12 text-base text-[#1a1c1d] transition-all duration-base placeholder:text-[#ababab] focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-neutral-50 ${
+                  errors.email
+                    ? 'border-error-500 focus:border-error-500 focus:ring-red-100'
+                    : 'border-[rgba(26,28,29,0.20)] focus:border-[rgba(11,26,125,0.50)] focus:ring-[rgba(11,26,125,0.08)]'
+                }`}
+                placeholder="name@business.com"
+                disabled={loading}
+              />
+              {emailChecking && (
+                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                  <Spinner size="sm" />
+                </div>
+              )}
+              {!emailChecking && emailAvailable === true && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                <Check className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-success-500" />
+              )}
+            </div>
+            {errors.email && (
+              <p className="mt-2 text-sm text-error-600">{errors.email}</p>
+            )}
+            {!errors.email && emailAvailable === true && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+              <p className="mt-2 text-sm text-success-600">
+                {language === 'hi' ? 'ईमेल उपलब्ध है' : language === 'mr' ? 'ईमेल उपलब्ध आहे' : 'Email is available'}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -498,7 +565,7 @@ export default function SignupForm({ onSubmit, loading, error, language }: Signu
 
       <Button
         type="submit"
-        disabled={loading || usernameAvailable === false}
+        disabled={loading || usernameAvailable === false || emailAvailable === false}
         loading={loading}
         fullWidth
         variant="primary"
