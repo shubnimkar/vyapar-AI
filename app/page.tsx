@@ -1237,98 +1237,22 @@ export default function Home() {
         {/* Main Content Area */}
         <main className="flex h-screen flex-1 flex-col overflow-hidden bg-neutral-50">
           {/* Header */}
-          <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 px-4 backdrop-blur-md sm:px-6 lg:px-10 h-16 flex items-center">
-            <div className="flex w-full items-center justify-between gap-6">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                  <h2 className="text-2xl font-bold tracking-tight text-neutral-900 shrink-0">
-                    {activeSection === 'pending' ? t('nav.pending', language) : getSectionLabel(activeSection)}
-                  </h2>
-                  {activeSection === 'pending' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {t('pendingSubtitle', language)}
-                    </p>
-                  )}
-                  {activeSection === 'chat' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {t('askAISubtitle', language)}
-                    </p>
-                  )}
-                  {activeSection === 'reports' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {language === 'hi'
-                        ? 'अवधि सारांश बनाएं, प्रदर्शन रुझान ट्रैक करें।'
-                        : language === 'mr'
-                          ? 'कालावधी सारांश तयार करा, कामगिरीचे ट्रेंड ट्रॅक करा.'
-                          : 'Generate summaries and track performance trends.'}
-                    </p>
-                  )}
-                  {activeSection === 'analysis' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {language === 'hi'
-                        ? 'CSV डेटा अपलोड करें और AI से अंतर्दृष्टि पाएं।'
-                        : language === 'mr'
-                          ? 'CSV डेटा अपलोड करा आणि AI कडून अंतर्दृष्टी मिळवा.'
-                          : 'Upload CSV data to get AI-powered insights.'}
-                    </p>
-                  )}
-                  {activeSection === 'credit' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {language === 'hi'
-                        ? 'ग्राहकों का उधार ट्रैक करें, बकाया भुगतान का फॉलो-अप करें।'
-                        : language === 'mr'
-                          ? 'ग्राहकांचे उधार ट्रॅक करा आणि थकीत पेमेंटचा फॉलो-अप करा.'
-                          : 'Track customer credit, follow up on overdue payments, and manage your udhaar.'}
-                    </p>
-                  )}
-                  {activeSection === 'entries' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {language === 'hi'
-                        ? 'आज की बिक्री, खर्च और नकद दर्ज करें — आवाज, रसीद या मैन्युअल एंट्री से।'
-                        : language === 'mr'
-                          ? 'आजची विक्री, खर्च आणि रोकड नोंदवा — आवाज, पावती किंवा मॅन्युअल नोंदीने.'
-                          : 'Log today\'s sales, expenses, and cash — by voice, receipt, or manual entry.'}
-                    </p>
-                  )}
-                  {activeSection === 'dashboard' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {language === 'hi'
-                        ? 'अपने व्यवसाय का आज का स्वास्थ्य और प्रमुख संकेतक देखें।'
-                        : language === 'mr'
-                          ? 'आजचे व्यवसाय आरोग्य आणि प्रमुख निर्देशक पाहा.'
-                          : 'Your business health at a glance — scores, trends, and key metrics.'}
-                    </p>
-                  )}
-                  {activeSection === 'health' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {language === 'hi'
-                        ? 'तनाव सूचकांक, वहनीयता और नकदी प्रवाह पूर्वानुमान देखें।'
-                        : language === 'mr'
-                          ? 'ताण निर्देशांक, परवडणारेपणा आणि रोख प्रवाह अंदाज पाहा.'
-                          : 'Stress index, affordability, and cash flow forecast for your shop.'}
-                    </p>
-                  )}
-                  {activeSection === 'account' && (
-                    <p className="text-sm text-neutral-500 truncate">
-                      {language === 'hi'
-                        ? 'अपनी प्रोफ़ाइल, व्यवसाय प्रकार और प्राथमिकताएं प्रबंधित करें।'
-                        : language === 'mr'
-                          ? 'तुमची प्रोफाइल, व्यवसाय प्रकार आणि प्राधान्ये व्यवस्थापित करा.'
-                          : 'Manage your profile, business type, and preferences.'}
-                    </p>
-                  )}
-                </div>
-              </div>
+          <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur-md">
+            {/* Top bar: title + controls */}
+            <div className="flex items-center justify-between gap-2 px-4 h-14 sm:px-6 lg:px-10 lg:h-16">
+              <h2 className="text-lg font-bold tracking-tight text-neutral-900 truncate shrink min-w-0 sm:text-2xl">
+                {activeSection === 'pending' ? t('nav.pending', language) : getSectionLabel(activeSection)}
+              </h2>
               {/* Right side: language dropdown + sync */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 shrink-0">
                 <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
                 <SyncStatus language={language} />
               </div>
             </div>
 
-            {/* Mobile top navigation pills */}
-            <div className="mt-4 overflow-x-auto lg:hidden">
-              <div className="flex gap-2 pb-1">
+            {/* Mobile nav pills row — separate sticky row, scrollable */}
+            <div className="overflow-x-auto lg:hidden border-t border-neutral-100 bg-white px-4 py-2">
+              <div className="flex gap-2">
                 {sectionItems.map((section) => {
                   const Icon = section.icon;
                   const active = activeSection === section.id;
@@ -1337,16 +1261,16 @@ export default function Home() {
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
-                      className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-2 text-xs font-medium transition-all ${
+                      className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
                         active
                           ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
                           : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50'
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5" />
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span>{getSectionLabel(section.id)}</span>
                       {showBadge && (
-                        <span className="ml-1 bg-white/20 text-[10px] px-1.5 py-0.5 rounded-full">
+                        <span className="ml-1 rounded-full bg-white/25 px-1.5 py-0.5 text-[10px]">
                           {pendingCount.badge}
                         </span>
                       )}
@@ -1355,19 +1279,34 @@ export default function Home() {
                 })}
               </div>
             </div>
+
+            {/* Desktop subtitle row */}
+            <div className="hidden lg:block px-10 pb-2 -mt-1">
+              <p className="text-sm text-neutral-500 truncate">
+                {activeSection === 'pending' && t('pendingSubtitle', language)}
+                {activeSection === 'chat' && t('askAISubtitle', language)}
+                {activeSection === 'reports' && (language === 'hi' ? 'अवधि सारांश बनाएं, प्रदर्शन रुझान ट्रैक करें।' : language === 'mr' ? 'कालावधी सारांश तयार करा, कामगिरीचे ट्रेंड ट्रॅक करा.' : 'Generate summaries and track performance trends.')}
+                {activeSection === 'analysis' && (language === 'hi' ? 'CSV डेटा अपलोड करें और AI से अंतर्दृष्टि पाएं।' : language === 'mr' ? 'CSV डेटा अपलोड करा आणि AI कडून अंतर्दृष्टी मिळवा.' : 'Upload CSV data to get AI-powered insights.')}
+                {activeSection === 'credit' && (language === 'hi' ? 'ग्राहकों का उधार ट्रैक करें, बकाया भुगतान का फॉलो-अप करें।' : language === 'mr' ? 'ग्राहकांचे उधार ट्रॅक करा आणि थकीत पेमेंटचा फॉलो-अप करा.' : 'Track customer credit, follow up on overdue payments.')}
+                {activeSection === 'entries' && (language === 'hi' ? 'आज की बिक्री, खर्च और नकद दर्ज करें।' : language === 'mr' ? 'आजची विक्री, खर्च आणि रोकड नोंदवा.' : "Log today's sales, expenses, and cash.")}
+                {activeSection === 'dashboard' && (language === 'hi' ? 'अपने व्यवसाय का आज का स्वास्थ्य देखें।' : language === 'mr' ? 'आजचे व्यवसाय आरोग्य पाहा.' : 'Your business health at a glance.')}
+                {activeSection === 'health' && (language === 'hi' ? 'तनाव सूचकांक, वहनीयता और नकदी प्रवाह पूर्वानुमान देखें।' : language === 'mr' ? 'ताण निर्देशांक, परवडणारेपणा आणि रोख प्रवाह अंदाज पाहा.' : 'Stress index, affordability, and cash flow forecast.')}
+                {activeSection === 'account' && (language === 'hi' ? 'अपनी प्रोफ़ाइल और प्राथमिकताएं प्रबंधित करें।' : language === 'mr' ? 'तुमची प्रोफाइल आणि प्राधान्ये व्यवस्थापित करा.' : 'Manage your profile and preferences.')}
+              </p>
+            </div>
           </header>
 
           {/* Scrollable Dashboard Content */}
           <div
-            className={`flex-1 overflow-y-auto px-4 py-6 pb-24 sm:px-6 sm:py-8 sm:pb-8 lg:px-10 lg:py-10 ${
+            className={`flex-1 overflow-y-auto px-3 py-4 pb-6 sm:px-6 sm:py-6 sm:pb-8 lg:px-10 lg:py-10 ${
               activeSection === 'credit' ? 'bg-white' : 'bg-neutral-50'
             }`}
           >
             <div
               className={
                 activeSection === 'health'
-                  ? 'w-full space-y-8'
-                  : 'mx-auto w-full max-w-7xl space-y-8'
+                  ? 'w-full space-y-4 sm:space-y-8'
+                  : 'mx-auto w-full max-w-7xl space-y-4 sm:space-y-6 lg:space-y-8'
               }
             >
               {activeSection === 'dashboard' && (
@@ -1513,7 +1452,18 @@ export default function Home() {
               )}
 
               {activeSection === 'account' && user && (
-                <ProfileContent language={language} user={user} />
+                <>
+                  <ProfileContent language={language} user={user} />
+                  {/* Logout — visible on mobile where sidebar is hidden */}
+                  <div className="lg:hidden">
+                    <button
+                      onClick={handleLogoutClick}
+                      className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    >
+                      {language === 'hi' ? 'लॉग आउट' : language === 'mr' ? 'लॉग आउट' : 'Log Out'}
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </div>

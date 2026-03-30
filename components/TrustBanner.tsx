@@ -10,16 +10,16 @@ interface TrustBannerProps {
 
 export default function TrustBanner({ language }: TrustBannerProps) {
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
-      <div className="flex items-start gap-4">
-        <div className="bg-primary-50 p-3 rounded-2xl flex-shrink-0">
-          <Shield className="w-6 h-6 text-primary-600" aria-hidden="true" />
+    <div className="bg-white border border-neutral-200 rounded-xl p-4 sm:p-6 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="bg-primary-50 p-2.5 rounded-2xl flex-shrink-0">
+          <Shield className="w-5 h-5 text-primary-600" aria-hidden="true" />
         </div>
         <div className="flex-1">
-          <h3 className="text-neutral-900 font-semibold text-base mb-1">
+          <h3 className="text-neutral-900 font-semibold text-sm sm:text-base mb-0.5">
             {language === 'hi' ? 'आपका डेटा सुरक्षित है' : language === 'mr' ? 'तुमचा डेटा सुरक्षित आहे' : 'Your Data is Secure'}
           </h3>
-          <p className="text-sm text-neutral-600 leading-relaxed">
+          <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed">
             {t('trustBanner', language)}
           </p>
         </div>

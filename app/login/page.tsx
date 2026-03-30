@@ -26,16 +26,6 @@ export default function LoginPage() {
     if (saved) setLanguage(saved);
   }, [router]);
 
-  useEffect(() => {
-    // Lock page scroll — login is a fixed viewport experience
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-    };
-  }, []);
-
   const handleLanguageChange = (l: Language) => {
     setLanguage(l);
     localStorage.setItem('vyapar-lang', l);
@@ -120,10 +110,10 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="h-screen overflow-hidden bg-[#f3f4f8] flex flex-col">
-      <div className="flex-1 min-h-0 lg:grid lg:grid-cols-2">
+    <div className="min-h-screen bg-white flex flex-col lg:bg-[#f3f4f8]">
+      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-2 lg:h-screen lg:overflow-hidden">
 
-      {/* ── LEFT: Hero ── */}
+      {/* ── LEFT: Hero (desktop only) ── */}
       <section
         className="relative hidden lg:flex flex-col overflow-hidden px-14 pt-10 pb-12 h-full min-h-0"
         style={{ background: 'linear-gradient(160deg, #eef0f8 0%, #f3f4f8 60%, #ede8f5 100%)' }}
@@ -139,10 +129,8 @@ export default function LoginPage() {
           <LangSwitcher theme="light" />
         </div>
 
-        {/* Content — anchored from top, overflow hidden so it never pushes past the section */}
+        {/* Content */}
         <div className="mt-8 flex flex-col overflow-hidden">
-
-          {/* Headline — fixed height, same across all languages */}
           <div style={{ height: '13rem', overflow: 'hidden' }}>
             <h1 className="font-headline text-4xl md:text-5xl font-extrabold leading-[1.15] text-[#0b1a7d] max-w-xl">
               {language === 'hi'
@@ -160,7 +148,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Feature cards — flex column so icon stays top, text fills naturally, fixed height clips overflow */}
           <div className="grid grid-cols-3 gap-4 mt-2">
             {featureCards.map((c, i) => (
               <div key={i} className="rounded-2xl bg-white/80 border border-white px-4 pt-4 pb-3 flex flex-col" style={{ height: '9rem', boxShadow: '0 2px 16px rgba(11,26,125,0.06)', overflow: 'hidden' }}>
@@ -173,7 +160,6 @@ export default function LoginPage() {
             ))}
           </div>
 
-          {/* Trust banner — auto height, no clipping so full text is always visible */}
           <div className="mt-6 flex items-start gap-3 rounded-2xl bg-white/80 border border-white px-5 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b1a7d]/5 mt-0.5">
               <ShieldCheck className="h-5 w-5 text-[#0b1a7d]" />
@@ -185,86 +171,70 @@ export default function LoginPage() {
               <p className="mt-0.5 text-xs text-[#7a7c7e]">{t('trustBanner', language)}</p>
             </div>
           </div>
-
-          {/* Use with confidence — moved from right card */}
-          <div className="mt-3 flex items-start gap-3 rounded-2xl bg-white/80 border border-white px-5 py-4" style={{ boxShadow: '0 2px 16px rgba(11,26,125,0.06)' }}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0b1a7d]/5 mt-0.5">
-              <ShieldCheck className="h-5 w-5 text-[#0b1a7d]" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#1a1c1d]">
-                {language === 'hi' ? 'विश्वास के साथ उपयोग करें' : language === 'mr' ? 'विश्वासाने वापरा' : 'Use with confidence'}
-              </p>
-              <p className="mt-0.5 text-xs text-[#7a7c7e]">{t('trustBanner', language)}</p>
-            </div>
-          </div>
-
         </div>
       </section>
 
-      {/* ── RIGHT: Auth card ── */}
-      <section className="flex flex-col bg-[#f8f8fc] px-6 pt-8 pb-6 lg:px-12 lg:pt-10 lg:pb-8 h-full min-h-0 overflow-y-auto">
+      {/* ── RIGHT: Auth ── */}
+      <section className="flex flex-col flex-1 bg-white px-5 pt-10 pb-8 lg:px-12 lg:pt-10 lg:pb-8 lg:h-full lg:overflow-y-auto">
 
         {/* Mobile: logo + lang switcher */}
-        <div className="flex items-center justify-between mb-6 lg:hidden">
-          <VyaparLogo variant="full" height={38} />
+        <div className="flex items-center justify-between mb-8 lg:hidden">
+          <VyaparLogo variant="full" height={36} />
           <LangSwitcher theme="light" />
         </div>
 
-        {/* Card — centered vertically when content is short, top-aligned when tall */}
-        <div className="flex-1 flex flex-col justify-center min-h-0">
-        <div className="w-full max-w-md mx-auto rounded-3xl bg-white px-8 py-8 shadow-[0_4px_32px_0_rgba(11,26,125,0.10)]">
+        {/* Form area — vertically centered on desktop, top-aligned on mobile */}
+        <div className="w-full max-w-sm mx-auto lg:max-w-md lg:my-auto">
 
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b1a7d] mb-2">
-            {t('appTitle', language)}
-          </p>
+          {/* Desktop card wrapper */}
+          <div className="lg:rounded-3xl lg:bg-white lg:px-8 lg:py-8 lg:shadow-[0_4px_32px_0_rgba(11,26,125,0.10)]">
 
-          {/* Heading block — fixed height covers all languages + both signin/signup modes */}
-          <div style={{ height: '7rem', overflow: 'hidden' }}>
-            <h2 className="text-[1.75rem] font-extrabold text-[#1a1c1d] font-headline leading-[1.2]">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0b1a7d] mb-2">
+              {t('appTitle', language)}
+            </p>
+
+            <h2 className="text-2xl font-extrabold text-[#1a1c1d] font-headline leading-[1.2] mb-1">
               {mode === 'signin'
                 ? (language === 'hi' ? 'वापसी पर स्वागत है' : language === 'mr' ? 'पुन्हा स्वागत आहे' : 'Welcome back')
                 : (language === 'hi' ? 'अपना खाता बनाएं' : language === 'mr' ? 'तुमचे खाते तयार करा' : 'Create your account')}
             </h2>
-            <p className="mt-1.5 text-sm text-[#7a7c7e] leading-[1.5] line-clamp-2">
+            <p className="text-sm text-[#7a7c7e] leading-[1.5] mb-6">
               {mode === 'signin'
                 ? (language === 'hi' ? 'अपने व्यवसाय को प्रबंधित करने के लिए साइन इन करें।' : language === 'mr' ? 'तुमचा व्यवसाय व्यवस्थापित करण्यासाठी साइन इन करा.' : 'Sign in to continue managing your business.')
                 : (language === 'hi' ? 'कुछ आसान चरणों में Vyapar AI सेट करें।' : language === 'mr' ? 'काही सोप्या टप्प्यांत Vyapar AI सेट करा.' : 'Set up Vyapar AI for your shop in a few steps.')}
             </p>
-          </div>
-          <div className="mb-4" />
 
-          {/* Tab switcher */}
-          <div className="mb-6 flex rounded-full bg-[#ebebee] p-1 gap-1">
-            <button
-              onClick={() => handleModeSwitch('signin')}
-              className={`flex-1 rounded-full py-2 text-sm font-semibold transition-all ${mode === 'signin' ? 'bg-[#c9a227] text-[#1a1c1d] shadow-sm' : 'text-[#4a4c4e] hover:text-[#1a1c1d]'}`}
-            >
-              {t('loginButton', language)}
-            </button>
-            <button
-              onClick={() => handleModeSwitch('signup')}
-              className={`flex-1 rounded-full py-2 text-sm font-semibold transition-all ${mode === 'signup' ? 'bg-[#c9a227] text-[#1a1c1d] shadow-sm' : 'text-[#4a4c4e] hover:text-[#1a1c1d]'}`}
-            >
-              {t('signupButton', language)}
-            </button>
-          </div>
+            {/* Tab switcher */}
+            <div className="mb-6 flex rounded-full bg-[#ebebee] p-1 gap-1">
+              <button
+                onClick={() => handleModeSwitch('signin')}
+                className={`flex-1 rounded-full py-2.5 text-sm font-semibold transition-all ${mode === 'signin' ? 'bg-[#c9a227] text-[#1a1c1d] shadow-sm' : 'text-[#4a4c4e] hover:text-[#1a1c1d]'}`}
+              >
+                {t('loginButton', language)}
+              </button>
+              <button
+                onClick={() => handleModeSwitch('signup')}
+                className={`flex-1 rounded-full py-2.5 text-sm font-semibold transition-all ${mode === 'signup' ? 'bg-[#c9a227] text-[#1a1c1d] shadow-sm' : 'text-[#4a4c4e] hover:text-[#1a1c1d]'}`}
+              >
+                {t('signupButton', language)}
+              </button>
+            </div>
 
-          {/* Form */}
-          <div className={mode === 'signup' ? 'max-h-[55vh] overflow-y-auto' : ''}>
-            {mode === 'signup'
-              ? <SignupForm onSubmit={handleSignup} loading={loading} error={error} language={language} />
-              : <LoginForm onSubmit={handleLogin} loading={loading} error={error} language={language} />}
-          </div>
+            {/* Form */}
+            <div className={mode === 'signup' ? 'max-h-[55vh] overflow-y-auto' : ''}>
+              {mode === 'signup'
+                ? <SignupForm onSubmit={handleSignup} loading={loading} error={error} language={language} />
+                : <LoginForm onSubmit={handleLogin} loading={loading} error={error} language={language} />}
+            </div>
 
-        </div>
+          </div>
         </div>
       </section>
 
       </div>
 
       {/* Footer */}
-      <footer className="shrink-0 py-1.5 px-6 text-center bg-[#f3f4f8] border-t border-[rgba(26,28,29,0.08)]">
+      <footer className="shrink-0 py-3 px-6 text-center bg-white border-t border-[rgba(26,28,29,0.06)] lg:bg-[#f3f4f8]">
         <p className="text-[11px] text-[#b0b0b4]">© 2026 Vyapar AI. All rights reserved.</p>
       </footer>
 
