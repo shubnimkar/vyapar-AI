@@ -11,6 +11,16 @@ import {
   LANGUAGE_INSTRUCTIONS,
 } from './templates';
 import { logger } from '@/lib/logger';
+import { buildAIDateContextBlock } from './date-context';
+
+function formatPromptDate(dateValue: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: 'Asia/Kolkata',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(`${dateValue}T00:00:00+05:30`));
+}
 
 /**
  * Build persona-aware prompt for AI requests
@@ -45,6 +55,7 @@ export function buildPersonaPrompt(
 
   // 0. LANGUAGE INSTRUCTION (MUST BE FIRST AND MOST PROMINENT)
   systemPrompt += LANGUAGE_INSTRUCTIONS[context.language] + '\n\n';
+  systemPrompt += buildAIDateContextBlock() + '\n\n';
 
   // 1. Persona identity
   systemPrompt += PERSONA_IDENTITIES[context.business_type][context.language] + '\n\n';
@@ -295,7 +306,7 @@ export function buildCashflowPredictionPrompt(predictions: any[], language: stri
     prompt = `कृपया निम्नलिखित 7-दिवसीय कैश फ्लो पूर्वानुमान की व्याख्या करें:\n\n`;
     prompt += `**पूर्वानुमान विवरण:**\n`;
     predictions.forEach((pred, idx) => {
-      const date = new Date(pred.date).toLocaleDateString('hi-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+      const date = formatPromptDate(pred.date, 'hi-IN');
       const balance = new Intl.NumberFormat('hi-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pred.predictedBalance);
       const trend = pred.trend === 'up' ? '📈 बढ़ रहा' : pred.trend === 'down' ? '📉 घट रहा' : '➡️ स्थिर';
       const confidence = Math.round(pred.confidence * 100);
@@ -313,7 +324,7 @@ export function buildCashflowPredictionPrompt(predictions: any[], language: stri
     prompt = `कृपया खालील 7-दिवसीय रोख प्रवाह अंदाजाचे स्पष्टीकरण द्या:\n\n`;
     prompt += `**अंदाज तपशील:**\n`;
     predictions.forEach((pred, idx) => {
-      const date = new Date(pred.date).toLocaleDateString('mr-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+      const date = formatPromptDate(pred.date, 'mr-IN');
       const balance = new Intl.NumberFormat('mr-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pred.predictedBalance);
       const trend = pred.trend === 'up' ? '📈 वाढत आहे' : pred.trend === 'down' ? '📉 कमी होत आहे' : '➡️ स्थिर';
       const confidence = Math.round(pred.confidence * 100);
@@ -331,7 +342,7 @@ export function buildCashflowPredictionPrompt(predictions: any[], language: stri
     prompt = `Please explain the following 7-day cash flow prediction:\n\n`;
     prompt += `**Prediction Details:**\n`;
     predictions.forEach((pred, idx) => {
-      const date = new Date(pred.date).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+      const date = formatPromptDate(pred.date, 'en-IN');
       const balance = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pred.predictedBalance);
       const trend = pred.trend === 'up' ? '📈 Rising' : pred.trend === 'down' ? '📉 Falling' : '➡️ Stable';
       const confidence = Math.round(pred.confidence * 100);

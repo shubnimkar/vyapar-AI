@@ -3,6 +3,11 @@ import { logger } from './logger';
 
 const reportsKey = (userId: string, language: Language) => `vyapar-reports-${userId}-${language}`;
 const preferencesKey = (userId: string) => `vyapar-report-preferences-${userId}`;
+const inFlightPulls = new Map<string, Promise<ReportsListResponse | null>>();
+
+function getPullKey(userId: string, language: Language): string {
+  return `${userId}:${language}`;
+}
 
 export function getCachedReports(userId: string, language: Language): DailyReport[] {
   if (typeof window === 'undefined') return [];
@@ -22,7 +27,6 @@ export function cacheReports(userId: string, language: Language, reports: DailyR
 
   try {
     localStorage.setItem(reportsKey(userId, language), JSON.stringify(reports));
-    window.dispatchEvent(new CustomEvent('reportsUpdated', { detail: { userId, language, count: reports.length } }));
   } catch (error) {
     logger.warn('Failed to cache reports', { error, userId, language });
   }
@@ -52,6 +56,14 @@ export function cacheReportPreferences(preferences: UserPreferences): void {
 }
 
 export async function pullReportsFromCloud(userId: string, language: Language): Promise<ReportsListResponse | null> {
+  const pullKey = getPullKey(userId, language);
+  const existingPull = inFlightPulls.get(pullKey);
+
+  if (existingPull) {
+    return existingPull;
+  }
+
+  const pullPromise = (async () => {
   try {
     const response = await fetch(`/api/reports?userId=${encodeURIComponent(userId)}&language=${encodeURIComponent(language)}`);
     const result = await response.json() as ReportsListResponse;
@@ -74,7 +86,13 @@ export async function pullReportsFromCloud(userId: string, language: Language): 
   } catch (error) {
     logger.warn('Failed to pull reports from cloud', { error, userId, language });
     return null;
+  } finally {
+    inFlightPulls.delete(pullKey);
   }
+  })();
+
+  inFlightPulls.set(pullKey, pullPromise);
+  return pullPromise;
 }
 
 export async function getReportsLocalFirst(userId: string, language: Language): Promise<ReportsListResponse> {
@@ -82,10 +100,7 @@ export async function getReportsLocalFirst(userId: string, language: Language): 
   const cachedPreferences = getCachedReportPreferences(userId);
 
   if (cachedReports.length > 0 || cachedPreferences) {
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
-      void pullReportsFromCloud(userId, language);
-    }
-
+    // Return cache immediately — caller is responsible for triggering a refresh if needed
     return {
       success: true,
       data: cachedReports,

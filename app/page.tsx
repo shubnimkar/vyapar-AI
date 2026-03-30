@@ -326,7 +326,7 @@ export default function Home() {
 
   useEffect(() => {
     const loadQAReports = async () => {
-      if (!user?.userId || !['chat', 'reports'].includes(activeSection)) {
+      if (!user?.userId || activeSection !== 'chat') {
         return;
       }
 

@@ -2,6 +2,60 @@
 
 import { calculateCreditSummary, calculateExpenseRatio, calculateHealthScore, calculateProfit, calculateProfitMargin } from './calculations';
 import { Language, ParsedCSV, ChatMessage, DailyEntry, CreditEntry, DailyReport, InferredTransaction } from './types';
+import { buildAIDateContextBlock, getCurrentISTDateContext } from './ai/date-context';
+
+function getRecentISTDateRange(days: number, now: Date = new Date()): string[] {
+  const { today } = getCurrentISTDateContext(now);
+  const cursor = new Date(`${today}T00:00:00.000Z`);
+  const dates: string[] = [];
+
+  for (let index = days - 1; index >= 0; index -= 1) {
+    const next = new Date(cursor);
+    next.setUTCDate(cursor.getUTCDate() - index);
+    dates.push(next.toISOString().slice(0, 10));
+  }
+
+  return dates;
+}
+
+function formatCalendarWindowSummary(dailyEntries: DailyEntry[], days: number): string {
+  const dates = getRecentISTDateRange(days);
+  const startDate = dates[0];
+  const endDate = dates[dates.length - 1];
+  const entryByDate = new Map(dailyEntries.map((entry) => [entry.date, entry]));
+
+  const rows = dates.map((date) => {
+    const entry = entryByDate.get(date);
+    return {
+      date,
+      sales: entry?.totalSales ?? 0,
+      expense: entry?.totalExpense ?? 0,
+      profit: entry?.estimatedProfit ?? ((entry?.totalSales ?? 0) - (entry?.totalExpense ?? 0)),
+      hasEntry: Boolean(entry),
+    };
+  });
+
+  const totalSales = rows.reduce((sum, row) => sum + row.sales, 0);
+  const totalExpense = rows.reduce((sum, row) => sum + row.expense, 0);
+  const totalProfit = rows.reduce((sum, row) => sum + row.profit, 0);
+  const missingDates = rows.filter((row) => !row.hasEntry).map((row) => row.date);
+
+  let formatted = `**Last ${days} Calendar Days (IST):** ${startDate} to ${endDate}\n`;
+  formatted += `- Total sales in this calendar window: ${formatCurrency(totalSales)}\n`;
+  formatted += `- Total expenses in this calendar window: ${formatCurrency(totalExpense)}\n`;
+  formatted += `- Total estimated profit in this calendar window: ${formatCurrency(totalProfit)}\n`;
+  formatted += `- Days with entries: ${rows.length - missingDates.length}/${rows.length}\n`;
+  formatted += missingDates.length > 0
+    ? `- Missing entry dates counted as zero: ${missingDates.join(', ')}\n`
+    : '- Missing entry dates counted as zero: none\n';
+  formatted += '- Daily breakdown for this calendar window:\n';
+
+  rows.forEach((row) => {
+    formatted += `  - ${row.date}: sales ${formatCurrency(row.sales)}, expenses ${formatCurrency(row.expense)}, profit ${formatCurrency(row.profit)}${row.hasEntry ? '' : ' (no entry, treated as zero)'}\n`;
+  });
+
+  return `${formatted}\n`;
+}
 
 /**
  * Format CSV data for inclusion in prompts
@@ -58,7 +112,8 @@ function formatDailyEntrySummary(dailyEntries: DailyEntry[]): string {
     `- Recent expense total: ${formatCurrency(totalExpense)}\n` +
     `- Recent estimated profit: ${formatCurrency(estimatedProfit)}\n` +
     `- Average margin over recent entries: ${(avgMargin * 100).toFixed(1)}%\n` +
-    `${latestEntry.cashInHand !== undefined ? `- Latest cash in hand: ${formatCurrency(latestEntry.cashInHand)}\n` : ''}\n`;
+    `${latestEntry.cashInHand !== undefined ? `- Latest cash in hand: ${formatCurrency(latestEntry.cashInHand)}\n` : ''}\n` +
+    `${formatCalendarWindowSummary(dailyEntries, 7)}`;
 }
 
 function formatCreditEntrySummary(creditEntries: CreditEntry[]): string {
@@ -66,9 +121,10 @@ function formatCreditEntrySummary(creditEntries: CreditEntry[]): string {
     return '**Credit Entries:** Not provided\n';
   }
 
+  const { today } = getCurrentISTDateContext();
   const creditSummary = calculateCreditSummary(creditEntries);
   const overdueEntries = creditEntries
-    .filter((entry) => !entry.isPaid && new Date(entry.dueDate) < new Date())
+    .filter((entry) => !entry.isPaid && entry.dueDate < today)
     .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 5);
 
@@ -229,6 +285,9 @@ ${calculatedMetrics.blockedInventory !== undefined ? `- Blocked Inventory Cash: 
 
   const prompt = `You are a business health advisor for small retail shops in India. ${calculatedMetrics ? 'You are explaining pre-calculated business metrics.' : 'Analyze the following data and provide insights.'}
 
+**Date Context (Use this for all relative dates):**
+${buildAIDateContextBlock()}
+
 ${metricsSection}
 
 ${formatCSVData(salesData, 'Sales Data')}
@@ -343,6 +402,9 @@ ${typeof appContext?.healthScore === 'number' ? `- Current health score: ${appCo
 
   const prompt = `You are answering questions for a small shop owner about their business data. Use only the provided data to answer.
 
+**Date Context (Use this for all relative dates):**
+${buildAIDateContextBlock()}
+
 ${dataSummary}
 ${appContextSummary}
 
@@ -357,6 +419,8 @@ ${getLanguageInstructions(language)}
 - You can answer using daily entries, credit records, and uploaded CSV data together
 - If data is insufficient, say so clearly
 - Provide specific numbers and examples
+- For phrases like "today", "yesterday", "last 7 days", or "this week", use the IST calendar window exactly as given in the Date Context and Last 7 Calendar Days section
+- For daily-entry questions about the last 7 days, include dates with no entry as zero instead of shrinking the window to only recorded entry dates
 - When useful, explain what happened, why it happened, and what the owner should do next
 - If the question spans multiple data sources, combine them into one answer
 - If only some data sources are available, answer from those and mention what is missing
@@ -393,6 +457,9 @@ export function buildQAResponseTranslationPrompt(answer: string, language: Langu
   return `You are translating a business assistant reply into ${languageName}.
 
 ${getLanguageInstructions(language)}
+
+**Date Context:**
+${buildAIDateContextBlock()}
 
 **Task:**
 - Translate the answer below into ${languageName}

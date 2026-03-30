@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
         DynamoDBService.getItem(`USER#${userId}`, 'PREFERENCES'),
       ]);
 
-      // Always translate fresh from the original stored content — no cache
       const localizedReports = await Promise.all(reports.map(async (item) => {
         const reportData = (item.reportData || {}) as Record<string, unknown>;
         const reportType = (item.reportType || 'daily') as 'daily' | 'weekly' | 'monthly';
@@ -47,13 +46,29 @@ export async function GET(request: NextRequest) {
           : periodEnd || item.date;
 
         const original = getOriginalReportContent(reportData);
-        const localizedContent = await translateReportContent({
-          reportType,
-          periodLabel,
-          generatedLanguage,
-          targetLanguage: language,
-          original,
-        });
+
+        // Use cached translation if available, only call AI when needed
+        const translationCacheKey = `localizedContent_${language}`;
+        const cachedTranslation = reportData[translationCacheKey] as Record<string, unknown> | undefined;
+        let localizedContent;
+        if (cachedTranslation && language !== generatedLanguage) {
+          localizedContent = cachedTranslation;
+        } else {
+          localizedContent = await translateReportContent({
+            reportType,
+            periodLabel,
+            generatedLanguage,
+            targetLanguage: language,
+            original,
+          });
+          // Persist the translation so future GETs skip AI
+          if (language !== generatedLanguage && item.reportId) {
+            DynamoDBService.putItem({
+              ...item,
+              reportData: { ...reportData, [translationCacheKey]: localizedContent },
+            }).catch(() => { /* best-effort cache write */ });
+          }
+        }
 
         return {
           id: item.reportId,

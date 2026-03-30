@@ -10,6 +10,7 @@ import { createErrorResponse, logAndReturnError, ErrorCode } from '@/lib/error-u
 import { DailyEntry, DailyReport, Language } from '@/lib/types';
 import { generateWithModelChain } from '@/lib/ai/bedrock-model-chain';
 import { getModelChain } from '@/lib/ai/model-routing';
+import { buildAIDateContextBlock, getCurrentISTDateContext } from '@/lib/ai/date-context';
 // report-localization not needed at generation time — content stored flat
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
@@ -41,15 +42,14 @@ function formatPeriodLabel(reportType: ReportType, periodStart: string, periodEn
 }
 
 function toCalendarDateString(value: Date): string {
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, '0');
-  const day = String(value.getDate()).padStart(2, '0');
+  const year = value.getUTCFullYear();
+  const month = String(value.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(value.getUTCDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
 
 function getPeriodRange(reportType: ReportType, now = new Date()): { reportDate: string; periodStart: string; periodEnd: string; previousStart: string; previousEnd: string } {
-  const current = new Date(now);
-  current.setHours(0, 0, 0, 0);
+  const current = new Date(`${getCurrentISTDateContext(now).today}T00:00:00.000Z`);
 
   const end = new Date(current);
   const start = new Date(current);
@@ -154,6 +154,9 @@ async function generateInsightsWithBedrock(
 
   const prompt = `You are generating a ${reportType} business report for a small shop owner in India.
 ${languageInstruction}
+
+Use this date context for all relative-date reasoning:
+${buildAIDateContextBlock()}
 
 Period: ${periodLabel}
 Sales: ${metrics.totalSales}

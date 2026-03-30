@@ -261,6 +261,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
   useEffect(() => {
     void fetchReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, language]);
 
   useEffect(() => {
@@ -337,16 +338,8 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
         throw new Error(result.error || t.generateFailed);
       }
 
-      if (result.data) {
-        const currentReports = await getReportsLocalFirst(userId, language);
-        cacheReports(userId, language, [result.data, ...(currentReports.data || []).filter((report) => report.id !== result.data.id)]);
-      }
       await fetchReports('refresh');
       setNotice(t.generatedSuccess);
-
-      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-        window.dispatchEvent(new CustomEvent('reportsUpdated', { detail: result.data }));
-      }
     } catch (generateError) {
       logger.error('Failed to generate report', { generateError, userId, reportType: selectedGenerateType });
       setError(t.generateFailed);

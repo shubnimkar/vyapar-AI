@@ -3,6 +3,7 @@ import { Language, ReportLocalizedContent } from '@/lib/types';
 import { logger } from '@/lib/logger';
 import { generateWithModelChain } from '@/lib/ai/bedrock-model-chain';
 import { getModelChain } from '@/lib/ai/model-routing';
+import { buildAIDateContextBlock } from '@/lib/ai/date-context';
 
 const AWS_REGION = process.env.AWS_REGION || 'ap-south-1';
 const bedrockClient = new BedrockRuntimeClient({ region: AWS_REGION });
@@ -80,6 +81,8 @@ export async function translateReportContent(params: {
   const prompt = `Translate this business report narrative into ${getLanguageName(targetLanguage)}.
 Keep all numbers, rupee amounts, percentages, dates, names, and business facts unchanged.
 Do not add new advice or remove meaning.
+Use this date context only for interpreting relative date words, if any:
+${buildAIDateContextBlock()}
 Return ONLY valid JSON in this exact shape:
 {
   "summary": "translated summary",

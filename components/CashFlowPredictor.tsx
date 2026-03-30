@@ -23,6 +23,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       title: 'Cash Flow Prediction',
       predict: 'Predict Next 7 Days',
       loading: 'Analyzing...',
+      forecastWindow: 'Forecast window',
       insufficientData: 'Need at least 7 days of data for prediction',
       error: 'Error',
       negativeAlert: 'Warning: Negative balance predicted',
@@ -37,6 +38,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       title: 'कैश फ्लो पूर्वानुमान',
       predict: 'अगले 7 दिनों की भविष्यवाणी करें',
       loading: 'विश्लेषण हो रहा है...',
+      forecastWindow: 'पूर्वानुमान अवधि',
       insufficientData: 'पूर्वानुमान के लिए कम से कम 7 दिनों का डेटा चाहिए',
       error: 'त्रुटि',
       negativeAlert: 'चेतावनी: नकारात्मक शेष राशि की भविष्यवाणी',
@@ -51,6 +53,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
       title: 'रोख प्रवाह अंदाज',
       predict: 'पुढील 7 दिवसांचा अंदाज लावा',
       loading: 'विश्लेषण करत आहे...',
+      forecastWindow: 'अंदाज कालावधी',
       insufficientData: 'अंदाजासाठी किमान 7 दिवसांचा डेटा आवश्यक आहे',
       error: 'त्रुटी',
       negativeAlert: 'चेतावणी: नकारात्मक शिल्लक अंदाजित',
@@ -166,10 +169,28 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
     }).format(amount);
   };
 
+  const formatPredictionDate = (date: string) =>
+    new Intl.DateTimeFormat('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(`${date}T00:00:00+05:30`));
+
+  const forecastStart = predictions[0]?.date || null;
+  const forecastEnd = predictions[predictions.length - 1]?.date || null;
+
   return (
     <Card className="space-y-5 rounded-2xl">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-neutral-900">{t.title}</h3>
+        <div>
+          <h3 className="text-xl font-semibold text-neutral-900">{t.title}</h3>
+          {forecastStart && forecastEnd && (
+            <p className="mt-1 text-sm text-neutral-500">
+              {t.forecastWindow}: {forecastStart} to {forecastEnd} (IST)
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {predictions.length > 0 && (
             <Button
@@ -284,11 +305,7 @@ export default function CashFlowPredictor({ userId, language }: CashFlowPredicto
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-neutral-900">
-                      {new Date(prediction.date).toLocaleDateString('en-IN', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {formatPredictionDate(prediction.date)}
                     </div>
                     <div
                       className={`text-lg font-bold ${

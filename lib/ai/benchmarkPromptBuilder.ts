@@ -13,6 +13,7 @@ import {
 } from './templates';
 import { logger } from '@/lib/logger';
 import type { BenchmarkComparison } from '@/lib/types';
+import { buildAIDateContextBlock } from './date-context';
 
 /**
  * Build AI prompt for benchmark explanation
@@ -53,6 +54,7 @@ export function buildBenchmarkExplanationPrompt(
 
   // 0. LANGUAGE INSTRUCTION (MUST BE FIRST AND MOST PROMINENT)
   systemPrompt += LANGUAGE_INSTRUCTIONS[context.language] + '\n\n';
+  systemPrompt += buildAIDateContextBlock() + '\n\n';
 
   // 1. Persona identity
   systemPrompt += PERSONA_IDENTITIES[context.business_type][context.language] + '\n\n';
