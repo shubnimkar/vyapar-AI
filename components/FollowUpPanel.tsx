@@ -432,7 +432,7 @@ export default function FollowUpPanel({
 
         {/* Queue cards */}
         {visibleCredits.length > 0 && (
-          <div className="divide-y divide-neutral-100 pb-20 sm:pb-0">
+          <div className="divide-y divide-neutral-100 pb-28 sm:pb-0">
             {paginatedCredits.map(credit => {
               const sev = getSeverity(credit.daysOverdue);
               const hint = getIntelligenceHint(credit, language);
@@ -495,7 +495,7 @@ export default function FollowUpPanel({
 
         {/* Pagination */}
         {!showAllEntries && visibleCredits.length > itemsPerPage && (
-          <div className="px-5 py-4 border-t border-neutral-100 flex items-center justify-between">
+          <div className="px-5 py-4 pb-28 sm:pb-4 border-t border-neutral-100 flex items-center justify-between">
             <p className="text-xs text-neutral-500">
               {formatTemplate(t('followUp.showingResults', language), {
                 start: visibleCredits.length > 0 ? startIndex + 1 : 0,
