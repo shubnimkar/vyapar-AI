@@ -1191,12 +1191,14 @@ export default function Home() {
         {/* Sidebar */}
         <aside className="sticky top-0 hidden h-screen w-56 flex-col border-r border-neutral-200 bg-white lg:flex">
           {/* Logo */}
-          <div className="flex items-center justify-center border-b border-neutral-200 px-4 h-16 shrink-0">
-            <img
-              src="/background-removed.png"
-              alt="Vyapar AI"
-              style={{ height: 55, width: 'auto', objectFit: 'contain' }}
-            />
+          <div className="flex h-[89px] shrink-0 items-center justify-center border-b border-neutral-200 bg-white/95 px-4 backdrop-blur-md">
+            <div className="flex items-center justify-center">
+              <img
+                src="/background-removed.png"
+                alt="Vyapar AI"
+                style={{ height: 55, width: 'auto', objectFit: 'contain' }}
+              />
+            </div>
           </div>
 
           {/* Navigation */}
@@ -1240,12 +1242,23 @@ export default function Home() {
           <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur-md">
             {/* Top bar: title + controls */}
             <div className="flex items-center justify-between gap-2 px-4 h-14 sm:px-6 lg:px-10 lg:h-16">
-              <h2 className="text-lg font-bold tracking-tight text-neutral-900 truncate shrink min-w-0 sm:text-2xl">
-                {activeSection === 'pending' ? t('nav.pending', language) : getSectionLabel(activeSection)}
-              </h2>
-              {/* Right side: language dropdown + sync */}
+              {/* Mobile: show logo; Desktop: show section title */}
+              <div className="flex items-center gap-3 shrink min-w-0">
+                <img
+                  src="/background-removed.png"
+                  alt="Vyapar AI"
+                  className="lg:hidden"
+                  style={{ height: 40, width: 'auto', objectFit: 'contain' }}
+                />
+                <h2 className="hidden lg:block text-lg font-bold tracking-tight text-neutral-900 truncate sm:text-2xl">
+                  {activeSection === 'pending' ? t('nav.pending', language) : getSectionLabel(activeSection)}
+                </h2>
+              </div>
+              {/* Right side: language dropdown (desktop only) + sync */}
               <div className="flex items-center gap-2 shrink-0">
-                <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
+                <div className="hidden lg:block">
+                  <LanguageSelector currentLanguage={language} onLanguageChange={handleLanguageChange} />
+                </div>
                 <SyncStatus language={language} />
               </div>
             </div>

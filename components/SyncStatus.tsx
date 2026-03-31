@@ -265,16 +265,16 @@ export default function SyncStatus({ language }: SyncStatusProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className={`flex h-12 items-center gap-2 rounded-xl px-4 text-sm font-semibold ${getStatusColor()} ${getStatusBadgeClass()}`}>
+    <div className="flex items-center gap-1.5">
+      <div className={`flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-sm font-semibold sm:h-10 sm:px-3 ${getStatusColor()} ${getStatusBadgeClass()}`}>
         {getStatusIcon()}
-        <span>{getStatusText()}</span>
+        <span className="hidden sm:inline">{getStatusText()}</span>
       </div>
       
       {online && !syncing && syncStatus !== 'syncing' && (
         <button
           onClick={handleSync}
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-colors hover:bg-neutral-50"
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white transition-colors hover:bg-neutral-50 sm:h-10 sm:w-10"
           title={language === 'hi' ? 'अभी सिंक करें' : language === 'mr' ? 'आता सिंक करा' : 'Sync now'}
         >
           <RefreshCw className="h-4 w-4 text-neutral-500" />
@@ -282,7 +282,7 @@ export default function SyncStatus({ language }: SyncStatusProps) {
       )}
       
       {lastSyncTime && syncStatus === 'synced' && (
-        <span className="text-xs text-neutral-500">
+        <span className="hidden lg:inline text-xs text-neutral-500">
           {language === 'hi' 
             ? `अंतिम: ${lastSyncTime.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' })}` 
             : language === 'mr' 

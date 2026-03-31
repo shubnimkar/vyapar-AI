@@ -65,11 +65,12 @@ export default function LanguageSelector({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
-        className="flex h-12 items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50"
+        className="flex h-9 items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 sm:h-10 sm:px-4"
       >
-        <Globe className="h-4 w-4 text-sky-500" />
-        <span>{current?.nativeName ?? 'English'}</span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <Globe className="h-4 w-4 text-sky-500 shrink-0" />
+        <span className="hidden xs:inline sm:inline">{current?.nativeName ?? 'English'}</span>
+        <span className="xs:hidden sm:hidden">{current?.code === 'en' ? 'EN' : current?.code === 'hi' ? 'हि' : 'म'}</span>
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
