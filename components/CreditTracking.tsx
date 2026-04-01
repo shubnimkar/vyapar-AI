@@ -391,7 +391,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
   ];
 
   return (
-    <div className="bg-white text-neutral-900 space-y-5">
+    <div className="bg-[#F9FAFB] rounded-3xl text-neutral-900 space-y-5 p-1">
 
       {/* Top action bar removed — Add Entry button moved into Recent Activity header */}
 
@@ -439,8 +439,8 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
 
       {/* ── Overdue action banner ── */}
       {overdueEntries.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-5 py-4">
-          <div className="flex items-center gap-2 text-sm text-rose-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-warning-200 bg-warning-50 px-5 py-4">
+          <div className="flex items-center gap-2 text-sm text-amber-800">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>
               <span className="font-semibold">₹{totalOverdueAmount.toLocaleString('en-IN')}</span>
@@ -524,7 +524,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
                 onClick={() => { setActiveFilter(tab.id); setCurrentPage(1); }}
                 className={`flex-none px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap min-h-[32px] ${
                   activeFilter === tab.id
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-[#ffe088] text-[#735c00] shadow-sm font-semibold'
                     : 'bg-neutral-100 text-neutral-600 active:bg-neutral-200'
                 }`}
               >
@@ -545,7 +545,7 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
             <thead className="bg-neutral-50 border-b border-neutral-200 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-neutral-500">{t('customerName', language)}</th>
-                <SortTh label={language === 'hi' ? 'राशि (₹)' : `${t('amount', language)} (₹)`} field="amount" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
+                <SortTh label={language === 'hi' ? 'राशि (₹)' : t('amount', language)} field="amount" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
                 <SortTh label={t('dueDate', language)} field="dueDate" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
                 <SortTh label={language === 'hi' ? 'बकाया दिन' : 'Overdue'} field="overdueDays" sortField={sortField} sortDir={sortDir} onSort={handleSort} />
                 <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider text-neutral-500 text-center">{t('credit.status', language)}</th>

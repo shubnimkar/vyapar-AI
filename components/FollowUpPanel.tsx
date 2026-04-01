@@ -319,6 +319,7 @@ export default function FollowUpPanel({
 
   return (
     <section className="mt-8">
+      <div className="bg-[#F9FAFB] rounded-3xl p-1">
 
       {/* Section header */}
       <div className="flex items-start justify-between gap-4 mb-4">
@@ -347,8 +348,8 @@ export default function FollowUpPanel({
 
       {/* Bulk action summary bar */}
       {overdueCredits.length > 0 && (
-        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
-          <div className="text-sm text-amber-900">
+        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-warning-200 bg-warning-50 px-5 py-4">
+          <div className="text-sm text-amber-800">
             <span className="font-semibold">⚠️ ₹{summary.totalAmount.toLocaleString('en-IN')}</span>
             {' '}{language === 'hi' ? `बकाया है ${summary.totalOverdue} ग्राहकों से` : `pending from ${summary.totalOverdue} customer${summary.totalOverdue > 1 ? 's' : ''}`}
             {summary.criticalCount > 0 && (
@@ -365,7 +366,7 @@ export default function FollowUpPanel({
         </div>
       )}
 
-      <div className="rounded-2xl border border-neutral-200 bg-white overflow-hidden">
+      <div className="rounded-2xl border border-neutral-100 bg-white overflow-hidden shadow-sm">
 
         {/* Queue controls */}
         <div className="px-5 pt-5 pb-4 border-b border-neutral-100">
@@ -389,14 +390,14 @@ export default function FollowUpPanel({
                 onClick={() => setActiveFilter(tab.id)}
                 className={`flex-none px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap min-h-[32px] ${
                   activeFilter === tab.id
-                    ? 'bg-primary-600 text-white'
+                    ? 'bg-[#ffe088] text-[#735c00] shadow-sm font-semibold'
                     : 'bg-neutral-100 text-neutral-600 active:bg-neutral-200'
                 }`}
               >
                 {tab.label}
                 {tab.count > 0 && (
                   <span className={`ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                    activeFilter === tab.id ? 'bg-white/25 text-white' : 'bg-neutral-200 text-neutral-600'
+                    activeFilter === tab.id ? 'bg-white/25 text-[#735c00]' : 'bg-neutral-200 text-neutral-600'
                   }`}>{tab.count}</span>
                 )}
               </button>
@@ -538,6 +539,7 @@ export default function FollowUpPanel({
         )}
 
       </div>
+      </div>{/* end bg-[#F9FAFB] wrapper */}
       {/* Sticky bottom bar — mobile only */}
       {overdueCredits.length > 0 && (
         <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-neutral-200 px-4 py-3 safe-area-inset-bottom">

@@ -1334,59 +1334,6 @@ export default function Home() {
                       language={language}
                     />
                   )}
-
-                  {/* Grid: OCR & Health Score */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <ReceiptOCR language={language} onDataExtracted={handleReceiptDataExtracted} />
-
-                    {typeof healthScore === 'number' &&
-                      Number.isFinite(healthScore) &&
-                      healthBreakdown &&
-                      isValidHealthBreakdown(healthBreakdown) &&
-                      !('success' in healthBreakdown) &&
-                      !('error' in healthBreakdown) ? (
-                      <HealthScoreDisplay
-                        score={healthScore}
-                        breakdown={healthBreakdown}
-                        language={language}
-                        sessionId={sessionId || undefined}
-                        userId={user?.userId}
-                      />
-                    ) : (
-                      <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200">
-                        <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                          {language === 'hi' ? 'स्वास्थ्य स्कोर' : language === 'mr' ? 'हेल्थ स्कोअर' : 'Health Score'}
-                        </h3>
-                        <p className="text-sm text-neutral-600">
-                          {language === 'hi'
-                            ? 'दैनिक एंट्री के बाद स्कोर दिखेगा।'
-                            : language === 'mr'
-                              ? 'दैनिक नोंदीनंतर स्कोअर दिसेल.'
-                              : 'Score will appear after daily entries are added.'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Benchmark Display */}
-                  <BenchmarkDisplay
-                    comparison={benchmarkComparison}
-                    language={language}
-                    isLoading={benchmarkLoading}
-                    error={benchmarkError || undefined}
-                    userId={user?.userId}
-                  />
-
-                  {/* Cash Flow Predictor */}
-                  {user && (
-                    <CashFlowPredictor
-                      userId={user.userId}
-                      language={language}
-                    />
-                  )}
-
-                  {/* Note: Daily Entry and Credit Tracking are available in their dedicated sections.
-                      We intentionally keep the dashboard focused on summary/insights only. */}
                 </>
               )}
 
@@ -1417,12 +1364,61 @@ export default function Home() {
 
               {activeSection === 'analysis' && renderAnalysisPanel()}
 
-              {activeSection === 'health' && user && userProfile && (
-                <IndicesDashboard
-                  userId={user.userId}
-                  userProfile={userProfile}
-                  language={language}
-                />
+              {activeSection === 'health' && user && (
+                <>
+                  {/* Business Health Score */}
+                  {typeof healthScore === 'number' &&
+                    Number.isFinite(healthScore) &&
+                    healthBreakdown &&
+                    isValidHealthBreakdown(healthBreakdown) &&
+                    !('success' in healthBreakdown) &&
+                    !('error' in healthBreakdown) ? (
+                    <HealthScoreDisplay
+                      score={healthScore}
+                      breakdown={healthBreakdown}
+                      language={language}
+                      sessionId={sessionId || undefined}
+                      userId={user.userId}
+                    />
+                  ) : (
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200">
+                      <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                        {language === 'hi' ? 'स्वास्थ्य स्कोर' : language === 'mr' ? 'हेल्थ स्कोअर' : 'Health Score'}
+                      </h3>
+                      <p className="text-sm text-neutral-600">
+                        {language === 'hi'
+                          ? 'दैनिक एंट्री के बाद स्कोर दिखेगा।'
+                          : language === 'mr'
+                            ? 'दैनिक नोंदीनंतर स्कोअर दिसेल.'
+                            : 'Score will appear after daily entries are added.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Segment Benchmark */}
+                  <BenchmarkDisplay
+                    comparison={benchmarkComparison}
+                    language={language}
+                    isLoading={benchmarkLoading}
+                    error={benchmarkError || undefined}
+                    userId={user.userId}
+                  />
+
+                  {/* Stress & Affordability Indices */}
+                  {userProfile && (
+                    <IndicesDashboard
+                      userId={user.userId}
+                      userProfile={userProfile}
+                      language={language}
+                    />
+                  )}
+
+                  {/* Cash Flow Predictor */}
+                  <CashFlowPredictor
+                    userId={user.userId}
+                    language={language}
+                  />
+                </>
               )}
 
               {activeSection === 'chat' &&
