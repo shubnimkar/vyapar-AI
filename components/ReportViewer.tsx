@@ -11,6 +11,7 @@ import {
   cacheReportPreferences,
   cacheReports,
   getReportsLocalFirst,
+  pullReportsFromCloud,
 } from '@/lib/report-sync';
 
 interface ReportViewerProps {
@@ -243,7 +244,16 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
     setError(null);
 
     try {
-      const result: ReportsListResponse = await getReportsLocalFirst(userId, language);
+      let result: ReportsListResponse;
+
+      if (mode === 'refresh') {
+        // Bypass cache — always pull fresh from the server
+        const pulled = await pullReportsFromCloud(userId, language);
+        result = pulled || { success: false, error: t.refreshFailed, data: [], automationEnabled: false, reportTime: '20:00' };
+      } else {
+        result = await getReportsLocalFirst(userId, language);
+      }
+
       if (!result.success) {
         throw new Error(result.error || t.loadFailed);
       }
