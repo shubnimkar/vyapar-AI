@@ -396,43 +396,43 @@ export default function CreditTracking({ userId, language, onCreditChange }: Cre
       {/* Top action bar removed — Add Entry button moved into Recent Activity header */}
 
       {/* ── Summary cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <Card className="bg-primary-50 border-primary-100">
-          <CardBody>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="rounded-xl border border-primary-100 bg-white p-2">
-                <Landmark className="w-5 h-5 text-primary-600" />
+          <CardBody className="p-3 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="rounded-xl border border-primary-100 bg-white p-1.5">
+                <Landmark className="w-4 h-4 text-primary-600" />
               </div>
             </div>
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">{t('totalOutstanding', language)}</p>
-            <p className="text-2xl font-bold text-neutral-900">₹{summary.totalOutstanding.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-neutral-400 mt-1 uppercase tracking-widest">{t('credit.updatedAgo', language)}</p>
+            <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider mb-1">{t('totalOutstanding', language)}</p>
+            <p className="text-xl font-bold text-neutral-900">₹{summary.totalOutstanding.toLocaleString('en-IN')}</p>
+            <p className="text-[10px] text-neutral-400 mt-1 uppercase tracking-widest">{t('credit.updatedAgo', language)}</p>
           </CardBody>
         </Card>
 
         <Card className="bg-rose-50 border-rose-100">
-          <CardBody>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="rounded-xl border border-rose-100 bg-white p-2">
-                <AlertCircle className="w-5 h-5 text-rose-600" />
+          <CardBody className="p-3 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="rounded-xl border border-rose-100 bg-white p-1.5">
+                <AlertCircle className="w-4 h-4 text-rose-600" />
               </div>
             </div>
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">{t('totalOverdue', language)}</p>
-            <p className="text-2xl font-bold text-neutral-900">₹{summary.totalOverdue.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-rose-600 mt-1 uppercase tracking-widest font-medium">{t('credit.requiresAction', language)}</p>
+            <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider mb-1">{t('totalOverdue', language)}</p>
+            <p className="text-xl font-bold text-neutral-900">₹{summary.totalOverdue.toLocaleString('en-IN')}</p>
+            <p className="text-[10px] text-rose-600 mt-1 uppercase tracking-widest font-medium">{t('credit.requiresAction', language)}</p>
           </CardBody>
         </Card>
 
-        <Card className="bg-amber-50 border-amber-100">
-          <CardBody>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="rounded-xl border border-amber-100 bg-white p-2">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+        <Card className="bg-amber-50 border-amber-100 col-span-2 md:col-span-1">
+          <CardBody className="p-3 sm:p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="rounded-xl border border-amber-100 bg-white p-1.5">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
               </div>
             </div>
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mb-1">{t('credit.totalAlerts', language)}</p>
-            <p className="text-2xl font-bold text-neutral-900">{summary.overdueCount}</p>
-            <p className="text-xs text-amber-600 mt-1 uppercase tracking-widest font-medium">{t('credit.criticalCount', language)}</p>
+            <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider mb-1">{t('credit.totalAlerts', language)}</p>
+            <p className="text-xl font-bold text-neutral-900">{summary.overdueCount}</p>
+            <p className="text-[10px] text-amber-600 mt-1 uppercase tracking-widest font-medium">{t('credit.criticalCount', language)}</p>
           </CardBody>
         </Card>
       </div>
