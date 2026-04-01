@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { BarChart3, CalendarClock, ChevronLeft, FileText, RefreshCw, Sparkles, TrendingDown, TrendingUp } from 'lucide-react';
+import { BarChart3, CalendarClock, ChevronDown, ChevronLeft, FileText, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { getLocalEntries } from '@/lib/daily-entry-sync';
@@ -230,6 +230,7 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [showTypeMenu, setShowTypeMenu] = useState(false);
 
   const reportTypes: ReportType[] = ['all', 'daily', 'weekly', 'monthly'];
 
@@ -274,6 +275,10 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
       setSelectedReport(localizedSelectedReport);
     }
   }, [reports, selectedReport]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [selectedReport]);
 
   const savePreferences = async () => {
     setIsSavingPrefs(true);
@@ -375,6 +380,9 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
     }).format(amount);
   }
 
+  // tabular-nums helper — kept for alignment consistency
+  const numClass = '';
+
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString(locale, {
       day: 'numeric',
@@ -409,290 +417,275 @@ export default function ReportViewer({ userId, language }: ReportViewerProps) {
 
   if (isLoading) {
     return (
-      <Card className="rounded-3xl">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 rounded bg-neutral-200" />
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="h-28 rounded-2xl bg-neutral-100" />
-            <div className="h-28 rounded-2xl bg-neutral-100" />
-            <div className="h-28 rounded-2xl bg-neutral-100" />
+      <div className="bg-[#F9FAFB] rounded-3xl p-1">
+        <Card className="rounded-3xl shadow-sm border-neutral-100">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-48 rounded bg-neutral-200" />
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="h-28 rounded-2xl bg-neutral-100" />
+              <div className="h-28 rounded-2xl bg-neutral-100" />
+              <div className="h-28 rounded-2xl bg-neutral-100" />
+            </div>
+            <div className="h-64 rounded-2xl bg-neutral-100" />
           </div>
-          <div className="h-64 rounded-2xl bg-neutral-100" />
-        </div>
-      </Card>
+        </Card>
+      </div>
     );
   }
 
   if (selectedReport) {
     return (
-      <Card className="space-y-6 rounded-3xl">
-        <div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedReport(null)}
-            icon={<ChevronLeft className="h-4 w-4" />}
-            className="px-0 text-primary-700 hover:bg-transparent hover:text-primary-800"
-          >
+      <div className="bg-[#F9FAFB] rounded-3xl p-1">
+      <Card className="space-y-5 rounded-3xl bg-white shadow-sm border-neutral-100">
+        {/* Back + header */}
+        <div className="flex items-start justify-between gap-4">
+          <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedReport(null)} icon={<ChevronLeft className="h-4 w-4" />} className="px-0 text-primary-700 hover:bg-transparent">
             {t.back}
           </Button>
-        </div>
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+          <div className="text-right">
+            <div className="inline-flex items-center rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-semibold text-primary-700 mb-1">
               {t[selectedReport.reportType]}
             </div>
-            <h3 className="text-section-heading text-neutral-900">{formatPeriod(selectedReport)}</h3>
-            <p className="text-body-sm text-neutral-500">
-              {t.generatedAt}: {formatDateTime(selectedReport.generatedAt)}
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <MetricCard label={t.sales} value={formatCurrency(selectedReport.totalSales)} tone="emerald" />
-            <MetricCard label={selectedReport.netProfit >= 0 ? t.profit : t.loss} value={formatCurrency(Math.abs(selectedReport.netProfit))} tone={selectedReport.netProfit >= 0 ? 'blue' : 'amber'} />
-            <MetricCard label={t.avgSales} value={formatCurrency(selectedReport.averageDailySales)} tone="slate" />
-            <MetricCard label={t.margin} value={formatPercent(selectedReport.profitMargin)} tone="slate" />
+            <p className="text-xs text-neutral-500">{formatDateTime(selectedReport.generatedAt)}</p>
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1.2fr,0.8fr]">
-          <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-5">
-            <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.summary}</h4>
-            <p className="mt-3 text-body text-neutral-800 leading-7">
-              {selectedReport.summary || selectedReport.insights}
-            </p>
+        <h3 className="text-lg font-bold text-neutral-900">{formatPeriod(selectedReport)}</h3>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-3">
-              <ListBlock title={t.wins} items={selectedReport.wins || []} emptyLabel="—" />
-              <ListBlock title={t.risks} items={selectedReport.risks || []} emptyLabel="—" />
-              <ListBlock title={t.nextSteps} items={selectedReport.nextSteps || []} emptyLabel="—" />
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <div className="rounded-2xl border border-neutral-200 p-5">
-              <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.period}</h4>
-              <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
-                <DetailRow label={t.entries} value={`${selectedReport.entryCount || 0}`} />
-                <DetailRow label={t.expenses} value={formatCurrency(selectedReport.totalExpenses)} />
-                <DetailRow label={t.avgExpenses} value={formatCurrency(selectedReport.averageDailyExpenses)} />
-                <DetailRow label={t.avgProfit} value={formatCurrency(selectedReport.averageDailyProfit)} />
-                <DetailRow label={t.expenseRatio} value={formatPercent(selectedReport.expenseRatio)} />
-                <DetailRow label={t.closingCash} value={formatCurrency(selectedReport.closingCash)} />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-neutral-200 p-5">
-              <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.comparison}</h4>
-              {selectedReport.comparison ? (
-                <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
-                  <DetailRow label={t.sales} value={`${selectedReport.comparison.salesChangePct.toFixed(1)}%`} />
-                  <DetailRow label={t.expenses} value={`${selectedReport.comparison.expenseChangePct.toFixed(1)}%`} />
-                  <DetailRow label={selectedReport.netProfit >= 0 ? t.profit : t.loss} value={`${selectedReport.comparison.profitChangePct.toFixed(1)}%`} />
-                  <p className="text-xs text-neutral-500">{selectedReport.comparison.previousLabel}</p>
-                </div>
-              ) : (
-                <p className="mt-3 text-sm text-neutral-500">—</p>
-              )}
-            </div>
-
-            <div className="rounded-2xl border border-neutral-200 p-5">
-              <h4 className="text-label uppercase tracking-wide text-neutral-500">{t.insights}</h4>
-              <div className="mt-4 space-y-3 text-body-sm text-neutral-700">
-                <DetailRow
-                  label={t.bestDay}
-                  value={selectedReport.bestDay ? `${formatDate(selectedReport.bestDay.date)} · ${formatCurrency(selectedReport.bestDay.profit)}` : '—'}
-                />
-                <DetailRow
-                  label={t.worstDay}
-                  value={selectedReport.worstDay ? `${formatDate(selectedReport.worstDay.date)} · ${formatCurrency(selectedReport.worstDay.profit)}` : '—'}
-                />
-              </div>
-            </div>
-          </section>
+        {/* 1. P&L — large, prominent */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className={`rounded-2xl border p-4 ${selectedReport.netProfit >= 0 ? 'border-primary-200 bg-primary-50' : 'border-warning-200 bg-warning-50'}`}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1">{selectedReport.netProfit >= 0 ? t.profit : t.loss}</p>
+            <p className={`text-2xl font-bold ${numClass} ${selectedReport.netProfit >= 0 ? 'text-primary-900' : 'text-amber-900'}`}>{formatCurrency(Math.abs(selectedReport.netProfit))}</p>
+          </div>
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 mb-1">{t.sales}</p>
+            <p className={`text-2xl font-bold ${numClass} text-emerald-900`}>{formatCurrency(selectedReport.totalSales)}</p>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-amber-900">
-          {t.missingData}
+        {/* 2. Secondary metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <MetricCard label={t.expenses} value={formatCurrency(selectedReport.totalExpenses)} tone="amber" />
+          <MetricCard label={t.margin} value={formatPercent(selectedReport.profitMargin)} tone="slate" />
+          <MetricCard label={t.avgSales} value={formatCurrency(selectedReport.averageDailySales)} tone="slate" />
+          <MetricCard label={t.entries} value={`${selectedReport.entryCount || 0}`} tone="slate" />
         </div>
+
+        {/* 3. AI Summary + action blocks */}
+        {(selectedReport.summary || selectedReport.insights) && (
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-2">{t.summary}</p>
+            <p className="text-sm text-neutral-700 leading-6">{selectedReport.summary || selectedReport.insights}</p>
+          </div>
+        )}
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <ListBlock title={t.wins} items={selectedReport.wins || []} emptyLabel="—" />
+          <ListBlock title={t.risks} items={selectedReport.risks || []} emptyLabel="—" />
+          <ListBlock title={t.nextSteps} items={selectedReport.nextSteps || []} emptyLabel="—" />
+        </div>
+
+        {/* 4. Detailed metrics — secondary */}
+        <details className="rounded-xl border border-neutral-200">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-neutral-600 select-none">{t.period} · {t.comparison}</summary>
+          <div className="border-t border-neutral-100 px-4 py-4 grid gap-4 sm:grid-cols-2">
+            <div className="space-y-3 text-sm text-neutral-700">
+              <DetailRow label={t.avgExpenses} value={formatCurrency(selectedReport.averageDailyExpenses)} />
+              <DetailRow label={t.avgProfit} value={formatCurrency(selectedReport.averageDailyProfit)} />
+              <DetailRow label={t.expenseRatio} value={formatPercent(selectedReport.expenseRatio)} />
+              <DetailRow label={t.closingCash} value={formatCurrency(selectedReport.closingCash)} />
+              {selectedReport.bestDay && <DetailRow label={t.bestDay} value={`${formatDate(selectedReport.bestDay.date)} · ${formatCurrency(selectedReport.bestDay.profit)}`} />}
+              {selectedReport.worstDay && <DetailRow label={t.worstDay} value={`${formatDate(selectedReport.worstDay.date)} · ${formatCurrency(selectedReport.worstDay.profit)}`} />}
+            </div>
+            {selectedReport.comparison && (
+              <div className="space-y-3 text-sm text-neutral-700">
+                <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">{t.comparison}</p>
+                <DetailRow label={t.sales} value={`${selectedReport.comparison.salesChangePct.toFixed(1)}%`} />
+                <DetailRow label={t.expenses} value={`${selectedReport.comparison.expenseChangePct.toFixed(1)}%`} />
+                <DetailRow label={selectedReport.netProfit >= 0 ? t.profit : t.loss} value={`${selectedReport.comparison.profitChangePct.toFixed(1)}%`} />
+                <p className="text-xs text-neutral-400">{selectedReport.comparison.previousLabel}</p>
+              </div>
+            )}
+          </div>
+        </details>
+
+        <div className="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-xs text-amber-800">{t.missingData}</div>
       </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="space-y-8 rounded-3xl">
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          onClick={() => void fetchReports('refresh')}
-          disabled={isRefreshing}
-          variant="secondary"
-          size="md"
-          icon={<RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />}
-        >
-          {t.refresh}
-        </Button>
-      </div>
+    <div className="space-y-4">
 
-      {error && <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-      {notice && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</div>}
+      {error && <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
+      {notice && <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{notice}</div>}
 
-      <div className="grid gap-4 xl:grid-cols-[1.15fr,0.85fr]">
-        <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
-          <div className="flex items-center gap-2 text-neutral-900">
-            <CalendarClock className="h-5 w-5 text-primary-700" />
-            <h4 className="text-section-heading text-neutral-900">{t.automation}</h4>
+      {/* ── Zone 1: KPI tiles ── always on top, read-only data */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+        <div className={`rounded-2xl border p-4 ${overview.totalProfit >= 0 ? 'border-primary-200 bg-primary-50' : 'border-warning-200 bg-warning-50'}`}>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{t.overviewProfit}</p>
+            {overview.totalProfit >= 0 ? <TrendingUp className="h-4 w-4 text-primary-600" /> : <TrendingDown className="h-4 w-4 text-amber-600" />}
           </div>
-          <p className="mt-2 text-body-sm text-neutral-600">{t.automationHint}</p>
-          <p className="mt-1 flex items-start gap-1.5 text-xs text-neutral-500">
-            <span className="mt-0.5 shrink-0 text-primary-400">ℹ</span>
-            {t.automationNote}
-          </p>
-
-          <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-end">
-            <div className="flex-1">
-              <label className="mb-2 block text-sm font-medium text-neutral-700">{t.reportTime}</label>
-              <input
-                type="time"
-                value={reportTime}
-                onChange={(event) => setReportTime(event.target.value)}
-                className="h-12 w-full rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
-              />
-            </div>
-            <button
-              type="button"
-              aria-pressed={automationEnabled}
-              onClick={() => setAutomationEnabled((value) => !value)}
-              className={`flex h-12 items-center gap-3 rounded-xl border px-4 text-sm font-medium transition ${
-                automationEnabled
-                  ? 'border-primary-200 bg-primary-50 text-primary-900'
-                  : 'border-neutral-200 bg-white text-neutral-700'
-              }`}
-            >
-              <span
-                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                  automationEnabled ? 'bg-primary-600' : 'bg-neutral-300'
-                }`}
-              >
-                <span
-                  className={`inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                    automationEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </span>
-              <span>{automationEnabled ? t.enabled : t.disabled}</span>
-            </button>
-            <Button
-              type="button"
-              onClick={savePreferences}
-              disabled={isSavingPrefs}
-              variant="primary"
-            >
-              {isSavingPrefs ? t.saving : t.savePrefs}
-            </Button>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-neutral-200 p-6">
-          <div className="flex items-center gap-2 text-neutral-900">
-            <Sparkles className="h-5 w-5 text-primary-700" />
-            <h4 className="text-section-heading text-neutral-900">{t.generateTitle}</h4>
-          </div>
-          <p className="mt-2 text-body-sm text-neutral-600">{t.generateHint}</p>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <select
-              value={selectedGenerateType}
-              onChange={(event) => setSelectedGenerateType(event.target.value as Exclude<ReportType, 'all'>)}
-              className="h-12 flex-1 rounded-xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
-            >
-              <option value="daily">{t.daily}</option>
-              <option value="weekly">{t.weekly}</option>
-              <option value="monthly">{t.monthly}</option>
-            </select>
-            <Button
-              type="button"
-              onClick={generateReport}
-              disabled={isGenerating}
-              variant="primary"
-            >
-              {isGenerating ? t.generating : t.generateNow}
-            </Button>
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <p className={`text-xl font-bold ${numClass} ${overview.totalProfit >= 0 ? 'text-primary-900' : 'text-amber-900'}`}>{formatCurrency(overview.totalProfit)}</p>
+        </div>
         <OverviewCard icon={BarChart3} label={t.overviewSales} value={formatCurrency(overview.totalSales)} tone="emerald" />
-        <OverviewCard icon={overview.totalProfit >= 0 ? TrendingUp : TrendingDown} label={t.overviewProfit} value={formatCurrency(overview.totalProfit)} tone={overview.totalProfit >= 0 ? 'blue' : 'amber'} />
         <OverviewCard icon={FileText} label={t.overviewReports} value={`${overview.totalReports}`} tone="slate" />
         <OverviewCard icon={CalendarClock} label={t.overviewLatest} value={overview.latestLabel} tone="slate" />
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {reportTypes.map((type) => (
-          <Button
-            key={type}
-            type="button"
-            onClick={() => setActiveFilter(type)}
-            variant={activeFilter === type ? 'primary' : 'secondary'}
-            size="sm"
-            className={`rounded-full ${
-              activeFilter === type
-                ? 'border-transparent'
-                : 'shadow-none'
-            }`}
-          >
-            {type === 'all' ? t.allReports : t[type]}
-          </Button>
-        ))}
-      </div>
+      {/* ── Zone 2: List card ── filter header + rows + automation footer */}
+      <div className="rounded-3xl bg-white shadow-sm border border-neutral-100 overflow-hidden">
 
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h4 className="text-section-heading text-neutral-900">{t.latestReports}</h4>
-          <span className="text-body-sm text-neutral-500">{t.lastUpdated}: {reports[0] ? formatDateTime(reports[0].generatedAt) : '—'}</span>
-        </div>
-
-        {reports.length === 0 ? (
-          <EmptyState title={t.noReports} subtitle={t.noReportsHint} />
-        ) : filteredReports.length === 0 ? (
-          <EmptyState title={t.noMatches} subtitle={t.noReportsHint} />
-        ) : (
-          <div className="space-y-3">
-            {filteredReports.map((report) => (
+        {/* Card header: two rows on mobile, one row on desktop */}
+        <div className="px-4 pt-4 pb-3 border-b border-neutral-100 space-y-3 sm:space-y-0 sm:flex sm:items-center sm:gap-3">
+          {/* Row 1 (mobile) / Left side (desktop): filter tabs */}
+          <div className="flex items-center gap-1 rounded-xl bg-neutral-100 p-1 sm:flex-1">
+            {reportTypes.map((type) => (
               <button
-                key={report.id}
+                key={type}
                 type="button"
-                onClick={() => setSelectedReport(report)}
-                className="w-full rounded-2xl border border-neutral-200 p-5 text-left transition hover:border-primary-300 hover:bg-neutral-50"
+                onClick={() => setActiveFilter(type)}
+                className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                  activeFilter === type
+                    ? 'bg-[#ffe088] text-[#735c00] shadow-sm font-semibold'
+                    : 'text-neutral-500 hover:text-neutral-700'
+                }`}
               >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
-                        {t[report.reportType]}
-                      </span>
-                      <span className="text-sm text-neutral-500">{formatPeriod(report)}</span>
-                    </div>
-                    <p className="max-w-3xl text-sm leading-6 text-neutral-700">
-                      {report.summary || report.insights}
-                    </p>
-                  </div>
-
-                  <div className="grid min-w-[320px] gap-3 sm:grid-cols-3">
-                    <MiniMetric label={t.sales} value={formatCurrency(report.totalSales)} />
-                    <MiniMetric label={report.netProfit >= 0 ? t.profit : t.loss} value={formatCurrency(Math.abs(report.netProfit))} />
-                    <MiniMetric label={t.viewReport} value="→" />
-                  </div>
-                </div>
+                {type === 'all' ? t.allReports : t[type]}
               </button>
             ))}
           </div>
-        )}
-      </section>
-    </Card>
+
+          {/* Row 2 (mobile) / Right side (desktop): Generate split button + Refresh */}
+          <div className="flex items-center gap-2 sm:shrink-0">
+            <div className="relative flex items-stretch flex-1 sm:flex-none">
+              <button
+                type="button"
+                onClick={generateReport}
+                disabled={isGenerating}
+                className="h-10 flex-1 sm:flex-none px-4 rounded-l-xl bg-primary-600 text-white text-xs font-semibold uppercase tracking-wide hover:bg-primary-700 disabled:opacity-50 transition-colors border-r border-primary-700"
+              >
+                {isGenerating ? t.generating : t.generateNow}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTypeMenu(v => !v)}
+                className="h-10 px-2.5 rounded-r-xl bg-primary-600 text-white hover:bg-primary-700 transition-colors flex items-center gap-1"
+                aria-label="Select report type"
+              >
+                <span className="text-[10px] font-semibold text-primary-200 hidden sm:inline">{t[selectedGenerateType]}</span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+              {showTypeMenu && (
+                <div className="absolute right-0 top-full mt-1 z-20 min-w-[120px] rounded-xl border border-neutral-200 bg-white shadow-md overflow-hidden">
+                  {(['daily', 'weekly', 'monthly'] as const).map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => { setSelectedGenerateType(type); setShowTypeMenu(false); }}
+                      className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+                        selectedGenerateType === type
+                          ? 'bg-[#ffe088] text-[#735c00] font-semibold'
+                          : 'text-neutral-700 hover:bg-neutral-50'
+                      }`}
+                    >
+                      {t[type]}
+                      {selectedGenerateType === type && <span className="ml-2 text-[10px]">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Button
+              type="button"
+              onClick={() => void fetchReports('refresh')}
+              disabled={isRefreshing}
+              variant="secondary"
+              size="sm"
+              className="h-10 w-10 p-0 shrink-0"
+              icon={<RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />}
+            />
+          </div>
+        </div>
+
+        {/* Report rows */}
+        <div className="px-4 py-3">
+          {reports.length === 0 ? (
+            <EmptyState title={t.noReports} subtitle={t.noReportsHint} />
+          ) : filteredReports.length === 0 ? (
+            <EmptyState title={t.noMatches} subtitle={t.noReportsHint} />
+          ) : (
+            <div className="space-y-3 py-1">
+              {filteredReports.map((report) => (
+                <button
+                  key={report.id}
+                  type="button"
+                  onClick={() => setSelectedReport(report)}
+                  className="w-full rounded-2xl border border-neutral-100 bg-[#F9FAFB] p-4 text-left transition-all hover:border-primary-200 hover:bg-white hover:shadow-sm active:scale-[0.98]"
+                >
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-primary-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-700">{t[report.reportType]}</span>
+                      <span className="text-xs text-neutral-400">{formatPeriod(report)}</span>
+                    </div>
+                    <span className="text-neutral-300 text-sm">→</span>
+                  </div>
+                  {(report.summary || report.insights) && (
+                    <p className="text-sm text-neutral-500 leading-5 line-clamp-2 mb-3">
+                      {report.summary || report.insights}
+                    </p>
+                  )}
+                  <div className="flex items-stretch gap-2">
+                    <div className="flex-1 rounded-xl bg-white px-3 py-2 border border-neutral-100">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">{t.sales}</p>
+                      <p className={`text-sm font-bold ${numClass} text-neutral-900 mt-0.5`}>{formatCurrency(report.totalSales)}</p>
+                    </div>
+                    <div className={`flex-[1.2] rounded-xl px-3 py-2 ${report.netProfit >= 0 ? 'bg-emerald-50' : 'bg-rose-50'}`}>
+                      <p className={`text-[10px] font-bold uppercase tracking-wider ${report.netProfit >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>{report.netProfit >= 0 ? t.profit : t.loss}</p>
+                      <p className={`text-base font-bold ${numClass} mt-0.5 ${report.netProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{formatCurrency(Math.abs(report.netProfit))}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Automation — quiet footer */}
+        <div className="border-t border-neutral-100 px-4 py-3">
+          <details>
+            <summary className="flex cursor-pointer items-center gap-2 text-xs font-medium text-neutral-400 select-none hover:text-neutral-600 transition-colors">
+              <CalendarClock className="h-3.5 w-3.5" />
+              {t.automation}
+              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${automationEnabled ? 'bg-primary-50 text-primary-600' : 'bg-neutral-100 text-neutral-400'}`}>
+                {automationEnabled ? t.enabled : t.disabled}
+              </span>
+            </summary>
+            <div className="mt-3 pt-3 border-t border-neutral-100">
+              <p className="text-xs text-neutral-400 mb-3">{t.automationNote}</p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <label className="mb-1.5 block text-xs font-medium text-neutral-500">{t.reportTime}</label>
+                  <input type="time" value={reportTime} onChange={(e) => setReportTime(e.target.value)} className="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15" />
+                </div>
+                <button type="button" aria-pressed={automationEnabled} onClick={() => setAutomationEnabled(v => !v)} className={`flex h-10 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition ${automationEnabled ? 'border-primary-200 bg-primary-50 text-primary-900' : 'border-neutral-200 bg-white text-neutral-700'}`}>
+                  <span className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors ${automationEnabled ? 'bg-primary-600' : 'bg-neutral-300'}`}>
+                    <span className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${automationEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
+                  </span>
+                  {automationEnabled ? t.enabled : t.disabled}
+                </button>
+                <Button type="button" onClick={savePreferences} disabled={isSavingPrefs} variant="primary" size="sm">
+                  {isSavingPrefs ? t.saving : t.savePrefs}
+                </Button>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -704,11 +697,11 @@ function MetricCard({ label, value, tone }: { label: string; value: string; tone
         ? 'border-primary-200 bg-primary-50 text-primary-900'
         : tone === 'amber'
           ? 'border-warning-200 bg-warning-50 text-amber-900'
-          : 'border-neutral-200 bg-neutral-50 text-neutral-900';
+          : 'border-neutral-100 bg-neutral-50 text-neutral-900';
 
   return (
     <div className={`rounded-2xl border p-4 ${toneClass}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{label}</p>
+      <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{label}</p>
       <p className="mt-2 text-lg font-bold">{value}</p>
     </div>
   );
@@ -732,7 +725,7 @@ function OverviewCard({
         ? 'border-primary-200 bg-primary-50 text-primary-900'
         : tone === 'amber'
           ? 'border-warning-200 bg-warning-50 text-amber-900'
-          : 'border-neutral-200 bg-neutral-50 text-neutral-900';
+          : 'border-neutral-100 bg-neutral-50 text-neutral-900';
 
   return (
     <div className={`rounded-2xl border p-4 ${toneClass}`}>
@@ -741,15 +734,6 @@ function OverviewCard({
         <Icon className="h-4 w-4 opacity-80" />
       </div>
       <p className="mt-3 text-lg font-bold">{value}</p>
-    </div>
-  );
-}
-
-function MiniMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-neutral-100 px-3 py-2">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-neutral-900">{value}</p>
     </div>
   );
 }
