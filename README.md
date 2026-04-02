@@ -117,8 +117,8 @@ Traditional AI tools compute everything, creating:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Frontend (Next.js 14)                    │
-│  ┌─────────────┐  ┌───���─────────┐  ┌──────────────────┐   │
+│                    Frontend (Next.js 16.1.6)                │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐   │
 │  │   React     │  │  TypeScript │  │  Tailwind CSS    │   │
 │  │ Components  │  │   Logic     │  │     Styling      │   │
 │  └─────────────┘  └─────────────┘  └──────────────────┘   │
@@ -139,18 +139,19 @@ Traditional AI tools compute everything, creating:
 │  │  Database   │  │  Storage    │  │   Functions      │   │
 │  └─────────────┘  └─────────────┘  └──────────────────┘   │
 │  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐   │
-│  │  Bedrock    │  │  Transcribe │  │  EventBridge     │   │
-│  │     AI      │  │   (Voice)   │  │   Events         │   │
+│  │  Bedrock    │  │  Transcribe │  │      SES         │   │
+│  │ Nova Models │  │   (Voice)   │  │  (Email/Reset)   │   │
 │  └─────────────┘  └─────────────┘  └──────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ### **AWS Services Used**
-- **AWS Bedrock**: Claude 3 Sonnet & Titan models for AI explanations
+- **AWS Bedrock**: Amazon Nova Pro, Lite, and Micro models with per-feature routing and fallback chain
 - **AWS DynamoDB**: Single-table design with TTL for session management
-- **AWS S3**: Secure file storage with lifecycle policies (7-day retention)
-- **AWS Lambda**: Serverless functions for OCR, voice processing, predictions
+- **AWS S3**: Secure file storage with lifecycle policies (receipts: 7-day, voice: 1-day)
+- **AWS Lambda**: Serverless functions for OCR, voice processing, predictions, and report generation
 - **AWS Transcribe**: Voice-to-text for multilingual speech recognition
+- **AWS SES**: Transactional email for password reset and welcome flows
 - **AWS IAM**: Fine-grained access control with least privilege principle
 
 ---
@@ -180,17 +181,65 @@ cp .env.local.example .env.local
 ### Environment Variables (.env.local)
 ```env
 # AWS Configuration
-AWS_REGION=us-east-1
+AWS_REGION=ap-south-1
 AWS_ACCESS_KEY_ID=your-access-key-here
 AWS_SECRET_ACCESS_KEY=your-secret-key-here
+# Required only for temporary STS credentials
+AWS_SESSION_TOKEN=your-session-token-here
 
-# AWS Services
-BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
-DYNAMODB_TABLE=vyapar-ai-table
-S3_BUCKET=vyapar-ai-receipts
+# AWS Bedrock - Per-feature Nova model routing
+BEDROCK_MODEL_ID=global.amazon.nova-2-lite-v1:0
 
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+BEDROCK_MODEL_QA_PRIMARY=apac.amazon.nova-pro-v1:0
+BEDROCK_MODEL_QA_FALLBACK=apac.amazon.nova-lite-v1:0
+BEDROCK_MODEL_QA_FINAL=apac.amazon.nova-micro-v1:0
+
+BEDROCK_MODEL_ANALYSIS_PRIMARY=apac.amazon.nova-pro-v1:0
+BEDROCK_MODEL_ANALYSIS_FALLBACK=apac.amazon.nova-lite-v1:0
+BEDROCK_MODEL_ANALYSIS_FINAL=apac.amazon.nova-micro-v1:0
+
+BEDROCK_MODEL_EXPLAIN_PRIMARY=apac.amazon.nova-pro-v1:0
+BEDROCK_MODEL_EXPLAIN_FALLBACK=apac.amazon.nova-lite-v1:0
+BEDROCK_MODEL_EXPLAIN_FINAL=apac.amazon.nova-micro-v1:0
+
+BEDROCK_MODEL_REPORT_PRIMARY=apac.amazon.nova-lite-v1:0
+BEDROCK_MODEL_REPORT_FALLBACK=apac.amazon.nova-pro-v1:0
+BEDROCK_MODEL_REPORT_FINAL=apac.amazon.nova-micro-v1:0
+
+BEDROCK_MODEL_VOICE_PRIMARY=apac.amazon.nova-lite-v1:0
+BEDROCK_MODEL_VOICE_FINAL=apac.amazon.nova-micro-v1:0
+
+BEDROCK_MODEL_EXPENSE_ALERT_PRIMARY=apac.amazon.nova-micro-v1:0
+BEDROCK_MODEL_EXPENSE_ALERT_FALLBACK=apac.amazon.nova-lite-v1:0
+
+# Enable automatic fallback to next configured Bedrock model
+ENABLE_AI_FALLBACK=true
+
+# DynamoDB
+DYNAMODB_TABLE_NAME=vyapar-ai
+
+# S3 Buckets
+S3_BUCKET_RECEIPTS=vyapar-ai-receipts-123456789012
+S3_BUCKET_VOICE=vyapar-ai-voice-123456789012
+AWS_S3_BUCKET_RECEIPTS_OUTPUT=vyapar-receipts-output
+
+# Lambda Functions
+LAMBDA_CASHFLOW_PREDICTOR=cashflow-predictor
+LAMBDA_EXPENSE_ALERT=expense-alert
+LAMBDA_REPORT_GENERATOR=report-generator
+LAMBDA_RECEIPT_OCR=receipt-ocr-processor
+LAMBDA_VOICE_PROCESSOR=voice-processor
+
+# SES Email
+SES_REGION=ap-south-1
+SES_ACCESS_KEY_ID=your-ses-access-key-id
+SES_SECRET_ACCESS_KEY=your-ses-secret-access-key
+EMAIL_FROM_ADDRESS=noreply@yourdomain.com
+APP_BASE_URL=https://yourdomain.com
+
+# Demo credentials (development only)
+DEMO_USERNAME=admin
+DEMO_PASSWORD=vyapar123
 ```
 
 ### Development
@@ -247,7 +296,7 @@ npm run build
 ## 🛠️ **Technical Stack**
 
 ### **Frontend**
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16.1.6 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + Design System
 - **State Management**: React Hooks + Context
@@ -258,8 +307,9 @@ npm run build
 - **API Routes**: Next.js App Router
 - **Database**: AWS DynamoDB (Single-table design)
 - **File Storage**: AWS S3 with lifecycle policies
-- **AI Services**: AWS Bedrock (Claude 3, Titan)
+- **AI Services**: AWS Bedrock (Amazon Nova Pro, Lite, Micro — per-feature model routing with fallback chain)
 - **Serverless**: AWS Lambda for async processing
+- **Email**: AWS SES for transactional emails (password reset, welcome)
 - **Authentication**: Session-based with bcrypt
 
 ### **Testing & Quality**
@@ -276,7 +326,7 @@ npm run build
 ### 1. **DynamoDB Table**
 ```bash
 # Create single-table design
-Table: vyapar-ai-table
+Table: vyapar-ai
 Partition Key: PK (String)
 Sort Key: SK (String)
 TTL: expires_at (Number)
@@ -285,10 +335,10 @@ TTL: expires_at (Number)
 ### 2. **S3 Buckets**
 ```bash
 # Receipt storage (7-day retention)
-vyapar-ai-receipts
+vyapar-ai-receipts-{account-id}
 
 # Voice processing (1-day retention)  
-vyapar-ai-voice
+vyapar-ai-voice-{account-id}
 
 # Enable CORS and lifecycle policies
 ```
@@ -312,10 +362,11 @@ lambda/report-generator/
 ```
 
 ### 4. **IAM Roles & Permissions**
-- Bedrock InvokeModel permissions
+- Bedrock InvokeModel permissions (Nova Pro, Lite, Micro)
 - DynamoDB read/write access
 - S3 put/get/delete permissions
 - Lambda execution roles
+- SES send email permissions
 
 ---
 
@@ -404,8 +455,7 @@ test('health score bounds', () => {
 vercel --prod
 
 # Environment variables in Vercel dashboard
-AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-BEDROCK_MODEL_ID, DYNAMODB_TABLE, S3_BUCKET
+# See .env.local.example for the full list of required variables
 ```
 
 ### **AWS EC2**
@@ -415,6 +465,19 @@ BEDROCK_MODEL_ID, DYNAMODB_TABLE, S3_BUCKET
 
 # Configure NGINX + PM2
 # Set up SSL with Let's Encrypt
+```
+
+### **AWS Infrastructure Setup**
+```bash
+# Deploy all AWS resources (DynamoDB, S3, Lambda)
+chmod +x scripts/*.sh
+./scripts/deploy-aws-infrastructure.sh
+
+# Validate deployment
+./scripts/validate-infrastructure.sh
+
+# Test Lambda functions
+./scripts/test-lambdas.sh
 ```
 
 ### **Docker**
@@ -453,8 +516,9 @@ CMD ["npm", "start"]
 - **API Documentation**: `app/api/*/route.ts` files
 - **Architecture**: `.kiro/steering/vyapar-rules.md`
 - **Testing Guide**: `__tests__/` directory
-- **Deployment**: `scripts/` directory
-- **Demo Data**: `public/demo-data/README.md`
+- **Deployment**: `scripts/deploy-aws-infrastructure.sh`
+- **Demo Data**: `public/demo-data/README.md` (CSV files for all business types × city tiers)
+- **DynamoDB Migration**: `docs/dynamodb-userid-migration-plan.md`
 
 ---
 
@@ -473,13 +537,14 @@ CMD ["npm", "start"]
    # Verify table exists in correct region
    # Check IAM role permissions
    # Use AWS CLI: aws dynamodb list-tables
+   # Default table name: vyapar-ai (set via DYNAMODB_TABLE_NAME)
    ```
 
-3. **Bedrock Model Access**
+### 3. **Bedrock Model Access**
    ```bash
-   # Request access to Claude 3 Sonnet in AWS Console
-   # Verify model ID: anthropic.claude-3-sonnet-20240229-v1:0
-   # Check region availability
+   # Request access to Amazon Nova models in AWS Console
+   # Verify model IDs match your region (ap-south-1 uses apac.* prefix)
+   # Check region availability for Nova Pro, Lite, and Micro
    ```
 
 4. **Build Errors**
